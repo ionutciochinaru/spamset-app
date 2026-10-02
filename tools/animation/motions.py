@@ -383,6 +383,16 @@ ALLOWED_CONTACT = {
     'kb-snatch': {'forearm_l|torso': .01, 'forearm_l|thigh_l': .025, 'upper_arm_l|thigh_l': .015},
     # Hanging arms rest against the front of the thighs at lockout.
     # ... and the arms brush the inner thighs at the bottom (arms inside the knees).
+    # Spamset bodyweight moves whose technique presses body parts together (the drawn
+    # limbs are thick, so touching surfaces overlap by a few centimetres).
+    # Knee drawn up to the elbow on each side.
+    'spiderman-pushup': {'upper_arm_l|thigh_l': .025, 'upper_arm_r|thigh_r': .025},
+    # Feet stacked: the legs lie against each other.
+    'stacked-pushup': {'thigh_l|thigh_r': .04, 'shin_l|shin_r': .04, 'shin_l|thigh_r': .03, 'shin_r|thigh_l': .03},
+    # Knees together, rolled side to side.
+    'reclined-twist': {'shin_l|shin_r': .03, 'thigh_l|thigh_r': .03},
+    # The free hand presses the straight arm across the chest.
+    'cross-body-shoulder': {'forearm_l|forearm_r': .03, 'hand_l|forearm_r': .02, 'hand_r|forearm_l': .02},
     'kb-deadlift': {'forearm_l|thigh_l': .02, 'forearm_r|thigh_r': .02, 'hand_l|thigh_l': .02, 'hand_r|thigh_r': .02,
                     'upper_arm_l|thigh_l': .02, 'upper_arm_r|thigh_r': .02},
 }

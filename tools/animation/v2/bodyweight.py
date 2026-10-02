@@ -19,11 +19,11 @@ from math import cos, sin, radians, sqrt, log, exp
 from functools import cached_property
 
 try:
-    from ..rig import add, sub, mul, unit, cross, dot, norm, side_sign, SIDES
+    from ..rig import add, sub, mul, unit, cross, dot, norm, side_sign, SIDES, UPPER_ARM, FOREARM
     from .collide import PARTS, segment_distance
     from .framework import Lift, SAMPLES_PER_SECOND, minjerk, _safe_target, _support_centre
 except ImportError:
-    from rig import add, sub, mul, unit, cross, dot, norm, side_sign, SIDES
+    from rig import add, sub, mul, unit, cross, dot, norm, side_sign, SIDES, UPPER_ARM, FOREARM
     from v2.collide import PARTS, segment_distance
     from v2.framework import Lift, SAMPLES_PER_SECOND, minjerk, _safe_target, _support_centre
 
@@ -46,12 +46,19 @@ def _capsule(j, part):
     return j[a], j[b], r
 
 
+# Which body parts each arm segment must clear. Hands behind the head, by the temples or
+# arms overhead otherwise sink into the drawn head (sit-ups, back lifts, overhead reach).
+ARM_TARGETS = {'hand': ('thigh_l', 'thigh_r', 'torso', 'head'),
+               'forearm': ('thigh_l', 'thigh_r', 'torso', 'head'),
+               'upper_arm': ('head',)}
+
+
 def _arm_clearance(j, s):
-    """Smallest clearance of this arm's hand and forearm to the thighs and torso."""
+    """Smallest clearance of this arm to the thighs, torso and head."""
     worst = 1.
-    for arm in ('hand', 'forearm'):
+    for arm, bodies in ARM_TARGETS.items():
         a0, a1, ra = _capsule(j, f'{arm}_{s}')
-        for body in ('thigh_l', 'thigh_r', 'torso'):
+        for body in bodies:
             b0, b1, rb = _capsule(j, body)
             worst = min(worst, segment_distance(a0, a1, b0, b1) - ra - rb)
     return worst
@@ -71,40 +78,143 @@ def _holds_prop(p, s):
     return False
 
 
-def clear_arms(p, clearance=ARM_CLEARANCE):
-    """Abduct each free arm just enough to clear the thighs and torso (in place)."""
+HEAD_CLEARANCE = .003
+
+
+def _head_clearance(j, s):
+    hx, _, hr = _capsule(j, 'head')
+    worst = 1.
+    for arm in ('hand', 'forearm'):
+        a0, a1, ra = _capsule(j, f'{arm}_{s}')
+        worst = min(worst, segment_distance(a0, a1, hx, hx) - ra - hr)
+    return worst
+
+
+def _push_from_head(p, s, clearance=HEAD_CLEARANCE):
+    """Hands at the head (behind it, at the temples): move the wrist straight out from the
+    head centre until hand and forearm just touch the head, then re-solve the arm with the
+    elbow kept on its side. Smooth: the push distance is a continuous function of the pose."""
+    j = p.j
+    if _head_clearance(j, s) >= clearance:
+        return
+    head = j['head']
+    wrist0, palm0, elbow0 = j['wrist_' + s], j['palm_' + s], j['elbow_' + s]
+    out = unit(sub(wrist0, head))
+    middle = mul(add(j['shoulder_' + s], wrist0), .5)
+    pole = add(elbow0, sub(elbow0, middle))
+
+    def apply(d):
+        push = mul(out, d)
+        p.arm(s, add(wrist0, push), pole=pole, palm=add(palm0, push))
+
+    # Never push the wrist beyond the arm's reach (a hand down the back, triceps stretch);
+    # whatever clearance is left is resolved by rotating the arm at the shoulder.
+    reach = UPPER_ARM + FOREARM - .002
+    limit = .15
+    for _ in range(30):
+        if norm(sub(add(wrist0, mul(out, limit)), j['shoulder_' + s])) <= reach:
+            break
+        limit *= .8
+    if norm(sub(add(wrist0, mul(out, limit)), j['shoulder_' + s])) > reach:
+        return
+    lo, hi = 0., limit
+    apply(hi)
+    if _head_clearance(j, s) < clearance:
+        lo = hi  # cannot clear within reach: push as far as reach allows
+    for _ in range(24 if lo < hi else 0):
+        mid = (lo + hi) / 2
+        apply(mid)
+        lo, hi = (mid, hi) if _head_clearance(j, s) < clearance else (lo, mid)
+    apply(hi)
+
+
+def _abduct(p, s, clearance):
+    """Rotate the arm about the shoulder in the trunk's frontal plane by the smallest angle,
+    in whichever direction clears the body (outward for a hanging arm, away from the head
+    for a raised one)."""
     j = p.j
     left = unit(sub(j['shoulder_l'], j['shoulder_r']))
     up = unit(sub(j['chest'], j['pelvis']))
     forward = unit(cross(left, up))
+    origin = j['shoulder_' + s]
+    base = {k: j[f'{k}_{s}'] for k in ARM_JOINTS}
+
+    def apply(angle):
+        for k, v in base.items():
+            j[f'{k}_{s}'] = _rotate(v, origin, forward, angle)
+
+    best = None
+    for sign in (1., -1.):
+        apply(sign * MAX_ABDUCTION)
+        if _arm_clearance(j, s) < clearance:
+            continue
+        lo, hi = 0., MAX_ABDUCTION
+        for _ in range(24):
+            mid = (lo + hi) / 2
+            apply(sign * mid)
+            lo, hi = (mid, hi) if _arm_clearance(j, s) < clearance else (lo, mid)
+        if best is None or hi < abs(best):
+            best = sign * hi
+    apply(best if best is not None else 0.)
+
+
+FOREARM_GAP = .005
+
+
+def _forearm_gap(j):
+    (a0, a1, ra), (b0, b1, rb) = _capsule(j, 'forearm_l'), _capsule(j, 'forearm_r')
+    return segment_distance(a0, a1, b0, b1) - ra - rb
+
+
+def separate_forearms(p, gap=FOREARM_GAP):
+    """Arms crossing in front pass one over the other: the left arm pitches up and the right
+    down about the shoulder axis, by the smallest equal angle that keeps the forearms apart."""
+    j = p.j
+    if _forearm_gap(j) >= gap:
+        return
+    axis = unit(sub(j['shoulder_l'], j['shoulder_r']))
+    base = {(k, s): j[f'{k}_{s}'] for k in ARM_JOINTS for s in SIDES}
+
+    def apply(angle):
+        for (k, s), v in base.items():
+            j[f'{k}_{s}'] = _rotate(v, j['shoulder_' + s], axis, angle if s == 'l' else -angle)
+
+    lo, hi = 0., radians(25)
+    apply(hi)
+    if _forearm_gap(j) < gap:
+        apply(0.)
+        return
+    for _ in range(24):
+        mid = (lo + hi) / 2
+        apply(mid)
+        lo, hi = (mid, hi) if _forearm_gap(j) < gap else (lo, mid)
+    apply(hi)
+
+
+def clear_arms(p, clearance=ARM_CLEARANCE):
+    """Move each free arm just clear of the body (in place): hands and forearms at the head
+    are pushed out from it; arms against the thighs, torso, or an upper arm against the
+    head, are rotated about the shoulder."""
     for s in SIDES:
         if 'palm_' + s in p.contacts or _holds_prop(p, s):
             continue
-        if _arm_clearance(j, s) >= clearance:
-            continue
-        # Positive angle about +forward moves a left arm up and out to the left; the
-        # right arm turns the other way.
-        axis = forward if s == 'l' else mul(forward, -1)
-        origin = j['shoulder_' + s]
-        base = {k: j[f'{k}_{s}'] for k in ARM_JOINTS}
-
-        def apply(angle):
-            for k, v in base.items():
-                j[f'{k}_{s}'] = _rotate(v, origin, axis, angle)
-
-        lo, hi = 0., MAX_ABDUCTION
-        apply(hi)
-        if _arm_clearance(j, s) < clearance:
-            continue  # cannot clear by abduction alone; leave at the widest and let the validator report
-        for _ in range(24):
-            mid = (lo + hi) / 2
-            apply(mid)
-            lo, hi = (mid, hi) if _arm_clearance(j, s) < clearance else (lo, mid)
-        apply(hi)
+        _push_from_head(p, s)
+        if _arm_clearance(p.j, s) < clearance:
+            _abduct(p, s, clearance)
+    if not any('palm_' + s in p.contacts or _holds_prop(p, s) for s in SIDES):
+        separate_forearms(p)
     return p
 
 
 FOOT_FREE_HEIGHT = .10
+# A lifting foot may be pulled toward its hip (to keep leg length) once it is this high.
+FOOT_PULL_HEIGHT = .01
+
+
+def _ramp(height, full):
+    """Smootherstep from 0 on the floor to 1 at `full` metres up (C2 in height)."""
+    t = max(0., min(1., height / full))
+    return t * t * t * (t * (6 * t - 15) + 10)
 
 
 def _follow(p, s):
@@ -127,8 +237,8 @@ def _smooth_max(a, b, width=.004):
 
 
 def _smooth_hinge(x, width=.004):
-    """C-infinity max(0, x)."""
-    return (x + sqrt(x * x + width * width)) / 2 - width / 2
+    """C-infinity upper bound of max(0, x): never below it, within width / 2 of it."""
+    return (x + sqrt(x * x + width * width)) / 2
 
 
 def _hip_drop(p, dx, dy, follow):
@@ -143,30 +253,66 @@ def _hip_drop(p, dx, dy, follow):
         hx = hip[0] + dx - (ankle[0] + dx * follow[s])
         hy = hip[1] + dy - (ankle[1] + dy * follow[s])
         vertical = hip[2] - ankle[2]
-        need.append(vertical - sqrt(max(before * before - hx * hx - hy * hy, 1e-9)))
+        # Only planted legs ask for a drop (weighted by how planted they are); a lifting
+        # leg that would overstretch is shortened at the foot instead (see _keep_length).
+        span = vertical - sqrt(max(before * before - hx * hx - hy * hy, 1e-9))
+        need.append(span * (1 - follow[s]))
     return _smooth_hinge(_smooth_max(*need))
+
+
+def _keep_length(hip, ankle, length, follow, width=.004):
+    """Pull a free foot toward the hip so the leg is no longer than `length`.
+
+    Smooth minimum of the stretched and original length, applied in proportion to how far
+    the foot has left the floor, so planted feet never slide and nothing jumps."""
+    v = sub(ankle, hip)
+    distance = norm(v)
+    if distance < 1e-9:
+        return (0., 0., 0.)
+    shorter = length - _smooth_hinge(length - distance, width)
+    target = add(hip, mul(v, min(distance, shorter) / distance))
+    return mul(sub(target, ankle), follow)
+
+
+def _pole(root, middle, end):
+    """A pole that reproduces the current bend: the middle joint pushed out from the chord."""
+    chord = mul(add(root, end), .5)
+    away = sub(middle, chord)
+    if norm(away) < 1e-6:
+        return add(middle, (0., 0., -.01))
+    return add(middle, away)
 
 
 def shift_upper_body(p, dx, dy):
     """Move the body by (dx, dy): planted feet stay, free feet follow, legs are re-solved."""
-    if not dx and not dy:
-        return p
+    # No early return at zero shift: the smooth drop must be the same function everywhere.
     follow = {s: _follow(p, s) for s in SIDES}
     shift = (dx, dy, -_hip_drop(p, dx, dy, follow))
+    original = dict(p.j)
     # Hands on a support (floor, wall, chair) stay where they are; the arm is re-solved.
     hands = {s: (p.j['wrist_' + s], p.j['palm_' + s]) for s in SIDES if 'palm_' + s in p.contacts}
+    lengths = {s: norm(sub(p.j['hip_' + s], p.j['ankle_' + s])) for s in SIDES}
     feet = {s: {k: add(p.j[f'{k}_{s}'], mul(shift, follow[s])) for k in ('ankle', 'heel', 'toe')} for s in SIDES}
+    for s in SIDES:
+        height = min(p.j[f'heel_{s}'][2], p.j[f'toe_{s}'][2])
+        free = 0. if f'knee_{s}' in p.contacts else _ramp(height, FOOT_PULL_HEIGHT)
+        pull = _keep_length(add(p.j['hip_' + s], shift), feet[s]['ankle'], lengths[s], free)
+        feet[s] = {k: add(v, pull) for k, v in feet[s].items()}
     for k, v in list(p.j.items()):
         side = k[-1] if k[-2:] in ('_l', '_r') else None
         if side and k[:-2] in LEG_JOINTS[1:]:
             continue
         p.j[k] = add(v, shift)
+    # Knees and elbows keep bending the way the original pose bends them (a spiderman
+    # knee swings out to the side; a push-up elbow points back), not toward a fixed pole.
+    knee_poles = {s: _pole(original[f'hip_{s}'], original[f'knee_{s}'], original[f'ankle_{s}']) for s in SIDES}
+    elbow_poles = {s: _pole(original[f'shoulder_{s}'], original[f'elbow_{s}'], original[f'wrist_{s}']) for s in SIDES}
     for s in SIDES:
         for k, v in feet[s].items():
             p.j[f'{k}_{s}'] = v
-        p.leg(s, feet[s]['ankle'], pole=add(p.j['hip_' + s], (1., side_sign(s) * .1, 0.)))
+        p.leg(s, feet[s]['ankle'], pole=add(knee_poles[s], shift))
     for s, (wrist, palm) in hands.items():
-        p.arm(s, wrist, palm=palm, contact=True)
+        p.arm(s, wrist, pole=add(elbow_poles[s], shift), palm=palm, contact=True)
     # Carried props move with the body; contacts are fixed in the world.
     for prop in p.props:
         if prop.get('type') in ('kettlebell', 'dumbbell', 'band') and 'center' in prop:
