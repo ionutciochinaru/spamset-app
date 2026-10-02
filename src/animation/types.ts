@@ -11,6 +11,8 @@ export type Clip = {
   /** Default camera; cropBelow (m) frames only the body above that height (upper-body drills). */
   view: { azimuth: number; elevation: number; cropBelow?: number };
   contract?: { variant?: string; counting?: string; phases?: string; contacts?: string };
+  /** Review exports only: validator v2 result for this clip. */
+  validator?: { passed: boolean; failures: string[] };
   frames: { j: number[]; b: ClipBell[]; hs?: [HandState, HandState] }[];
 };
 

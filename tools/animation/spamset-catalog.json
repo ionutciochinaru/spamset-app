@@ -1,0 +1,434 @@
+[
+ {
+  "id": "squat",
+  "name": "Squats",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "wall-pushup",
+  "name": "Wall push-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "calf-raise",
+  "name": "Calf raises",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "shoulder-circle",
+  "name": "Shoulder circles",
+  "group": "stretching",
+  "unit": "reps"
+ },
+ {
+  "id": "reverse-lunge",
+  "name": "Reverse lunges",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "pushup",
+  "name": "Push-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "wide-pushup",
+  "name": "Wide push-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "close-pushup",
+  "name": "Close-grip push-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "staggered-pushup",
+  "name": "Staggered push-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "stacked-pushup",
+  "name": "Stacked-feet push-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "raised-leg-pushup",
+  "name": "Raised-leg push-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "spiderman-pushup",
+  "name": "Spiderman push-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "decline-pushup",
+  "name": "Decline push-ups",
+  "group": "chair",
+  "unit": "reps"
+ },
+ {
+  "id": "clapping-pushup",
+  "name": "Clapping push-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "power-pushup",
+  "name": "Power push-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "pike-pushup",
+  "name": "Pike push-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "standing-knee",
+  "name": "Standing knee lifts",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "side-step",
+  "name": "Side steps",
+  "group": "bodyweight",
+  "unit": "seconds"
+ },
+ {
+  "id": "glute-bridge",
+  "name": "Glute bridges",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "bird-dog",
+  "name": "Bird dogs",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "plank",
+  "name": "Forearm plank",
+  "group": "bodyweight",
+  "unit": "seconds"
+ },
+ {
+  "id": "sit-ups",
+  "name": "Sit-ups",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "reverse-crunches",
+  "name": "Reverse crunches",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "bicycle-crunches",
+  "name": "Bicycle crunches",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "flutter-kicks",
+  "name": "Flutter kicks",
+  "group": "bodyweight",
+  "unit": "seconds"
+ },
+ {
+  "id": "leg-raises",
+  "name": "Leg raises",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "superman",
+  "name": "Superman",
+  "group": "bodyweight",
+  "unit": "seconds"
+ },
+ {
+  "id": "back-lifts",
+  "name": "Back lifts",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "alt-arm-leg-plank",
+  "name": "Arm and leg plank",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "shoulder-taps",
+  "name": "Shoulder taps",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "climbers",
+  "name": "Climbers",
+  "group": "bodyweight",
+  "unit": "seconds"
+ },
+ {
+  "id": "plank-jump-ins",
+  "name": "Plank jump-ins",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "tricep-extensions",
+  "name": "Tricep extensions",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "pseudo-planche",
+  "name": "Pseudo planche",
+  "group": "bodyweight",
+  "unit": "seconds"
+ },
+ {
+  "id": "tricep-dips",
+  "name": "Tricep dips",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "fly-steps",
+  "name": "Fly steps",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "side-leg-raises",
+  "name": "Side leg raises",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "punches",
+  "name": "Punches",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "side-to-side-chops",
+  "name": "Side-to-side chops",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "chest-expansions",
+  "name": "Chest expansions",
+  "group": "bodyweight",
+  "unit": "reps"
+ },
+ {
+  "id": "chin-ups",
+  "name": "Chin-ups",
+  "group": "pullup-bar",
+  "unit": "reps"
+ },
+ {
+  "id": "pull-ups",
+  "name": "Pull-ups",
+  "group": "pullup-bar",
+  "unit": "reps"
+ },
+ {
+  "id": "doorframe-rows",
+  "name": "Doorframe rows",
+  "group": "doorframe",
+  "unit": "reps"
+ },
+ {
+  "id": "sit-stand",
+  "name": "Sit-to-stands",
+  "group": "chair",
+  "unit": "reps"
+ },
+ {
+  "id": "seated-knee",
+  "name": "Seated knee lifts",
+  "group": "chair",
+  "unit": "reps"
+ },
+ {
+  "id": "kb-deadlift",
+  "name": "Kettlebell deadlift",
+  "group": "kettlebell",
+  "unit": "reps"
+ },
+ {
+  "id": "goblet-squat",
+  "name": "Goblet squats",
+  "group": "kettlebell",
+  "unit": "reps"
+ },
+ {
+  "id": "kb-swing",
+  "name": "Kettlebell swings",
+  "group": "kettlebell",
+  "unit": "reps"
+ },
+ {
+  "id": "kb-reverse-lunge",
+  "name": "Goblet reverse lunges",
+  "group": "kettlebell",
+  "unit": "reps"
+ },
+ {
+  "id": "kb-upright-row",
+  "name": "Kettlebell upright rows",
+  "group": "kettlebell",
+  "unit": "reps"
+ },
+ {
+  "id": "kb-bent-row",
+  "name": "Kettlebell bent rows",
+  "group": "kettlebell",
+  "unit": "reps"
+ },
+ {
+  "id": "kb-side-lunge",
+  "name": "Goblet side lunges",
+  "group": "kettlebell",
+  "unit": "reps"
+ },
+ {
+  "id": "kb-side-bend",
+  "name": "Kettlebell side bends",
+  "group": "kettlebell",
+  "unit": "reps"
+ },
+ {
+  "id": "kb-curl",
+  "name": "Kettlebell curls",
+  "group": "kettlebell",
+  "unit": "reps"
+ },
+ {
+  "id": "kb-halo",
+  "name": "Kettlebell halos",
+  "group": "kettlebell",
+  "unit": "reps"
+ },
+ {
+  "id": "db-curl",
+  "name": "Dumbbell curls",
+  "group": "dumbbells",
+  "unit": "reps"
+ },
+ {
+  "id": "band-pull",
+  "name": "Band pull-aparts",
+  "group": "band",
+  "unit": "reps"
+ },
+ {
+  "id": "neck-flexion",
+  "name": "Neck flexion",
+  "group": "stretching",
+  "unit": "reps"
+ },
+ {
+  "id": "neck-extension",
+  "name": "Neck extension",
+  "group": "stretching",
+  "unit": "reps"
+ },
+ {
+  "id": "side-neck",
+  "name": "Side neck stretch",
+  "group": "stretching",
+  "unit": "reps"
+ },
+ {
+  "id": "overhead-reach",
+  "name": "Overhead reach",
+  "group": "stretching",
+  "unit": "seconds"
+ },
+ {
+  "id": "triceps-stretch",
+  "name": "Triceps stretch",
+  "group": "stretching",
+  "unit": "seconds"
+ },
+ {
+  "id": "cross-body-shoulder",
+  "name": "Cross-body stretch",
+  "group": "stretching",
+  "unit": "seconds"
+ },
+ {
+  "id": "behind-back-clasp",
+  "name": "Behind-back clasp",
+  "group": "stretching",
+  "unit": "seconds"
+ },
+ {
+  "id": "torso-extension",
+  "name": "Standing back bends",
+  "group": "stretching",
+  "unit": "reps"
+ },
+ {
+  "id": "side-bend",
+  "name": "Side bends",
+  "group": "stretching",
+  "unit": "reps"
+ },
+ {
+  "id": "oblique-twist",
+  "name": "Standing twists",
+  "group": "stretching",
+  "unit": "reps"
+ },
+ {
+  "id": "cat-cow",
+  "name": "Cat-cow",
+  "group": "stretching",
+  "unit": "reps"
+ },
+ {
+  "id": "quad-stretch",
+  "name": "Standing quad stretch",
+  "group": "stretching",
+  "unit": "seconds"
+ },
+ {
+  "id": "hamstring-stretch",
+  "name": "Hamstring stretch",
+  "group": "stretching",
+  "unit": "seconds"
+ },
+ {
+  "id": "hip-flexor-lunge",
+  "name": "Hip-flexor stretch",
+  "group": "stretching",
+  "unit": "seconds"
+ },
+ {
+  "id": "reclined-twist",
+  "name": "Knee rolls",
+  "group": "stretching",
+  "unit": "reps"
+ }
+]

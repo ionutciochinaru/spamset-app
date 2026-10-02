@@ -281,3 +281,29 @@ class Wrapped(Lift):
         pose = self.build(self.name, phase, {}, dx, dy)
         pose.view = dict(pose.view)
         return pose
+
+
+def weight_shift_holds(legacy, name, seconds=.5, samples=480):
+    """Pauses for Wrapped(holds=...): the middle of each double-support stretch of the
+    legacy motion that borders a single-support stretch (a foot about to leave or just
+    back on the floor). Moves that never stand on one foot get none."""
+    def single(phase):
+        j = legacy(name, phase).j
+        free = [s for s in SIDES if min(j[f'heel_{s}'][2], j[f'toe_{s}'][2]) > .02]
+        return len(free) == 1
+    flags = [single(i / samples) for i in range(samples)]
+    if not any(flags) or all(flags):
+        return []
+    holds = []
+    first = flags.index(True)
+    k = 0
+    while k < samples:
+        if flags[(first + k) % samples]:
+            k += 1
+            continue
+        start = k
+        while not flags[(first + k) % samples]:
+            k += 1
+        middle = ((first + (start + k - 1) / 2) / samples) % 1.
+        holds.append((round(middle, 4), seconds))
+    return sorted(holds)

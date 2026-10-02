@@ -353,6 +353,14 @@ except ImportError:
 MOTIONS['kb-swing'] = kb_swing_v2
 V2_LIFTS = {**LIFTS, **SINGLE_ARM, GETUP.name: GETUP, HALO.name: HALO}
 MOTIONS.update(V2_LIFTS)
+try:
+    from .v2.spamset import build as _build_spamset
+except ImportError:
+    from v2.spamset import build as _build_spamset
+# Every other Spamset exercise: its legacy motion wrapped for balance and arm clearance.
+SPAMSET_V2 = _build_spamset(MOTIONS, {'kb-swing', *V2_LIFTS})
+V2_LIFTS = {**V2_LIFTS, **SPAMSET_V2}
+MOTIONS.update(SPAMSET_V2)
 V2_MOTIONS = {'kb-swing', *V2_LIFTS}
 # Loop length in seconds for motions whose timing comes from simulation or v2 authoring.
 DURATIONS = {'kb-swing': swing_duration, **{name: (lambda d=lift.duration: d) for name, lift in V2_LIFTS.items()}}

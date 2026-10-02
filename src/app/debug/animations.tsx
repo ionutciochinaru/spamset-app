@@ -3,6 +3,9 @@
  * frame by frame, read the reviewer agents' scores, and record your own
  * 1–10 score and note per exercise (exportable as JSON).
  *
+ * Lists every exported clip: the app's kettlebell lifts and, after
+ * `export_3d.py --review`, every Spamset exercise with its validator v2 result.
+ *
  * Capture mode renders only the figure for evidence screenshots:
  *   /debug/animations?capture=1&clip=kb-swing&phase=0.25&az=0&el=10
  */
@@ -15,11 +18,10 @@ import type { ReviewBundle } from '@/animation/review-types';
 import { ROLE_LABELS } from '@/animation/review-types';
 import reviewsJson from '@/animation/reviews.json';
 import { ANIMATION_REVISION } from '@/animation/revision';
-import { ExercisePicker } from '@/components/exercise-picker';
+import { REVIEW_CATALOG } from '@/animation/review-catalog';
 import { FigureViewer } from '@/components/figure-viewer';
 import { Body, Button, Card, Heading, Label, Row, Screen, Title } from '@/components/ui';
 import { Palette, Radius } from '@/constants/theme';
-import { EXERCISES, getExercise } from '@/core/exercises';
 import { useApp } from '@/store/app-store';
 
 const reviews = reviewsJson as ReviewBundle;
@@ -36,6 +38,15 @@ const VIEWS = [
 ] as const;
 
 const SPEEDS = [0.25, 0.5, 1];
+
+/** Exported clips in catalog order, grouped as in Spamset's exercise list. */
+const ENTRIES = REVIEW_CATALOG.filter((e) => clips[e.id]);
+const GROUPS = ['all', 'failing', ...Array.from(new Set(ENTRIES.map((e) => e.group)))];
+const GROUP_LABELS: Record<string, string> = {
+  all: 'All', failing: 'Failing check', bodyweight: 'Bodyweight', stretching: 'Stretching', chair: 'Chair',
+  kettlebell: 'Kettlebell', dumbbells: 'Dumbbells', band: 'Band', 'pullup-bar': 'Pull-up bar', doorframe: 'Doorframe',
+};
+const passed = (id: string) => clips[id]?.validator?.passed !== false;
 
 export default function AnimationReview() {
   const params = useLocalSearchParams<{ capture?: string; clip?: string; phase?: string; az?: string; el?: string }>();
@@ -84,7 +95,8 @@ function Capture({ initial }: { initial: CaptureState }) {
 }
 
 function ReviewPage({ initial }: { initial?: string }) {
-  const [clipId, setClipId] = useState(initial && clips[initial] ? initial : EXERCISES[0].id);
+  const [clipId, setClipId] = useState(initial && clips[initial] ? initial : ENTRIES[0].id);
+  const [group, setGroup] = useState('all');
   const [viewIndex, setViewIndex] = useState(0);
   const [speed, setSpeed] = useState(1);
   const [paused, setPaused] = useState(false);
@@ -96,7 +108,9 @@ function ReviewPage({ initial }: { initial?: string }) {
     if (Platform.OS === 'web') document.title = `Animation review ${ANIMATION_REVISION}`;
   }, []);
 
-  const clip = clips[getExercise(clipId).animation];
+  const clip = clips[clipId];
+  const listed = ENTRIES.filter((e) => group === 'all' || (group === 'failing' ? !passed(e.id) : e.group === group));
+  const failingCount = ENTRIES.filter((e) => !passed(e.id)).length;
   const frames = clip.frames.length;
   const view = VIEWS[viewIndex];
   const shown = paused ? phase : live;
@@ -129,13 +143,33 @@ function ReviewPage({ initial }: { initial?: string }) {
       {reviews.revision && reviews.revision !== ANIMATION_REVISION ? (
         <Body muted style={{ fontSize: 13 }}>Agent reviews are for revision {reviews.revision}</Body>
       ) : null}
-      <ExercisePicker
-        value={clipId}
-        onChange={(id) => {
-          setClipId(id);
-          setPhase(0);
-        }}
-      />
+      <Body muted style={{ fontSize: 13 }}>
+        {ENTRIES.length} animations · {ENTRIES.length - failingCount} pass validator v2 · {failingCount} failing
+      </Body>
+      <Row style={{ flexWrap: 'wrap' }}>
+        {GROUPS.map((g) => (
+          <Chip key={g} label={GROUP_LABELS[g] ?? g} active={group === g} onPress={() => setGroup(g)} />
+        ))}
+      </Row>
+      <Row style={{ flexWrap: 'wrap', gap: 6 }}>
+        {listed.map((e) => (
+          <Chip
+            key={e.id}
+            label={`${passed(e.id) ? '' : '✗ '}${e.name}`}
+            active={e.id === clipId}
+            onPress={() => {
+              setClipId(e.id);
+              setPhase(0);
+            }}
+          />
+        ))}
+      </Row>
+      <Heading style={{ fontSize: 18 }}>{ENTRIES.find((e) => e.id === clipId)?.name ?? clipId}</Heading>
+      {clip.validator && !clip.validator.passed ? (
+        <Body style={{ color: Palette.accent, fontSize: 13 }}>Validator v2: {clip.validator.failures.join('; ')}</Body>
+      ) : clip.validator ? (
+        <Body muted style={{ fontSize: 13 }}>Validator v2: pass</Body>
+      ) : null}
 
       <View>
         <FigureViewer
@@ -243,9 +277,10 @@ function ReviewPage({ initial }: { initial?: string }) {
               {{ form: 'Form', visuals: 'Visuals', anatomy: 'Anatomy' }[role]}
             </Text>
           ))}
+          <Text style={[styles.cell, styles.head]}>Check</Text>
           <Text style={[styles.cell, styles.head]}>You</Text>
         </Row>
-        {EXERCISES.map((e) => (
+        {listed.map((e) => (
           <Pressable key={e.id} onPress={() => setClipId(e.id)} style={[styles.tableRow, e.id === clipId && { backgroundColor: Palette.tonal }]}>
             <Text style={[styles.cell, styles.nameCell]} numberOfLines={1}>
               {e.name}
@@ -258,6 +293,7 @@ function ReviewPage({ initial }: { initial?: string }) {
                 </Text>
               );
             })}
+            <Text style={[styles.cell, !passed(e.id) && { color: Palette.accent }]}>{passed(e.id) ? '✓' : '✗'}</Text>
             <Text style={styles.cell}>{ratings[e.id]?.score || '—'}</Text>
           </Pressable>
         ))}
