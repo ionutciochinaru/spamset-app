@@ -53,15 +53,17 @@ def _capsule(j, part):
 # arms overhead otherwise sink into the drawn head (sit-ups, back lifts, overhead reach).
 ARM_TARGETS = {'hand': ('thigh_l', 'thigh_r', 'torso', 'head'),
                'forearm': ('thigh_l', 'thigh_r', 'torso', 'head'),
-               'upper_arm': ('head',)}
+               'upper_arm': ('head', 'thigh_l', 'thigh_r')}
 
 
-def _arm_clearance(j, s):
-    """Smallest clearance of this arm to the thighs, torso and head."""
+def _arm_clearance(j, s, rest=()):
+    """Smallest clearance of this arm to the thighs, torso and head (except `rest` parts)."""
     worst = 1.
     for arm, bodies in ARM_TARGETS.items():
         a0, a1, ra = _capsule(j, f'{arm}_{s}')
         for body in bodies:
+            if body in rest:
+                continue
             b0, b1, rb = _capsule(j, body)
             worst = min(worst, segment_distance(a0, a1, b0, b1) - ra - rb)
     return worst
@@ -120,18 +122,26 @@ def _push_from_head(p, s, clearance=HEAD_CLEARANCE):
         push = mul(out, d)
         p.arm(s, add(wrist0, push), pole=pole, palm=add(palm0, push))
 
-    # Never push the wrist beyond the arm's reach (a hand down the back, triceps stretch);
-    # whatever clearance is left is resolved by rotating the arm at the shoulder.
+    # Never push the wrist beyond the arm's reach (a hand down the back, triceps stretch).
+    # The exact largest reachable push is a continuous function of the pose, so the push,
+    # min(needed, reachable), is continuous too; any clearance left is handled by rotation.
     reach = UPPER_ARM + FOREARM - .002
-    limit = .15
-    for _ in range(30):
-        if norm(sub(add(wrist0, mul(out, limit)), j['shoulder_' + s])) <= reach:
-            break
-        limit *= .8
-    if norm(sub(add(wrist0, mul(out, limit)), j['shoulder_' + s])) > reach:
+    rel = sub(wrist0, j['shoulder_' + s])
+    b = dot(out, rel)
+    c = dot(rel, rel) - reach * reach
+    if c > 0 or b * b - c < 0:
         return
-    lo, hi = 0., limit
+    cap = min(.15, -b + sqrt(b * b - c))
+    if cap <= 0:
+        return
+    lo, hi = 0., cap
     apply(hi)
+    if _head_clearance(j, s) >= clearance:
+        for _ in range(24):
+            mid = (lo + hi) / 2
+            apply(mid)
+            lo, hi = (mid, hi) if _head_clearance(j, s) < clearance else (lo, mid)
+        apply(hi)
     if _head_clearance(j, s) < clearance:
         lo = hi  # cannot clear within reach: push as far as reach allows
     for _ in range(24 if lo < hi else 0):
@@ -141,7 +151,44 @@ def _push_from_head(p, s, clearance=HEAD_CLEARANCE):
     apply(hi)
 
 
-def _abduct(p, s, clearance):
+def _rest_on(p, s, part, clearance=0.):
+    """A hand resting on a body part (hands on the front thigh): push the wrist straight out
+    from the part's axis until the hand lies on its surface, then re-solve the arm."""
+    j = p.j
+    a0, a1, rb = _capsule(j, part)
+    ha, hb, rh = _capsule(j, 'hand_' + s)
+
+    def gap():
+        return segment_distance(ha, hb, a0, a1) - rh - rb
+    if gap() >= clearance:
+        return
+    wrist0, palm0, elbow0 = j['wrist_' + s], j['palm_' + s], j['elbow_' + s]
+    axis = sub(a1, a0)
+    t = max(0., min(1., dot(sub(palm0, a0), axis) / max(dot(axis, axis), 1e-9)))
+    out = unit(sub(palm0, add(a0, mul(axis, t))))
+    pole = _pole(j['shoulder_' + s], elbow0, wrist0)
+    reach = UPPER_ARM + FOREARM - .002
+
+    def apply(d):
+        push = mul(out, d)
+        target = add(wrist0, push)
+        if norm(sub(target, j['shoulder_' + s])) > reach:
+            return False
+        p.arm(s, target, pole=pole, palm=add(palm0, push))
+        ha_, hb_ = j['wrist_' + s], j['palm_' + s]
+        return True
+    lo, hi = 0., .15
+    for _ in range(24):
+        mid = (lo + hi) / 2
+        if not apply(mid):
+            hi = mid
+            continue
+        ha, hb = j['wrist_' + s], j['palm_' + s]
+        lo, hi = (mid, hi) if gap() < clearance else (lo, mid)
+    apply(hi)
+
+
+def _abduct(p, s, clearance, rest=(), sign=None, exact=False):
     """Rotate the arm about the shoulder in the trunk's frontal plane by the smallest angle,
     in whichever direction clears the body (outward for a hanging arm, away from the head
     for a raised one)."""
@@ -152,7 +199,6 @@ def _abduct(p, s, clearance):
     origin = j['shoulder_' + s]
     base = {k: j[f'{k}_{s}'] for k in ARM_JOINTS}
     carried = [(prop, list(prop['center']), [list(h) for h in prop['handle']]) for prop in _carried(p, s)]
-
     def apply(angle):
         for k, v in base.items():
             j[f'{k}_{s}'] = _rotate(v, origin, forward, angle)
@@ -161,18 +207,22 @@ def _abduct(p, s, clearance):
             prop['handle'] = [list(_rotate(tuple(h), origin, forward, angle)) for h in handle]
 
     best = None
-    for sign in (1., -1.):
+    for sign in ((1., -1.) if sign is None else (sign,)):
         apply(sign * MAX_ABDUCTION)
-        if _arm_clearance(j, s) < clearance:
+        if _arm_clearance(j, s, rest) < clearance:
             continue
         lo, hi = 0., MAX_ABDUCTION
         for _ in range(24):
             mid = (lo + hi) / 2
             apply(sign * mid)
-            lo, hi = (mid, hi) if _arm_clearance(j, s) < clearance else (lo, mid)
+            lo, hi = (mid, hi) if _arm_clearance(j, s, rest) < clearance else (lo, mid)
         if best is None or hi < abs(best):
             best = sign * hi
+    if best is None and sign is not None and not exact:
+        # Cannot clear in this stretch's direction: rotate as far as it helps (continuous).
+        best = sign * MAX_ABDUCTION
     apply(best if best is not None else 0.)
+    return abs(best) if best is not None else float('inf')
 
 
 FOREARM_GAP = .005
@@ -208,7 +258,7 @@ def separate_forearms(p, gap=FOREARM_GAP):
     apply(hi)
 
 
-def clear_arms(p, clearance=ARM_CLEARANCE):
+def clear_arms(p, clearance=ARM_CLEARANCE, rest=(), signs=None):
     """Move each free arm just clear of the body (in place): hands and forearms at the head
     are pushed out from it; arms against the thighs, torso, or an upper arm against the
     head, are rotated about the shoulder."""
@@ -217,8 +267,10 @@ def clear_arms(p, clearance=ARM_CLEARANCE):
             continue
         if not _carried(p, s):
             _push_from_head(p, s)
-        if _arm_clearance(p.j, s) < clearance:
-            _abduct(p, s, clearance)
+        for part in rest:
+            _rest_on(p, s, part)
+        if _arm_clearance(p.j, s, rest) < clearance:
+            _abduct(p, s, clearance, rest, None if signs is None else signs.get(s))
     if not any('palm_' + s in p.contacts or _holds_prop(p, s) for s in SIDES):
         separate_forearms(p)
     return p
@@ -372,6 +424,26 @@ def shift_hips(p, dx, dy):
     return p
 
 
+UPPER_BODY = ('chest', 'neck', 'head', 'face', 'shoulder_l', 'shoulder_r', 'elbow_l', 'elbow_r',
+              'wrist_l', 'wrist_r', 'palm_l', 'palm_r')
+LEAN_PER_METRE = 4.  # radians of trunk flexion per metre of balance offset (0.2 m limit: 46 deg)
+
+
+def lean_trunk(p, dx):
+    """Balance by leaning the trunk (sit-to-stand): rotate the upper body about the pelvis,
+    forward for dx > 0. Hips, legs, feet and the seat stay where they are, which is how a
+    person brings the weight over the feet before the hips leave the chair."""
+    j = p.j
+    left = unit(sub(j['shoulder_l'], j['shoulder_r']))
+    angle = dx * LEAN_PER_METRE
+    # Rotating about +left by a positive angle tips +z toward +x (forward) for this rig.
+    sign = 1. if _rotate(add(j['pelvis'], (0., 0., 1.)), j['pelvis'], left, .1)[0] > j['pelvis'][0] else -1.
+    for k in UPPER_BODY:
+        if k in j:
+            j[k] = _rotate(j[k], j['pelvis'], left, sign * angle)
+    return p
+
+
 def hang_under_grip(p):
     """Hanging from a bar the body is a pendulum: rotate the whole body rigidly about the
     bar (the line through both hands) so the centre of mass sits directly below it. The
@@ -460,11 +532,13 @@ class Wrapped(Lift):
     """
 
     def __init__(self, name, legacy, duration, balance='xy', mirror=False, clear=True, holds=(), iterations=3, hang=False,
-                 grip=False, hips=False):
+                 grip=False, hips=False, rest=(), lean=False):
         """grip: the hands hold a fixed support (doorframe) and are declared contacts.
         hips: balance by moving the hips only (planks), not the whole body."""
         self.legacy, self.clear, self.iterations, self.hang, self.grip = legacy, clear, iterations, hang, grip
         self.hips = hips
+        self.rest = tuple(rest)  # body parts the hands rest on (not cleared)
+        self.lean = lean  # balance by trunk lean only (seated starts)
         # Thin supports (one hand and two feet) cannot hold the standing margin.
         self.keep = .015 if hips else SAFE_KEEP
         self.legacy_duration = duration
@@ -503,6 +577,69 @@ class Wrapped(Lift):
 
     def state(self, phase):
         return {}
+
+    SIGN_SAMPLES = 240
+
+    @cached_property
+    def abduct_table(self):
+        """Rotation direction per arm, per stretch of the loop that needs a correction.
+
+        Inside a stretch where an arm must be moved clear of the body, one direction is used
+        throughout (the one needing the least total rotation there), so the arm cannot flip
+        sides mid-stretch. Between stretches no correction is applied at all, so a change of
+        direction there is seamless (an arm going overhead needs the opposite rotation to
+        one hanging down)."""
+        n = self.SIGN_SAMPLES
+        table = {}
+        for s in SIDES:
+            need = []
+            for k in range(n):
+                p = self.legacy(self.name, self.legacy_phase(k / n))
+                if 'palm_' + s in p.contacts or _holds_prop(p, s):
+                    need.append(None)
+                    continue
+                if not _carried(p, s):
+                    _push_from_head(p, s)
+                for part in self.rest:
+                    _rest_on(p, s, part)
+                if _arm_clearance(p.j, s, self.rest) >= ARM_CLEARANCE:
+                    need.append(None)
+                    continue
+                angles = {}
+                for sign in (1., -1.):
+                    q = self.legacy(self.name, self.legacy_phase(k / n))
+                    if not _carried(q, s):
+                        _push_from_head(q, s)
+                    for part in self.rest:
+                        _rest_on(q, s, part)
+                    angles[sign] = _abduct(q, s, ARM_CLEARANCE, self.rest, sign, exact=True)
+                need.append(angles)
+            signs = [1.] * n
+            k = 0
+            while k < n and need[k] is not None:
+                k += 1
+            start = k % n if k < n else 0
+            m = 0
+            while m < n:
+                i = (start + m) % n
+                if need[i] is None:
+                    m += 1
+                    continue
+                run = []
+                while m < n and need[(start + m) % n] is not None:
+                    run.append((start + m) % n)
+                    m += 1
+                totals = {sign: sum(need[r][sign] for r in run) for sign in (1., -1.)}
+                best = min(totals, key=totals.get)
+                for r in run:
+                    signs[r] = best
+            table[s] = signs
+        return table
+
+    def abduct_signs_at(self, phase):
+        n = self.SIGN_SAMPLES
+        k = int(round((phase % 1.) * n)) % n
+        return {s: signs[k] for s, signs in self.abduct_table.items()}
 
     @cached_property
     def stance_targets(self):
@@ -609,14 +746,18 @@ class Wrapped(Lift):
         if self.hang:
             hang_under_grip(p)
             if self.clear:
-                clear_arms(p)
+                clear_arms(p, rest=self.rest, signs=self.abduct_signs_at(phase))
             return p
-        if self.hips:
+        if not self.balance:
+            pass  # no balance solving (lying, plank, seated moves): keep the authored body
+        elif self.lean:
+            lean_trunk(p, dx)
+        elif self.hips:
             shift_hips(p, dx, dy)
         else:
             shift_upper_body(p, dx, dy)
         if self.clear:
-            clear_arms(p)
+            clear_arms(p, rest=self.rest, signs=self.abduct_signs_at(phase))
         return p
 
     def authored(self, phase, dx=0., dy=0.):

@@ -392,6 +392,9 @@ ALLOWED_CONTACT = {
     # Knees together, rolled side to side.
     'reclined-twist': {'shin_l|shin_r': .03, 'thigh_l|thigh_r': .03},
     # The hand wraps the ankle and pulls the heel toward the bottom.
+    # Both hands rest on the straight front thigh.
+    'hamstring-stretch': {'hand_l|thigh_l': .01, 'hand_r|thigh_l': .01, 'forearm_l|thigh_l': .01, 'forearm_r|thigh_l': .01,
+                          'hand_r|thigh_r': .01, 'hand_l|thigh_r': .01},
     # Knees stay together.
     'quad-stretch': {'hand_l|shin_l': .065, 'hand_r|shin_r': .065, 'forearm_l|shin_l': .03, 'forearm_r|shin_r': .03,
                      'thigh_l|thigh_r': .015},

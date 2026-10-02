@@ -43,6 +43,12 @@ def punches(name, phase):
     return p
 
 
+# Seated starts balanced by leaning the trunk forward (lean_trunk). Sit-to-stand needs its arms
+# swinging forward as it leans (the legacy arms hang into the thighs), so it is to be
+# re-authored as a v2 Lift; empty until then.
+LEAN = set()
+# Body parts the hands rest on by design (pushed onto the surface, not cleared away).
+REST = {'hamstring-stretch': ('thigh_l', 'thigh_r'), 'quad-stretch': ('thigh_l', 'thigh_r')}
 # v2 replacements for legacy motions with a defect of their own.
 REPLACEMENTS = {'punches': punches}
 # Slower demonstration tempo where the legacy rhythm is physically too fast for a planted
@@ -102,12 +108,14 @@ def build(motions, skip):
             name, legacy, duration,
             # Planks shift the hips sideways only: along the body, moving the hips just
             # raises or lowers them (a pike), it barely moves the centre of mass.
-            balance='y' if name in PLANK_SHIFT else 'xy' if shifting else '',
+            balance='x' if name in LEAN else 'y' if name in PLANK_SHIFT else 'xy' if shifting else '',
             mirror=shifting and name in BILATERAL,
+            lean=name in LEAN,
             holds=weight_shift_holds(legacy, name) if standing
             else weight_shift_holds(legacy, name, hands=True) if name in PLANK_SHIFT else (),
-            iterations=3 if shifting else 1,
+            iterations=3 if shifting or name in LEAN else 1,
             hang=name in HANGING,
             grip=name in HAND_SUPPORTED,
-            hips=name in PLANK_SHIFT)
+            hips=name in PLANK_SHIFT,
+            rest=REST.get(name, ()))
     return wrapped
