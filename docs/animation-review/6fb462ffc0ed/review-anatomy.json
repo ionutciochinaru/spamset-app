@@ -1,0 +1,915 @@
+{
+ "role": "anatomy",
+ "revision": "6fb462ffc0ed",
+ "reviewedAt": "2026-10-02T21:16:45+00:00",
+ "method": "Viewed all 77 contact sheets (4 views x 8 phases; 16 for kb-getup) and enlarged native 480x480 frames for push-up hands, wall push-up, goblet squat, kb-curl, kb-halo, kb-getup sweep, back-lifts/superman feet. Measured every clip's frames[].j with scripts: segment-length variation, knee-hinge axis vs foot transverse axis, shin-foot (ankle) angle, elbow/knee interior angles, trunk twist, floor penetration using drawn radii from figure.ts (hip 70, knee 54, elbow 34 mm; shoe sole at heel/toe joints; flat palm centred on wrist height), foot/hand contact drift, grip-point vs wrist/palm and bar centreline, capsule self-collision (arms vs torso/legs/head, leg vs leg), bell clearance, prop penetration (slabs/tubes), and single-frame joint pops (second difference). Used geometry.json and clip validator for collisions/ZMP. Not observed: real-time playback (timing judged from duration and per-sample joint steps only); the shirt hull was approximated as a capsule; ZMP was not recomputed independently.",
+ "exercises": {
+  "kb-swing": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Credible hinge swing: knees 143 deg min, hips 86 deg flexion, two-hand grip exactly on the handle in every frame, bell passes between thighs with 5 mm clearance. Forearms brush the inner thighs (-16 mm) on the hike, which is normal contact.",
+   "defects": []
+  },
+  "kb-deadlift": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Hinge with neutral spine, bell base touches the floor (3 mm) at the bottom and grips stay on the handle. Upper arms press 16 mm into the thighs at the bottom; reads as contact, not impossible.",
+   "defects": []
+  },
+  "goblet-squat": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Horn grip held at the chest through a 69 deg knee / 108 deg hip squat; heels planted, knees track the toes. Forearms overlap the bell body by up to 14 mm (drawn radii), a small visual merge.",
+   "defects": [
+    {
+     "phase": "0.0-0.5",
+     "view": "threequarter",
+     "issue": "Bell body intersects both forearms by ~14 mm (drawn radii).",
+     "fix": "Move the bell centre 15 mm forward of the chest or spread the horn grip slightly."
+    }
+   ]
+  },
+  "kb-reverse-lunge": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Clean alternating lunge with constant segments and goblet hold. The stepping foot skims 4-11 mm above the floor while moving 15-18 mm per sample at lift-off and touch-down (phases 0.07-0.17, 0.45, mirrored), reading as a slight drag.",
+   "defects": [
+    {
+     "phase": "0.07-0.17 / 0.57-0.67",
+     "view": "left",
+     "issue": "Stepping foot moves horizontally while still within 11 mm of the floor (drag rather than lift).",
+     "fix": "Lift the swing foot to >=25 mm clearance before translating it; translate only after lift-off."
+    },
+    {
+     "phase": "0.0-0.5",
+     "view": "threequarter",
+     "issue": "Bell overlaps forearms by ~15 mm.",
+     "fix": "Same bell/forearm offset as goblet squat."
+    }
+   ]
+  },
+  "kb-side-lunge": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Lateral lunge with 54 deg hip abduction, knee over toes, trailing leg straight, feet planted. Bell/forearm overlap of 18 mm is the only geometric blemish.",
+   "defects": [
+    {
+     "phase": "0.25 / 0.75",
+     "view": "front",
+     "issue": "Bell intersects forearms ~18 mm.",
+     "fix": "Offset bell centre forward ~20 mm."
+    }
+   ]
+  },
+  "kb-upright-row": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Elbows rise to shoulder height with the handle held two-handed; bell grazes the torso hull (-5 mm) at the top, otherwise clear. Wrist sits 75 mm below the handle so the palm stretches slightly but stays attached.",
+   "defects": []
+  },
+  "kb-bent-row": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Staggered-stance one-arm row: grip on handle every frame, free hand rests on the front thigh (0 mm contact), hips hinge 94 deg, feet planted. Resting hand is a relaxed mitten, not a palm-on-thigh pose (cosmetic).",
+   "defects": []
+  },
+  "kb-side-bend": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Lateral bend with bell at the side and other hand on the hip; segments constant. The trunk is a single rigid pelvis-chest segment, so the bend pivots at the hips rather than curving through the spine; acceptable for this rig.",
+   "defects": []
+  },
+  "kb-curl": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Elbow flexes to 48 deg with upper arm fixed at the side; two-hand handle grip constant; bell clears thighs (2 mm) at the bottom.",
+   "defects": []
+  },
+  "kb-halo": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Bell held upside-down by the horns circles the head; grips stay on the horns, bell keeps 49 mm from the head and 11 mm from the forearms. Biacromial width varies 27 mm (scapular protraction/retraction), plausible. Bell orbits at neck/shoulder height on the sides, so the near forearm crosses the chin at 0.125/0.625.",
+   "defects": []
+  },
+  "kb-clean": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Hike, hip drive and rack are anatomically consistent; bell lands on the back of the forearm with 6 mm clearance; feet planted. Rack elbow interior angle 26 deg is at the edge of the soft-tissue limit.",
+   "defects": []
+  },
+  "kb-press": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Rack to lockout press with constant segments, bell resting on forearm (6 mm). Rack elbow interior angle 22 deg is tighter than real soft-tissue contact allows (~30-35 deg), so forearm and upper-arm tubes overlap in the rack.",
+   "defects": [
+    {
+     "phase": "0.0 / 0.875",
+     "view": "left",
+     "issue": "Rack elbow folded to 22 deg; forearm and upper-arm tubes visibly merge.",
+     "fix": "Open the rack elbow to ~32 deg (wrist slightly forward of the shoulder)."
+    }
+   ]
+  },
+  "kb-snatch": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Swing-to-overhead path with correct hinge, punch-through and lockout; bell clears head by 165 mm and rests on forearm overhead (4 mm). Fast elbow travel (139 mm/sample) occurs only in the ballistic phase.",
+   "defects": []
+  },
+  "kb-getup": {
+   "score": 4,
+   "confidence": "high",
+   "summary": "Most of the 34 s sequence is credible, but both leg-sweep transitions are geometrically wrong: with the right knee on the floor, the right shin folds up into the air (ankle 431 mm high, above the hip at 389 mm), the knee hinge is twisted ~135 deg relative to the foot (ankle/tibia rotation impossible), the ankle is dorsiflexed to a 20 deg shin-foot angle, and the folded shin passes 65 mm into the pelvis/torso. The right toe also drags 900 mm along the floor across the sweep.",
+   "defects": [
+    {
+     "phase": "0.175-0.195 and 0.805-0.825",
+     "view": "right / front",
+     "issue": "Kneeling leg: shin flips upward behind the body, foot points upward, knee hinge rotated ~135 deg against the foot; shin intersects the torso by 65 mm.",
+     "fix": "Author the sweep as: shin slides back along the floor (ankle y<=90 mm, instep down) with the foot following tibial rotation; keep knee hinge axis within 30 deg of the foot's transverse axis."
+    },
+    {
+     "phase": "0.20",
+     "view": "right",
+     "issue": "Shin-foot angle 20 deg (extreme dorsiflexion).",
+     "fix": "Clamp ankle to shin-foot angle >= 70 deg (or >= 160 deg plantarflexed when the instep is on the floor)."
+    },
+    {
+     "phase": "0.16-0.24",
+     "view": "left",
+     "issue": "Right toe drags ~0.9 m while within 12 mm of the floor.",
+     "fix": "Pin the toe during kneel-down and lift it before repositioning."
+    }
+   ]
+  },
+  "kb-pullover": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Standing overhead pullover with two-hand grip; bell clears head by 47 mm and shoulders flex fully without elbow collapse.",
+   "defects": []
+  },
+  "alt-arm-leg-plank": {
+   "score": 6,
+   "confidence": "high",
+   "summary": "Opposite arm and leg lift from a high plank with constant segments, but the trunk never shifts toward the support diagonal: validator ZMP is 0.144 m outside the two-point support, so the pose would topple.",
+   "defects": [
+    {
+     "phase": "0.125-0.375 / 0.625-0.875",
+     "view": "front",
+     "issue": "No lateral weight shift onto the supporting hand/foot diagonal; ZMP 0.144 m outside support.",
+     "fix": "Shift pelvis and chest 60-90 mm toward the support diagonal and add slight trunk rotation before lifting."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "back-lifts": {
+   "score": 4,
+   "confidence": "high",
+   "summary": "Prone back extension with a geometric impossibility for the whole clip: both feet are folded forward onto the shins (shin-foot angle 2 deg, toes pointing toward the knees, soles up). The body also floats: knees and hips 100 mm high with drawn radii 54-70 mm, so legs hover 30-46 mm over the floor.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left / threequarter",
+     "issue": "Feet folded onto the shins (2 deg shin-foot angle) instead of plantarflexed behind.",
+     "fix": "Place toe joints beyond the ankle along the shin line (shin-foot ~160-175 deg) with toes resting on the floor and heels up."
+    },
+    {
+     "phase": "all",
+     "view": "left",
+     "issue": "Thighs and pelvis float 30-46 mm above the floor.",
+     "fix": "Lower prone hip/knee joints to their drawn radius (~55-70 mm) so the body rests on the floor."
+    }
+   ]
+  },
+  "band-pull": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Arm path and grips are fine, but the band is a straight rigid tube between the hands; at full abduction it runs through both upper arms (-35 mm).",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "front / threequarter",
+     "issue": "Band passes through the upper arms at the T position.",
+     "fix": "Route the band in front of the chest (sag/offset forward 60-80 mm) or stop horizontal abduction ~10 deg short of the arm line."
+    }
+   ]
+  },
+  "behind-back-clasp": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Hands clasp behind the back (overlap is the clasp) and lift without elbow or shoulder impossibility; feet planted.",
+   "defects": []
+  },
+  "bicycle-crunches": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Alternating elbow-to-knee with 39 deg trunk rotation, constant segments; validator ZMP 0.107 m outside the sacral support and hips sink 18 mm into the floor.",
+   "defects": [
+    {
+     "phase": "0.25 / 0.75",
+     "view": "left",
+     "issue": "ZMP 0.107 m outside the buttock contact patch.",
+     "fix": "Keep the shoulders lower (shoulder blades just off the floor) or move pelvis to put COM over the sacrum."
+    }
+   ]
+  },
+  "bird-dog": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Quadruped opposite reach with stable support; knees rest 9 mm into the floor (radius tolerance). Ankle plantarflexed with instep on floor, correct.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "calf-raise": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Heels rise to 129 deg shin-foot angle with forefoot pivot fixed; no drift.",
+   "defects": []
+  },
+  "cat-cow": {
+   "score": 5,
+   "confidence": "high",
+   "summary": "The rig has a single rigid pelvis-chest segment, so the defining spinal flexion/extension is not shown: only the head nods (neck 125 deg) while the back stays a straight line. Supports are stable.",
+   "defects": [
+    {
+     "phase": "0.0-0.5 / 0.5-1.0",
+     "view": "left / right",
+     "issue": "Spine cannot round or arch; cat and cow look identical apart from the head.",
+     "fix": "Add a mid-spine joint (or tilt pelvis and chest segments in opposite directions) so the thoracolumbar curve reverses."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "chest-expansions": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Arms open and cross in front of the chest without shoulder impossibility; forearms cross cleanly.",
+   "defects": []
+  },
+  "chin-ups": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Underhand grip (facing -1) held on the bar every frame (wrist 5-8 mm from grip point), elbows flex to 48 deg, head clears the bar; knees bent 115 deg as a hollow hang.",
+   "defects": []
+  },
+  "clapping-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Push-up to flight and clap; hands release (state 0) during flight and land back on the same marks; toes stay pivoted. Hands overlap 44 mm at the clap (contact).",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "climbers": {
+   "score": 5,
+   "confidence": "high",
+   "summary": "Mountain climber with two geometric faults: the driving knee drops to 21 mm above the floor (drawn knee penetrates 33 mm) and the swing foot is dorsiflexed to a 27 deg shin-foot angle (toes pointing up at the shin). Validator ZMP is 0.125 m outside support.",
+   "defects": [
+    {
+     "phase": "0.21 / 0.71",
+     "view": "left / right",
+     "issue": "Knee penetrates floor by 33 mm while it should drive toward the chest in the air.",
+     "fix": "Raise the knee path to >=120 mm above floor at mid-drive."
+    },
+    {
+     "phase": "0.21 / 0.71",
+     "view": "left",
+     "issue": "Shin-foot angle 27 deg (impossible dorsiflexion).",
+     "fix": "Keep the swing foot near neutral (shin-foot 90-130 deg) with toes pointing back/down."
+    },
+    {
+     "phase": "0.2-0.3",
+     "view": "front",
+     "issue": "ZMP 0.125 m outside the hand/foot support.",
+     "fix": "Shift shoulders over wrists during the drive."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "close-pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Narrow-hand push-up with elbows tucked (upper arm ~10 deg from trunk), rigid plank, toes pinned.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "cross-body-shoulder": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Stretch arm is pulled across the chest but sinks 20 mm into the torso hull and the helping forearm sinks 13 mm into it; the release is abrupt (elbow moves 112-189 mm per sample at 0.725, a one-frame second-difference spike of 145 mm).",
+   "defects": [
+    {
+     "phase": "0.25-0.65",
+     "view": "front",
+     "issue": "Stretched upper arm penetrates the chest by ~20 mm; helping forearm into stretched arm 13 mm.",
+     "fix": "Hold the stretched arm 25 mm in front of the chest and place the helping hand on the outer upper arm surface."
+    },
+    {
+     "phase": "0.725",
+     "view": "front",
+     "issue": "Elbow jumps ~110-190 mm in one sample at release.",
+     "fix": "Ease the release over >=8 samples."
+    }
+   ]
+  },
+  "db-curl": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Dumbbell handles stay in the hands (wrist 3-5 mm from grip), elbows fixed at the sides, 55 deg top flexion.",
+   "defects": []
+  },
+  "decline-pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Feet on the chair seat with no seat penetration, rigid plank, elbow tuck credible.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "doorframe-rows": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Lean-back row holding the vertical posts; grips on the post centreline, feet planted inside the frame, body stays rigid.",
+   "defects": []
+  },
+  "flutter-kicks": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Supine alternating straight-leg kicks, hips sink 18 mm into floor (radius tolerance), arms flat.",
+   "defects": []
+  },
+  "fly-steps": {
+   "score": 6,
+   "confidence": "high",
+   "summary": "Single-leg airplane balance is credible, but the returning foot lands 10 mm under the floor and 20 mm wider than its start, its toe digs 25 mm into the floor on the way down, and at the side switch it pops back 22 mm sideways while grounded.",
+   "defects": [
+    {
+     "phase": "0.347 / 0.868",
+     "view": "threequarter",
+     "issue": "Toe digs 25 mm below floor during return.",
+     "fix": "Keep toe y>=0 on the return arc (lower heel first or raise arc)."
+    },
+    {
+     "phase": "0.405-0.463 / 0.926-0.984",
+     "view": "front",
+     "issue": "Returned foot rests at y=-10 mm and x=\u00b1100 vs start \u00b180, then snaps back at the switch.",
+     "fix": "Return the foot to its exact starting heel/toe positions at y=0."
+    }
+   ]
+  },
+  "glute-bridge": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Hip extension with planted feet and shoulders on floor; neck 136 deg at top reads as chin tucked, acceptable.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "hamstring-stretch": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Hinge over a heel-down front leg is credible, but the front foot slides 200 mm forward along the floor with the heel grounded instead of stepping, and validator ZMP is 0.078 m outside support.",
+   "defects": [
+    {
+     "phase": "0.0-0.25 / 0.75-0.9",
+     "view": "left",
+     "issue": "Front heel slides 200 mm along the floor.",
+     "fix": "Lift the foot to place it, or start the clip with the foot already forward."
+    },
+    {
+     "phase": "0.375-0.625",
+     "view": "left",
+     "issue": "ZMP 0.078 m outside support.",
+     "fix": "Shift hips back over the rear foot as the trunk hinges."
+    }
+   ]
+  },
+  "hip-flexor-lunge": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Half-kneeling hip flexor stretch, knee resting on floor (4 mm), hands on front knee, constant pose.",
+   "defects": []
+  },
+  "leg-raises": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Straight-leg raise to 45 deg hip flexion, pelvis on floor (18 mm sink, tolerance).",
+   "defects": []
+  },
+  "neck-extension": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Head extends 42 deg about a single neck joint; credible range, no collision.",
+   "defects": []
+  },
+  "neck-flexion": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Head flexes 48 deg toward the chest without intersecting it.",
+   "defects": []
+  },
+  "oblique-twist": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Standing trunk rotation of \u00b145 deg on fixed hips with clasped hands; near the upper limit of thoracolumbar rotation but plausible.",
+   "defects": []
+  },
+  "overhead-reach": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Arms rise through abduction to overhead with no shoulder impossibility; feet planted.",
+   "defects": []
+  },
+  "pike-pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Pike with head lowered toward the floor (head centre 109 mm), hips 117 deg flexion, toes pinned.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "plank": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Static forearm plank; elbows on floor, body straight.",
+   "defects": []
+  },
+  "plank-jump-ins": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Feet jump in toward the hands, but the tuck lands with the knees almost on the floor (knee penetrates 4 mm) and validator ZMP is 0.39 m outside support, so the tucked pose would fall backward.",
+   "defects": [
+    {
+     "phase": "0.3-0.55",
+     "view": "left",
+     "issue": "Knees descend to the floor in the tuck; ZMP 0.39 m outside support.",
+     "fix": "Land the feet flat under the hips with knees ~150 mm off the floor and shoulders over the wrists."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "power-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Explosive push-up with brief hand release and landing on the same marks; toes pinned.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "pseudo-planche": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Forward lean with straight arms and hands turned back; supports constant.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "pull-ups": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Overhand grip held on the bar every frame, elbows flex to 53 deg, head clears the bar.",
+   "defects": []
+  },
+  "punches": {
+   "score": 6,
+   "confidence": "high",
+   "summary": "Upper body credible (trunk rotates up to 22 deg with each punch), but the rear foot's toe is 39 mm below the floor for the entire clip while its heel is raised 22 mm.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left / threequarter",
+     "issue": "Rear toe embedded 39 mm in floor.",
+     "fix": "Pivot the raised heel about a toe at y=0 (shift the rear foot up 39 mm or reduce its plantarflexion)."
+    }
+   ]
+  },
+  "pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Standard push-up: elbows tuck ~35-40 deg from the trunk, rigid plank, hands and toes pinned.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "quad-stretch": {
+   "score": 5,
+   "confidence": "high",
+   "summary": "Standing quad stretch with plausible knee flexion (29 deg interior), but the free mitten passes 40 mm into the held shin instead of wrapping it, the toe digs 45 mm into the floor as the heel lifts, the resting foot sits 8 mm under the floor, the free hand penetrates the thigh (validator: -22 mm at 0.917), and the release is a 130 mm/sample snap. Validator ZMP 391931 m is a numerical blow-up, not a measured balance result.",
+   "defects": [
+    {
+     "phase": "0.18-0.65",
+     "view": "left / right",
+     "issue": "Holding hand intersects the shin by 40 mm.",
+     "fix": "Give the holding hand a grip state on the ankle (or offset the wrist 30 mm behind the ankle)."
+    },
+    {
+     "phase": "0.08",
+     "view": "threequarter",
+     "issue": "Toe 45 mm under the floor at lift-off.",
+     "fix": "Lift the heel about the toe at y=0, then raise the toe."
+    },
+    {
+     "phase": "0.917",
+     "view": "front",
+     "issue": "Free hand inside the thigh by 22 mm.",
+     "fix": "Keep the free hand 25 mm lateral of the thigh."
+    }
+   ]
+  },
+  "raised-leg-pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Push-up with one leg raised; single-toe support and plank stay credible.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "reclined-twist": {
+   "score": 4,
+   "confidence": "high",
+   "summary": "Supine knee-drop twist rotates the pelvis about a fixed centre instead of rolling on the floor: the lower hip joint goes to y=-19 mm so the drawn hip sinks 89 mm into the floor; the feet slide ~100 mm sideways and toes dip 21 mm under the floor; shins overlap by 21 mm.",
+   "defects": [
+    {
+     "phase": "0.125-0.25 / 0.625-0.75",
+     "view": "front / threequarter",
+     "issue": "Down-side hip sinks 89 mm through the floor.",
+     "fix": "Rotate the pelvis about the down-side hip contact (keep that hip at its radius height) and lift the up-side hip."
+    },
+    {
+     "phase": "0.1-0.3 / 0.6-0.8",
+     "view": "front",
+     "issue": "Feet slide sideways and toes dip 21 mm below floor.",
+     "fix": "Keep feet pinned (allow only foot roll onto the outer edge)."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "reverse-crunches": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Pelvis curls off the floor with knees at 90 deg; slight pelvis-chest chord change models spinal flexion credibly.",
+   "defects": []
+  },
+  "reverse-lunge": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Alternating bodyweight reverse lunge, front shin vertical-ish, back heel up; minor low skim (toe <=11 mm while moving 16 mm/sample) at step-off.",
+   "defects": []
+  },
+  "seated-knee": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Seated knee extensions are credible, but the hips and pelvis sit 25-35 mm into the chair seat for the whole clip.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left / right",
+     "issue": "Pelvis and thigh bases penetrate the seat slab by 25-35 mm.",
+     "fix": "Raise pelvis/hip joints by ~35 mm (hip joint at seat top + drawn hip radius)."
+    }
+   ]
+  },
+  "shoulder-circle": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Shoulder girdle elevation/retraction cycle; shoulder width varies 6 mm, plausible.",
+   "defects": []
+  },
+  "shoulder-taps": {
+   "score": 6,
+   "confidence": "high",
+   "summary": "Tapping hand leaves the floor without any weight shift; validator ZMP 0.136 m outside the three-point support.",
+   "defects": [
+    {
+     "phase": "0.125-0.375 / 0.625-0.875",
+     "view": "front",
+     "issue": "No lateral shift onto the support hand.",
+     "fix": "Shift chest 50-70 mm over the support hand before each tap, widen feet."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "side-bend": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Standing side reach; single-segment spine pivots at the hips, plausible for the rig.",
+   "defects": []
+  },
+  "side-leg-raises": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Standing hip abduction to 40 deg is credible, but the resting foot sits 10 mm under the floor and slides 15-20 mm outward before lift-off, and the pelvis never shifts over the stance leg.",
+   "defects": [
+    {
+     "phase": "0.0-0.12 / 0.5-0.62",
+     "view": "front",
+     "issue": "Resting foot at y=-10 mm, sliding outward while grounded.",
+     "fix": "Rest the foot at y=0 and lift before abducting."
+    },
+    {
+     "phase": "0.25-0.35",
+     "view": "front",
+     "issue": "No pelvic shift over the stance foot.",
+     "fix": "Shift pelvis ~40 mm toward the stance leg."
+    }
+   ]
+  },
+  "side-neck": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Lateral neck flexion ~36 deg each way, credible.",
+   "defects": []
+  },
+  "side-step": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Lateral step pattern with brief low skims (<=7 mm) only; knees track toes.",
+   "defects": []
+  },
+  "side-to-side-chops": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Clasped-hand chops with 40 deg trunk rotation and planted feet.",
+   "defects": []
+  },
+  "sit-stand": {
+   "score": 6,
+   "confidence": "high",
+   "summary": "Sit-to-stand pattern reads correctly, but the pelvis sinks 25-35 mm into the seat while seated and validator ZMP is 0.263 m outside the feet at seat-off.",
+   "defects": [
+    {
+     "phase": "0.0-0.25 / 0.75-1.0",
+     "view": "left",
+     "issue": "Pelvis embedded 25-35 mm in the seat.",
+     "fix": "Raise seated hip joints by ~35 mm."
+    },
+    {
+     "phase": "~0.25",
+     "view": "left",
+     "issue": "ZMP 0.263 m behind the feet at seat-off.",
+     "fix": "Lean the trunk further forward / bring feet back so the COM is over the feet before the hips leave the seat."
+    }
+   ]
+  },
+  "sit-ups": {
+   "score": 5,
+   "confidence": "high",
+   "summary": "Sit-up curls credibly, but with hands behind the head the wrists go 69 mm under the floor at the bottom, the head centre is at 52 mm (head sinks ~25 mm), and validator ZMP is 0.066 m outside support.",
+   "defects": [
+    {
+     "phase": "0.0 / 0.9-1.0",
+     "view": "left / right",
+     "issue": "Hands behind the head pass 69 mm through the floor; head sinks ~25 mm.",
+     "fix": "Rest the head at its radius (~75 mm) and keep the wrists above y=20 mm (elbows wider)."
+    }
+   ]
+  },
+  "spiderman-pushup": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Knee drives to the elbow but the upper arm and thigh interpenetrate by 21 mm, and with the hip abducted 86 deg the foot does not rotate with the shin (knee hinge ~87 deg off the foot axis).",
+   "defects": [
+    {
+     "phase": "0.25 / 0.75",
+     "view": "front / threequarter",
+     "issue": "Upper arm vs thigh -21 mm; foot orientation ignores tibial rotation.",
+     "fix": "Stop the knee 25 mm short of the elbow and rotate the foot with the shin (toe pointing back/out)."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "squat": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Bodyweight squat to 71 deg knees, 116 deg hips, heels planted, knees over toes.",
+   "defects": []
+  },
+  "stacked-pushup": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Feet-stacked push-up with credible arms, but the legs interpenetrate (thighs -14 mm) and the top foot's ankle-heel distance varies 10 mm.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Stacked legs overlap by 14 mm; top foot deforms.",
+     "fix": "Offset the top leg upward by its radius and keep foot bone lengths rigid."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "staggered-pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Asymmetric hand placement with correct differing elbow angles; supports pinned.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "standing-knee": {
+   "score": 5,
+   "confidence": "high",
+   "summary": "Knee raises are otherwise credible, but the export has two single-frame arm pops: at 0.12 (frame 18) the right elbow jumps to the body midline and the forearm passes through the torso, and at 0.847 (frame 127) the right arm flicks 300 mm sideways for one frame.",
+   "defects": [
+    {
+     "phase": "0.12",
+     "view": "front",
+     "issue": "Right arm teleports through the torso for one frame (elbow on the trunk axis).",
+     "fix": "Fix the source keyframe/IK solve at frame 18 (likely a branch flip); smooth with continuity check."
+    },
+    {
+     "phase": "0.847",
+     "view": "front",
+     "issue": "Right arm flicks out 300 mm for one frame.",
+     "fix": "Same continuity fix at frame 127; add a per-sample joint-step limit to the exporter."
+    }
+   ]
+  },
+  "superman": {
+   "score": 4,
+   "confidence": "high",
+   "summary": "Prone superman with both feet folded onto the shins for the whole clip (shin-foot angle 0-10 deg, toes pointing at the knees) - an impossible ankle. Validator ZMP fail is marginal (6 mm).",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left / threequarter",
+     "issue": "Feet folded forward onto the shins.",
+     "fix": "Plantarflex the feet behind the ankles (shin-foot ~165 deg) as in a prone lie."
+    }
+   ]
+  },
+  "torso-extension": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Standing back extension with hands on hips; extension pivots mostly at the hips with knees softening, acceptable for the single-segment spine.",
+   "defects": []
+  },
+  "tricep-dips": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Floor dips with hands behind, elbows to 105 deg, feet planted.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "tricep-extensions": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Forearm-to-high plank transitions; elbows return to their marks, supports constant.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  },
+  "triceps-stretch": {
+   "score": 5,
+   "confidence": "high",
+   "summary": "Overhead triceps stretch folds the elbow to an 8 deg interior angle (forearm collapsed onto the upper arm, beyond any soft-tissue limit), and the release drops the hand ~330 mm per sample over 3 samples. Validator ZMP 304381 m is a numerical blow-up for a static stance.",
+   "defects": [
+    {
+     "phase": "0.25-0.65",
+     "view": "front / threequarter",
+     "issue": "Elbow interior angle 8 deg; forearm and upper-arm tubes merge.",
+     "fix": "Open to ~35 deg with the hand behind the head/neck."
+    },
+    {
+     "phase": "0.75-0.77",
+     "view": "front",
+     "issue": "Arm snaps down in ~3 samples.",
+     "fix": "Ease the release over >=10 samples."
+    }
+   ]
+  },
+  "wall-pushup": {
+   "score": 4,
+   "confidence": "high",
+   "summary": "Wall push-up uses the floor hand state, so the palms stay horizontal (normal forced down) instead of flat on the wall; the mittens poke straight through the 40 mm wall and are visible on its far side from the front view.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front / left",
+     "issue": "Hands horizontal and penetrating the wall slab.",
+     "fix": "Add a wall-contact hand state (palm normal = wall normal, fingers up) or orient state-2 palms to the nearest support surface."
+    }
+   ]
+  },
+  "wide-pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Wide push-up with elbows ~35 deg from the trunk, rigid plank.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Flat (hs=2) hands are exported with the wrist 50 mm above the floor; the palm box is centred on wrist height, so the palm underside floats about 35 mm (20 mm counting the outline) above the floor.",
+     "fix": "Export floor-hand wrists at about 15-19 mm (palm half-thickness), or have hand-model.ts drop the palm onto y=0 when state===2."
+    }
+   ]
+  }
+ }
+}

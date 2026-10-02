@@ -100,20 +100,26 @@ def main():
     root = Path(sys.argv[1])
     frames = root / 'frames'
     (root / 'sheets').mkdir(exist_ok=True)
-    validate.IDS = EXERCISES
+    # Every captured clip (kettlebell lifts and the Spamset library); the legacy geometry
+    # validator covers the kettlebell lifts, validator v2 results come from each exported clip.
+    exercises = sorted({f.name.split('__')[0] for f in frames.glob('*__front__*.png')},
+                       key=lambda e: (e not in EXERCISES, EXERCISES.index(e) if e in EXERCISES else 0, e))
+    validate.IDS = [e for e in EXERCISES if e in exercises]
     report = validate.validate(240)
     rows = {row['id']: row for row in report['exercises']}
     geometry = {}
-    for exercise in EXERCISES:
+    for exercise in exercises:
         sheet(frames, exercise, root / 'sheets' / f'{exercise}.png')
-        row = rows[exercise]
+        clip = json.loads((ROOT / 'assets/animations' / f'{exercise}.json').read_text())
+        row = rows.get(exercise)
         geometry[exercise] = {
-            'validator_failures': row['failures'],
-            'max_bone_length_error_m': row['max_bone_length_error_m'],
-            'max_grip_error_m': row['max_grip_error_m'],
-            'max_support_drift_m_per_sample': row['max_declared_support_drift_m_per_sample'],
-            'min_joint_height_m': row['min_joint_center_z_m'],
-            'loop_seam_m': row['loop_near_seam_displacement_m'],
+            **({'validator_v2': clip['validator']} if 'validator' in clip else {}),
+            **({'validator_failures': row['failures'],
+                'max_bone_length_error_m': row['max_bone_length_error_m'],
+                'max_grip_error_m': row['max_grip_error_m'],
+                'max_support_drift_m_per_sample': row['max_declared_support_drift_m_per_sample'],
+                'min_joint_height_m': row['min_joint_center_z_m'],
+                'loop_seam_m': row['loop_near_seam_displacement_m']} if row else {}),
             'worst_limb_and_bell_clearance': clearance(exercise),
         }
         print(exercise)

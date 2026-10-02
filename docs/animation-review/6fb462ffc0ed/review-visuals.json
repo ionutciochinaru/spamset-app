@@ -1,0 +1,1229 @@
+{
+ "role": "visuals",
+ "revision": "6fb462ffc0ed",
+ "reviewedAt": "2026-10-02T19:46:02+00:00",
+ "method": "Inspected all 77 contact sheets (front/threequarter/left/right x 8 phases, 16 for kb-getup) from docs/animation-review/6fb462ffc0ed/sheets and opened ~30 native 480x480 frames for hands, grips, occlusion, framing and contacts. Read figure.ts, hand-model.ts, kettlebell-model.ts, equipment-model.ts, figure-viewer.tsx, design/visual-tokens.json and src/constants/theme.ts. Used geometry.json clearances and computed from each clip JSON: per-frame joint speed, one-frame spikes, loop-seam step/acceleration, floor penetration and pairwise differences between similar clips. Real-time playback was NOT available: timing, pacing and loop seam are judged from duration and per-frame joint data only; the app's default per-clip camera (clip 'view') was not captured, so views were judged as the four fixed captures; PSX mode not reviewed.",
+ "exercises": {
+  "kb-swing": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Hinge, float to chest height and hike read clearly in left/right/threequarter; two-hand grip on the handle is legible. Fast 1.43 s loop is plausible for a swing.",
+   "defects": [
+    {
+     "phase": "0.0",
+     "view": "threequarter",
+     "issue": "At the hike the bell is hidden between/behind the near thigh and the forearms sink 16 mm into the thighs (geometry forearm_l/r vs thigh -0.016 m).",
+     "fix": "Carry the hike path 3-4 cm wider/higher between the thighs or open the knees slightly so forearms and bell clear the thigh hulls."
+    },
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Iron bell #55534e is a dark low-contrast blob on the #0b0b0a stage at phone size.",
+     "fix": "Lift the iron colour a step (about #6a675f) or strengthen the rim light so the bell silhouette separates from the stage."
+    }
+   ]
+  },
+  "kb-deadlift": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Clear hinge with bell between the feet in every view; handle grip reads; floor contact at the bottom is visible.",
+   "defects": [
+    {
+     "phase": "0.0",
+     "view": "left/right",
+     "issue": "Upper arms pass 16.5 mm into the thighs at the bottom (geometry upper_arm vs thigh -0.0165 m).",
+     "fix": "Hang the arms a little more vertical/inside the knees at the bottom, or narrow the upper-arm radius near the shoulder."
+    }
+   ]
+  },
+  "goblet-squat": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Bell held at the chest by the horns, squat reads well from all four views; clean silhouette.",
+   "defects": [
+    {
+     "phase": "0.5",
+     "view": "threequarter",
+     "issue": "At depth the bell and both forearms overlap the chest into one dark mass; elbows touch the thighs (-1 mm).",
+     "fix": "Hold the bell 2-3 cm further forward at depth so the elbow-to-knee gap stays visible."
+    }
+   ]
+  },
+  "kb-reverse-lunge": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Alternating step-back with goblet hold reads clearly in side and three-quarter views.",
+   "defects": [
+    {
+     "phase": "0.25/0.75",
+     "view": "front",
+     "issue": "Front view hides the rear leg behind the front leg; lunge reads only as a dip.",
+     "fix": "Acceptable for front; consider default view az 60 (already set) and no change needed beyond the cross-cutting disc/shading items."
+    }
+   ]
+  },
+  "kb-clean": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Swing-to-rack path is readable from the sides; the rack position is muddy.",
+   "defects": [
+    {
+     "phase": "0.0/0.875",
+     "view": "threequarter",
+     "issue": "In the rack the bell covers the chest and the rack hand/forearm disappears behind it; the bell looks pasted on the shirt.",
+     "fix": "Seat the bell slightly outside the forearm (toward the lateral side) and keep the wrist/hand visible above the handle; or bias the default camera so the rack arm is near."
+    },
+    {
+     "phase": "0.62",
+     "view": "left",
+     "issue": "Forearm passes 14 mm into the thigh on the back-swing (geometry forearm_l vs thigh -0.0137).",
+     "fix": "Widen or raise the back-swing arc so the forearm clears the thigh."
+    }
+   ]
+  },
+  "kb-press": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Rack to lockout is clear in every view; bell stays on the handle grip and well framed.",
+   "defects": [
+    {
+     "phase": "0.5",
+     "view": "right",
+     "issue": "Bell is far-side and sits near the top margin (about 40 px) at lockout; acceptable but tight.",
+     "fix": "Keep the current framing margin; no change required."
+    }
+   ]
+  },
+  "kb-snatch": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Hike, high pull and punch-through to overhead read from all views; motion speed is plausible.",
+   "defects": [
+    {
+     "phase": "0.75",
+     "view": "front",
+     "issue": "Turnover phase compresses bell, hand and head into one cluster.",
+     "fix": "Hold the turnover a frame or two longer at the top so the transition is perceptible."
+    }
+   ]
+  },
+  "kb-halo": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Upper-body crop makes the circle large and clear in side views; front view loses the bell.",
+   "defects": [
+    {
+     "phase": "0.25/0.75",
+     "view": "front",
+     "issue": "Bell is fully hidden behind the head when it passes behind; the front view shows only arms framing the face.",
+     "fix": "Offset the halo path slightly higher behind the head or prefer a three-quarter default; document that the front orbit hides the bell."
+    },
+    {
+     "phase": "0.125",
+     "view": "threequarter",
+     "issue": "Bell passes in front of the face and covers it; the far arm crosses the face.",
+     "fix": "Raise the bell path a few cm at the near side so the face stays visible."
+    }
+   ]
+  },
+  "kb-pullover": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Bell lowered behind the head and returned overhead reads well in left/right; horns grip legible.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "front",
+     "issue": "Bell disappears behind the head at the bottom of the pullover.",
+     "fix": "Inherent to the front view; keep default side-ish camera."
+    }
+   ]
+  },
+  "kb-curl": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Two-hand horns curl reads in side views; bottom position intersects the thighs.",
+   "defects": [
+    {
+     "phase": "0.0",
+     "view": "front/threequarter",
+     "issue": "Bell sinks 8.7 mm into both thighs at the bottom and upper arms clip the thighs (-8 mm at 0.4).",
+     "fix": "Start the curl with the bell 2 cm further forward of the thighs."
+    }
+   ]
+  },
+  "kb-upright-row": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Elbows-high pull is clear in front and side views; handle grip readable.",
+   "defects": [
+    {
+     "phase": "0.5",
+     "view": "threequarter",
+     "issue": "Both forearms and hands overlap the bell into one shape at the top.",
+     "fix": "Minor; keep the elbows a touch higher than the hands so the V of the forearms remains visible."
+    }
+   ]
+  },
+  "kb-bent-row": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Staggered hinge and row are clear in left/threequarter; other orbits lose the bell.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front/right",
+     "issue": "Bell is hidden behind the near leg in the front view and behind the legs in the right view.",
+     "fix": "Accept for side, but set the default camera on the rowing side (already az 64) and move the bell path a few cm outward of the knee."
+    },
+    {
+     "phase": "0.0",
+     "view": "left",
+     "issue": "Forearm 3.8 mm into the thigh at the bottom.",
+     "fix": "Hang the bell slightly outside the front thigh."
+    }
+   ]
+  },
+  "kb-getup": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Long 34 s sequence is legible with 16 phases; the bell stays vertical and tracked. Floor phases are small in the fixed frame.",
+   "defects": [
+    {
+     "phase": "0.0/0.938",
+     "view": "front",
+     "issue": "Lying and sit-up phases occupy only the bottom third; top half empty because framing fits the standing pose.",
+     "fix": "Allow the camera to ease between two framings (floor segment vs standing segment) or aim lower during floor phases."
+    },
+    {
+     "phase": "0.125",
+     "view": "threequarter",
+     "issue": "Post hand on the floor is hidden behind the torso, so the support contact is not visible.",
+     "fix": "Bias the default orbit toward the post-arm side for this clip or move the post hand slightly further out."
+    }
+   ]
+  },
+  "kb-side-bend": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Front and threequarter show the lateral bend with the hand on the hip clearly.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Bell is fully hidden behind the body; side views show almost no bend.",
+     "fix": "Expected for a frontal-plane move; keep default front view and accept, or note limitation."
+    },
+    {
+     "phase": "0.375-0.625",
+     "view": "left",
+     "issue": "Lateral bend is invisible in profile; looks like standing still.",
+     "fix": "No motion fix; consider limiting orbit range or adding a subtle bell sway forward-free."
+    }
+   ]
+  },
+  "kb-side-lunge": {
+   "score": 9,
+   "confidence": "high",
+   "summary": "Wide lateral lunge with goblet hold reads strongly in front and threequarter, alternating sides cleanly.",
+   "defects": []
+  },
+  "pushup": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Clean plank-to-chest descent, hands flat with mittens and thumbs readable.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter/left/right",
+     "issue": "Horizontal clip framed by its largest dimension, so the figure fills only the middle third of the square; the upper half is empty.",
+     "fix": "In figure-viewer, fit distance from the projected height and width separately and aim at the bounds centre, so floor work fills more of the 1:1 frame."
+    }
+   ]
+  },
+  "wide-pushup": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Hand width difference is clear in front/threequarter; side views identical to push-up (inherent).",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter/left/right",
+     "issue": "Horizontal clip framed by its largest dimension, so the figure fills only the middle third of the square; the upper half is empty.",
+     "fix": "In figure-viewer, fit distance from the projected height and width separately and aim at the bounds centre, so floor work fills more of the 1:1 frame."
+    }
+   ]
+  },
+  "close-pushup": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Elbows tucked are visible in front/threequarter.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    },
+    {
+     "phase": "0.5",
+     "view": "front",
+     "issue": "Elbows and forearms merge with the torso at the bottom.",
+     "fix": "Small outward flare of 2-3 cm or near/far shading per arm would separate them."
+    }
+   ]
+  },
+  "staggered-pushup": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Reads as a push-up; the stagger is too small to see at phone size.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter/front",
+     "issue": "Hand offset is about 11 cm (wrist_r 110 mm vs push-up) and is lost at native size; looks like a regular push-up.",
+     "fix": "Increase the stagger to ~25-30 cm (one hand at shoulder, one by the ribs) so the variant reads."
+    },
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    }
+   ]
+  },
+  "stacked-pushup": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Push-up readable; the stacked foot is barely legible.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "The stacked foot hides behind the support foot; only one shoe reads.",
+     "fix": "Stack with a visible cross (top shoe angled) and/or give the top leg the near-side colour."
+    },
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    }
+   ]
+  },
+  "decline-pushup": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Chair and feet-on-seat are clear in side/threequarter views.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Chair sits off the floor disc; chair legs and feet appear to float over the void.",
+     "fix": "Centre the ground disc on clip bounds so chair and hands both sit on it."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Chair is behind the figure and the head/shoulders cover the legs.",
+     "fix": "Acceptable; keep default side camera."
+    }
+   ]
+  },
+  "pike-pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Inverted-V silhouette is distinctive and reads from every side view; head descent visible.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Head is hidden under the shoulders in front view.",
+     "fix": "Inherent; no change."
+    }
+   ]
+  },
+  "clapping-pushup": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Push-off and flight read; the clap itself is a near-imperceptible moment.",
+   "defects": [
+    {
+     "phase": "0.6",
+     "view": "front/threequarter",
+     "issue": "Palms cross through each other by ~20 mm at the clap (palm_l x -10 mm, palm_r +10 mm) and the clap lasts about 2 frames.",
+     "fix": "Stop the palms at contact (x = +/-35 mm) and hold the clap 3-4 frames."
+    },
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Except for 0.5 s of flight the clip is identical to power-pushup (max diff 173 mm, only in the airborne frames).",
+     "fix": "Raise the hands higher/longer and bring them together in front of the chest so the two clips differ at a glance."
+    },
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    }
+   ]
+  },
+  "power-pushup": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Explosive press and brief hand lift visible; hard to tell apart from the clapping variant.",
+   "defects": [
+    {
+     "phase": "0.625",
+     "view": "all",
+     "issue": "Airborne hands lift only ~0.33 m for ~0.4 s; otherwise identical to clapping-pushup.",
+     "fix": "Exaggerate the hand lift (higher, hands stay wide) and emphasise the catch to differentiate."
+    },
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    }
+   ]
+  },
+  "raised-leg-pushup": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Leg raise alternates clearly, especially in threequarter and side views.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    },
+    {
+     "phase": "seam",
+     "view": "left",
+     "issue": "Small velocity discontinuity at the loop seam (seam accel 16 mm/frame^2 vs p90 13).",
+     "fix": "Match first/last frame velocity of the raised leg."
+    }
+   ]
+  },
+  "spiderman-pushup": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Knee-to-elbow drive is visible in front/threequarter, but limbs cross through each other.",
+   "defects": [
+    {
+     "phase": "0.29/0.79",
+     "view": "threequarter/front",
+     "issue": "Upper arm passes 21.5 mm into the driving thigh (geometry upper_arm vs thigh -0.0215).",
+     "fix": "Route the knee outside the elbow (wider hip abduction) or lower the knee path a few cm."
+    },
+    {
+     "phase": "seam",
+     "view": "right",
+     "issue": "Right knee pops 33 mm in the last frame before the loop restarts.",
+     "fix": "Ease knee_r into the start pose over the final 4-6 frames."
+    },
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    }
+   ]
+  },
+  "pseudo-planche": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Forward lean is visible only in left/right and is subtle; at phone size it resembles a static plank.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "threequarter",
+     "issue": "Shoulder travel past the hands is small (max 10 mm/frame) and the hands' turned-out fingers are not legible.",
+     "fix": "Increase the forward lean and show fingers turned out/back on the floor hand model."
+    },
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    }
+   ]
+  },
+  "tricep-dips": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Seated dip reads in side views with hands behind; front view small.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Figure occupies a small area and the arms are hidden behind the torso.",
+     "fix": "Accept; consider tighter framing for compact clips."
+    },
+    {
+     "phase": "0.5",
+     "view": "threequarter",
+     "issue": "Hands behind the hips are hidden by the torso.",
+     "fix": "Place hands slightly wider so they peek out of the silhouette."
+    }
+   ]
+  },
+  "tricep-extensions": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Forearm-plank to high-plank transitions are readable in side views.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter/left/right",
+     "issue": "Horizontal clip framed by its largest dimension, so the figure fills only the middle third of the square; the upper half is empty.",
+     "fix": "In figure-viewer, fit distance from the projected height and width separately and aim at the bounds centre, so floor work fills more of the 1:1 frame."
+    }
+   ]
+  },
+  "wall-pushup": {
+   "score": 5,
+   "confidence": "high",
+   "summary": "Side views are clear, but the wall blocks two of four orbit views.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "The opaque wall hides the entire figure; only two mitten fingertips poke through the wall surface.",
+     "fix": "Render the wall semi-transparent or with depthWrite off when the camera is behind it, and stop the palms at the wall face (fingers currently penetrate)."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Wall occludes most of the body; only the back edge of the figure is visible.",
+     "fix": "Same fix: fade the wall when it is between camera and figure."
+    }
+   ]
+  },
+  "plank": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Forearm plank is clean and static, as a hold should be.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    },
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Completely still (0 mm motion) for 2 s; on the phone it may read as a frozen frame.",
+     "fix": "Add a subtle breathing/hold cue (2-3 mm chest rise) so playback is visibly alive."
+    }
+   ]
+  },
+  "pull-ups": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Hang to chin-over-bar reads in front and threequarter; overhand grip legible.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "The bar is a free-floating rod with no supports; in profile it is end-on, so the hands appear to grip nothing.",
+     "fix": "Add short uprights/brackets or a door-frame mount so the bar has a visible support in every view."
+    },
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Floor disc sits far below the hanging feet, adding empty space under a small figure.",
+     "fix": "Hide or shrink the ground disc for hanging clips, or frame from the bar to the feet."
+    }
+   ]
+  },
+  "chin-ups": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Similar to pull-ups with underhand grip; elbows-forward path differentiates in side views only.",
+   "defects": [
+    {
+     "phase": "0.5",
+     "view": "threequarter",
+     "issue": "Near hand and forearm cover the face at the top.",
+     "fix": "Keep the chin above the bar slightly behind the hands."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "At phone size the underhand vs overhand mitten is not distinguishable from pull-ups.",
+     "fix": "Make the palm side visible (lighter palm tone or thumb on the outside) for the underhand grip."
+    }
+   ]
+  },
+  "doorframe-rows": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Lean-back row inside the doorframe reads well in left/right and front.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "The near door post cuts vertically through the figure's torso and hides the near hand.",
+     "fix": "Fade or thin the near post when it occludes the figure."
+    }
+   ]
+  },
+  "band-pull": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Arms opening at chest height is clear in front and threequarter.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "left/right",
+     "issue": "In profile the band and hands collapse into one point at the chest.",
+     "fix": "Accept for profile; ensure default view stays front-biased (az 30)."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "The band is a thin dark-orange line that nearly disappears against the shirt.",
+     "fix": "Give the band a contrasting colour (e.g. ivory or green) and thicken it."
+    }
+   ]
+  },
+  "db-curl": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Bilateral curl is clear in side views; dumbbells readable.",
+   "defects": [
+    {
+     "phase": "0.5",
+     "view": "front",
+     "issue": "Orange dumbbell plates sit on the orange shirt at the top of the curl and merge with it.",
+     "fix": "Use a contrasting plate colour (iron grey like the kettlebell, or ivory) with the black outline."
+    }
+   ]
+  },
+  "sit-stand": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Chair and sit-to-stand with arms forward read clearly from all views.",
+   "defects": [
+    {
+     "phase": "0.5",
+     "view": "front",
+     "issue": "Chair hidden behind the standing figure (inherent).",
+     "fix": "None required."
+    }
+   ]
+  },
+  "seated-knee": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Alternating seated knee lift readable in side and threequarter; chair clear.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Lift is small from the front.",
+     "fix": "None required; default threequarter is good."
+    }
+   ]
+  },
+  "standing-knee": {
+   "score": 5,
+   "confidence": "high",
+   "summary": "Knee lifts are clear, but the right arm glitches.",
+   "defects": [
+    {
+     "phase": "0.12/0.46/0.85",
+     "view": "all",
+     "issue": "One-frame spike: wrist_r/palm_r jump ~400 mm across the body and back (frames 18, 69, 127), a visible flicker at 30 fps.",
+     "fix": "Remove the outlier frames in the export (re-solve the arm IK or interpolate neighbours)."
+    }
+   ]
+  },
+  "squat": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Arms-forward squat reads clearly in all views with good silhouette.",
+   "defects": []
+  },
+  "reverse-lunge": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Alternating reverse lunge is clear in side and threequarter views.",
+   "defects": [
+    {
+     "phase": "0.25/0.75",
+     "view": "front",
+     "issue": "Rear leg hidden behind the front leg.",
+     "fix": "Inherent; none."
+    }
+   ]
+  },
+  "calf-raise": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Correct motion, but it is almost invisible at phone size.",
+   "defects": [
+    {
+     "phase": "0.5",
+     "view": "front/threequarter",
+     "issue": "Heel rise is only a few cm; native frames look identical to standing.",
+     "fix": "Increase the rise slightly and use a lower camera elevation default so heels separate from the floor disc; add a small hold at the top."
+    }
+   ]
+  },
+  "side-leg-raises": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Lateral leg raise is clear in front and threequarter.",
+   "defects": [
+    {
+     "phase": "seam",
+     "view": "front",
+     "issue": "Both knees pop ~60 mm between the last and first frame (seam step 63 mm vs p90 velocity).",
+     "fix": "Make the loop's last frame equal the first pose (knee flex) and smooth the last 4 frames."
+    },
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "Profile views show nothing (inherent for frontal-plane motion).",
+     "fix": "None."
+    }
+   ]
+  },
+  "side-step": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Step-together and return reads in front view; small knee bend.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "In profile the step is invisible and the figure appears to shuffle in place.",
+     "fix": "Inherent; keep default front."
+    }
+   ]
+  },
+  "fly-steps": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Hinge with rear leg lift and arms out reads strongly in side views.",
+   "defects": [
+    {
+     "phase": "seam",
+     "view": "all",
+     "issue": "Knees pop 58 mm at the loop seam (seam accel 61 vs p90 9).",
+     "fix": "Match the final frame to the first frame and ease in."
+    },
+    {
+     "phase": "0.042",
+     "view": "left",
+     "issue": "Support toe sinks 25 mm below the floor for 38 frames.",
+     "fix": "Clamp toe/heel to y >= 0 in the export."
+    }
+   ]
+  },
+  "glute-bridge": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Hip lift visible in side views.",
+   "defects": [
+    {
+     "phase": "0.5",
+     "view": "left",
+     "issue": "Near arm lies along the torso and merges into a white slab under the shirt; the lift is small within an empty upper frame.",
+     "fix": "Place arms slightly away from the body and frame floor clips tighter."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "View from the feet shows only the knees; torso hidden.",
+     "fix": "Inherent."
+    }
+   ]
+  },
+  "sit-ups": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Bent-knee sit-up with hands behind head reads well in side and threequarter.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter/left/right",
+     "issue": "Horizontal clip framed by its largest dimension, so the figure fills only the middle third of the square; the upper half is empty.",
+     "fix": "In figure-viewer, fit distance from the projected height and width separately and aim at the bounds centre, so floor work fills more of the 1:1 frame."
+    }
+   ]
+  },
+  "bicycle-crunches": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Alternating elbow-to-knee is visible in threequarter/side views; limbs tangle at the cross.",
+   "defects": [
+    {
+     "phase": "0.25/0.75",
+     "view": "threequarter",
+     "issue": "Elbow, knee and far leg overlap into one cluster at the touch.",
+     "fix": "Keep the extended leg lower and further out so the touching pair separates from it."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter/left/right",
+     "issue": "Horizontal clip framed by its largest dimension, so the figure fills only the middle third of the square; the upper half is empty.",
+     "fix": "In figure-viewer, fit distance from the projected height and width separately and aim at the bounds centre, so floor work fills more of the 1:1 frame."
+    }
+   ]
+  },
+  "leg-raises": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Straight-leg raise to 45 degrees reads clearly in side and threequarter.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Only the soles/legs are visible end-on.",
+     "fix": "Inherent."
+    }
+   ]
+  },
+  "reverse-crunches": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Knees-to-chest with pelvis curl readable in side and threequarter.",
+   "defects": []
+  },
+  "flutter-kicks": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Alternating small kicks are visible in side views at a fast 2 s loop.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "Kick amplitude is small at native size.",
+     "fix": "Increase amplitude a few cm; keep tempo."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter/left/right",
+     "issue": "Horizontal clip framed by its largest dimension, so the figure fills only the middle third of the square; the upper half is empty.",
+     "fix": "In figure-viewer, fit distance from the projected height and width separately and aim at the bounds centre, so floor work fills more of the 1:1 frame."
+    }
+   ]
+  },
+  "reclined-twist": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Knees rolling side to side reads in front (from the feet) and threequarter.",
+   "defects": [
+    {
+     "phase": "0.16",
+     "view": "front",
+     "issue": "Toe sinks 21 mm below the floor (64 frames).",
+     "fix": "Clamp feet to the floor in the export."
+    },
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "Twist hidden in profile.",
+     "fix": "Inherent; keep default view."
+    }
+   ]
+  },
+  "plank-jump-ins": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Jump-in to crouch and back reads clearly in side views.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    }
+   ]
+  },
+  "climbers": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Alternating knee drive visible in side and threequarter.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    },
+    {
+     "phase": "seam",
+     "view": "left",
+     "issue": "Small velocity jump at the seam (seam accel 29 vs p90 6).",
+     "fix": "Match start/end velocities."
+    }
+   ]
+  },
+  "shoulder-taps": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Hand-to-shoulder tap reads in threequarter/front.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    },
+    {
+     "phase": "0.25/0.75",
+     "view": "left/right",
+     "issue": "Tapping hand hidden behind the torso in profile.",
+     "fix": "Inherent; default threequarter is right."
+    }
+   ]
+  },
+  "alt-arm-leg-plank": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Opposite arm/leg reach is clear in side and threequarter.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "right",
+     "issue": "Feet hang past the floor disc into the black stage; the toe contact is not grounded visually (the 0.95 m disc is centred on the world origin, not on the plank's support footprint).",
+     "fix": "Centre the ground disc on the clip's support-polygon centre (mean of planted hand/foot contacts over the loop) or size it to the clip bounds in figure.ts."
+    }
+   ]
+  },
+  "bird-dog": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Contralateral reach reads clearly; knees and hands on floor visible.",
+   "defects": []
+  },
+  "cat-cow": {
+   "score": 4,
+   "confidence": "high",
+   "summary": "Identity relies on head nod only; the spine cannot curve.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "The torso is a rigid convex hull from chest to pelvis (no mid-spine joint), so rounding and arching the back cannot be drawn; cat and cow look like the same flat back with the head up or down.",
+     "fix": "Add a mid-spine joint (or bend the shirt hull through a thoracic point) and animate visible flexion/extension; shade the spine curve."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Front view shows a static box.",
+     "fix": "Inherent; side default."
+    }
+   ]
+  },
+  "superman": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Arm and leg lift reads in side views.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Head-on view is a small cluster.",
+     "fix": "Inherent."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter/left/right",
+     "issue": "Horizontal clip framed by its largest dimension, so the figure fills only the middle third of the square; the upper half is empty.",
+     "fix": "In figure-viewer, fit distance from the projected height and width separately and aim at the bounds centre, so floor work fills more of the 1:1 frame."
+    }
+   ]
+  },
+  "back-lifts": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Prone chest lift is small and hard to see at phone size.",
+   "defects": [
+    {
+     "phase": "0.5",
+     "view": "left/right",
+     "issue": "Chest rises only a few cm (max 7 mm/frame) and the rigid torso hides any extension.",
+     "fix": "Increase lift height and frame the clip tighter; a spine joint would help."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter/left/right",
+     "issue": "Horizontal clip framed by its largest dimension, so the figure fills only the middle third of the square; the upper half is empty.",
+     "fix": "In figure-viewer, fit distance from the projected height and width separately and aim at the bounds centre, so floor work fills more of the 1:1 frame."
+    }
+   ]
+  },
+  "side-bend": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Overhead reach and lateral bend read in front.",
+   "defects": [
+    {
+     "phase": "0.375/0.875",
+     "view": "front",
+     "issue": "Arm whips through horizontal at ~6 m/s (198 mm/frame) between sides; at 30 fps it reads as a snap.",
+     "fix": "Slow the transfer: lower the arm through the side over ~0.4 s instead of 3 frames."
+    },
+    {
+     "phase": "seam",
+     "view": "front",
+     "issue": "Elbows pop 45 mm at the loop seam.",
+     "fix": "Match final and first frames."
+    }
+   ]
+  },
+  "side-to-side-chops": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Arms sweep side to side; the chop path is small and ambiguous.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Legs swap ivory/grey with trunk rotation although they don't move (near/far blend uses shoulders+hips).",
+     "fix": "Compute near/far shade per limb chain (leg from hip/ankle depth) rather than from torso twist."
+    },
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "Sweep stays at chest height; diagonal chop is not evident.",
+     "fix": "Give the path a clearer high-to-low diagonal."
+    }
+   ]
+  },
+  "hamstring-stretch": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Heel-down toes-up forward hinge is clear in side and threequarter.",
+   "defects": []
+  },
+  "hip-flexor-lunge": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Half-kneeling stretch with pelvis shift reads well in side views.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Rear leg hidden.",
+     "fix": "Inherent."
+    }
+   ]
+  },
+  "quad-stretch": {
+   "score": 5,
+   "confidence": "high",
+   "summary": "Held-foot pose reads, but entry and release are violent.",
+   "defects": [
+    {
+     "phase": "0.72",
+     "view": "all",
+     "issue": "Held leg drops at up to 8 m/s (269 mm/frame) on release and the toe goes 45 mm through the floor (0.08).",
+     "fix": "Lengthen the release to ~0.5 s with an eased landing and clamp the foot to the floor."
+    },
+    {
+     "phase": "0.175",
+     "view": "left",
+     "issue": "Hand passes 44 mm into the shin while grabbing the foot (geometry hand_l vs shin_l -0.0438).",
+     "fix": "Grab at the ankle/instep outside the shin hull."
+    },
+    {
+     "phase": "0.5",
+     "view": "right",
+     "issue": "Held foot behind the buttock reads as a grey spike; hand-foot contact is ambiguous.",
+     "fix": "Show the foot from the side or bias default camera to the held side."
+    }
+   ]
+  },
+  "triceps-stretch": {
+   "score": 4,
+   "confidence": "high",
+   "summary": "The stretch hold is plausible, but the arm teleports into and out of it.",
+   "defects": [
+    {
+     "phase": "0.19/0.77",
+     "view": "all",
+     "issue": "Right arm jumps from the side to overhead in ~3 frames (palm moves 658 mm in one frame, ~20 m/s).",
+     "fix": "Animate the raise and lowering over 0.5-0.8 s with eased IK."
+    },
+    {
+     "phase": "0.5",
+     "view": "threequarter",
+     "issue": "Near upper arm stands in front of the face; the forearm and the assisting hand are hidden behind the head.",
+     "fix": "Bias the default view to show the bent elbow from the side, or move the assisting hand to the near side."
+    }
+   ]
+  },
+  "cross-body-shoulder": {
+   "score": 5,
+   "confidence": "medium",
+   "summary": "Arm across the chest reads in front/threequarter but framing is off.",
+   "defects": [
+    {
+     "phase": "0.0/0.875",
+     "view": "left",
+     "issue": "Rest pose sits at the right edge with the back of the shoulder clipped; the frame is centred on bounds that include the extended arm.",
+     "fix": "Centre the upper-body crop on the torso, not the arm's swept bounds, and add margin."
+    },
+    {
+     "phase": "0.75",
+     "view": "front",
+     "issue": "Arm releases at 5.7 m/s (189 mm/frame).",
+     "fix": "Slow and ease the release."
+    }
+   ]
+  },
+  "behind-back-clasp": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Clasp and lift read in left/right profiles.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Clasped hands hidden behind the body.",
+     "fix": "Inherent; side default already."
+    }
+   ]
+  },
+  "neck-extension": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Upper-body crop makes the look-up obvious in side and threequarter.",
+   "defects": []
+  },
+  "neck-flexion": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Chin-to-chest reads clearly in side and threequarter.",
+   "defects": []
+  },
+  "side-neck": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Ear-to-shoulder alternation reads in front and threequarter.",
+   "defects": []
+  },
+  "shoulder-circle": {
+   "score": 5,
+   "confidence": "medium",
+   "summary": "Shoulder roll is barely perceptible at phone size.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front/threequarter",
+     "issue": "Only the shirt hull deforms slightly; the circular path of the shoulders cannot be read in any view (max 7 mm/frame).",
+     "fix": "Exaggerate elevation/retraction, let the arms ride with the shoulders, and add a visible collarbone/shoulder cap."
+    }
+   ]
+  },
+  "overhead-reach": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Interlaced overhead reach is clear.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Crop (cropBelow 0.45) cuts the shoes at the bottom edge and slices the floor disc.",
+     "fix": "Either show the full feet or crop clearly at mid-shin."
+    },
+    {
+     "phase": "0.8",
+     "view": "all",
+     "issue": "Arms lower at ~6 m/s (210 mm/frame).",
+     "fix": "Ease the lowering over ~0.5 s."
+    }
+   ]
+  },
+  "torso-extension": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Hands-on-hips back lean reads in side views; the rigid torso limits the arch.",
+   "defects": [
+    {
+     "phase": "0.5",
+     "view": "left/right",
+     "issue": "Extension shows as a stiff lean from the hips.",
+     "fix": "A mid-spine bend would make the lumbar extension readable."
+    }
+   ]
+  },
+  "oblique-twist": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Trunk rotation with clasped hands is subtle in standard views.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Legs swap near/far shade as the torso rotates though they don't move.",
+     "fix": "Shade each limb from its own depth."
+    },
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "Rotation reads only through the shirt; amplitude is small.",
+     "fix": "Increase rotation and let the head follow."
+    }
+   ]
+  },
+  "chest-expansions": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Open-and-cross arms read clearly in front and threequarter.",
+   "defects": [
+    {
+     "phase": "0.25/0.75",
+     "view": "front",
+     "issue": "Crossed forearms merge into the shirt.",
+     "fix": "Cross a little lower/forward."
+    }
+   ]
+  },
+  "punches": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Jab and cross extension reads in side views.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Guard hides the face and punches come straight at the camera.",
+     "fix": "Inherent; default az 75."
+    },
+    {
+     "phase": "all",
+     "view": "left",
+     "issue": "Rear toe sits 39 mm below the floor every frame.",
+     "fix": "Clamp the rear foot to the floor."
+    }
+   ]
+  }
+ }
+}

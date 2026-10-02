@@ -1,0 +1,616 @@
+{
+ "role": "form",
+ "revision": "6fb462ffc0ed",
+ "reviewedAt": "2026-10-02T21:13:05+00:00",
+ "method": "Initial independent form review of revision 6fb462ffc0ed. Inspected all 77 contact sheets (4 views x 8 phases; 16 for kb-getup) and native 480px frames where detail mattered (kb-upright-row, kb-clean, kb-getup, staggered-pushup, plank-jump-ins, climbers, punches, triceps-stretch). Read the clip JSON contracts and joint tracks with scratch scripts to check contralateral pairing, grip/contact positions, foot planting, elbow angles, torso rotation sign, and ranges; read geometry.json validator results. Real-time playback was not available, so timing and loop smoothness were inferred from duration and per-frame joints only. Primary sources opened: NHS Strength exercises (https://www.nhs.uk/live-well/exercise/strength-exercises/) for sit-to-stand, wall press-up, bicep curl and calf raise; ACE Bird-dog (https://www.acefitness.org/resources/everyone/exercise-library/14/bird-dog/) for limb heights. Source IDs (S1-S59, K1-K7, H1-H3) are not resolvable to URLs in this repo, so chart-defined and IDs-only cues (e.g. S53 punches, S54 chops) were judged against the generator docstrings and general practice. The kb-pullover user reference video was not available. These are editorial AI judgments, not professional certification.",
+ "exercises": {
+  "kb-swing": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Two-hand hip-hinge swing: backswing between the thighs, hip drive, float near chest height, return to hinge; both hands on the handle throughout. Reads as a swing, not a squat or front raise.",
+   "defects": []
+  },
+  "kb-deadlift": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Bell starts on the floor between the feet, two-hand grip, hinge to stand and back to a floor reset. Correct deadlift identity.",
+   "defects": [
+    {
+     "phase": "0.000-0.125",
+     "view": "left",
+     "issue": "Setup has quite a lot of knee bend (squat-leaning hinge); still acceptable for a KB deadlift.",
+     "fix": "Optional: shift pelvis back ~40 mm and reduce knee flexion at the floor phase so the hinge reads more clearly."
+    }
+   ]
+  },
+  "goblet-squat": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Bell held at chest by both hands throughout; comfortable-depth squat with feet planted; stands fully. Matches the represented variant.",
+   "defects": []
+  },
+  "kb-reverse-lunge": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Goblet hold kept; steps back into a rear-knee-near-floor lunge, returns, then the other leg. Alternation shown, front foot stays planted.",
+   "defects": []
+  },
+  "kb-side-lunge": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Wide stance, sits back over one bent knee with the other leg long, returns, repeats the other side; bell stays at chest.",
+   "defects": []
+  },
+  "kb-upright-row": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Two-hand handle grip; bell lifted close to the body to lower chest, elbows lead and stay near shoulder height, controlled lower.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "front",
+     "issue": "Elbows reach exactly shoulder height (elbow y 1375 mm vs shoulder 1381 mm); contract says elbows below shoulders.",
+     "fix": "Stop the pull ~40-60 mm lower so elbows remain visibly below the shoulders at the top."
+    }
+   ]
+  },
+  "kb-bent-row": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Staggered stance, right hand on front thigh, left arm rows bell from hang to hip with elbow driving back, flat-ish hinged torso. Clear one-arm row.",
+   "defects": []
+  },
+  "kb-side-bend": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Bell in the left hand, right hand on hip; trunk bends toward the bell and returns to tall. Identity clear from front/three-quarter.",
+   "defects": []
+  },
+  "kb-curl": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Horn-grip two-hand curl; elbows stay beside the ribs (elbow z ~10-60 mm) while the bell rises from thighs to chest and lowers slowly.",
+   "defects": []
+  },
+  "kb-halo": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Bell circles the head from front to side to behind (base down, elbows high) to other side and back, then reverses direction. Both directions shown; grip stays on the horns.",
+   "defects": []
+  },
+  "kb-clean": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Rack, drop into hinge backswing between the thighs, hip drive, elbow pulls in, bell lands on the outside of the forearm in the rack.",
+   "defects": [
+    {
+     "phase": "0.000/0.875",
+     "view": "threequarter",
+     "issue": "Racked bell sits in front of the sternum and hides the forearm, so the 'outside of the forearm' rack contact is hard to see.",
+     "fix": "Move the racked bell ~30-40 mm laterally/back toward the shoulder pocket so the forearm under it stays visible."
+    }
+   ]
+  },
+  "kb-press": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Single-arm strict press from rack to lockout beside the ear and controlled return; legs still.",
+   "defects": [
+    {
+     "phase": "0.250 and 0.750",
+     "view": "front",
+     "issue": "Elbow flares wide (elbow x ~355-393 mm vs shoulder ~180 mm) during the press/lower, so the forearm is not vertical as the contract states.",
+     "fix": "Keep the elbow nearer the shoulder plane (x ~250 mm) with the forearm vertical under the bell through mid-press."
+    }
+   ]
+  },
+  "kb-snatch": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Lockout, drop into backswing, hip drive, high pull with elbow up, punch through to lockout with bell on the back of the forearm.",
+   "defects": [
+    {
+     "phase": "0.250",
+     "view": "left",
+     "issue": "On the drop the bell casts far forward (wrist z ~420 mm at hip height), more like a swing than a close drop.",
+     "fix": "Keep the drop path closer to the body (pull the elbow in and let the bell fall near the torso) before it passes into the backswing."
+    }
+   ]
+  },
+  "kb-getup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Full get-up and reverse: lie with bell pressed, roll to elbow, post hand, high bridge, sweep the leg into a half-kneel, windmill upright, lunge-stand, and reverse; bell arm stays vertical. Long 34 s cycle judged from 16 phases plus joint data only.",
+   "defects": [
+    {
+     "phase": "0.125-0.250",
+     "view": "threequarter",
+     "issue": "Posted right hand is mostly hidden behind the torso in captures, so the hand-post step is hard to verify from this view.",
+     "fix": "Rely on the app default camera that shows the posted hand side; no motion change required."
+    }
+   ]
+  },
+  "kb-pullover": {
+   "score": 8,
+   "confidence": "low",
+   "summary": "Standing horns-grip upside-down bell travels from chest over the head to behind the head with bent elbows and back. Matches contract; the 'user reference video' source could not be inspected.",
+   "defects": []
+  },
+  "squat": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Hips back and down to comfortable depth, feet flat, arms forward as counterbalance, stands tall. Clear bodyweight squat.",
+   "defects": []
+  },
+  "wall-pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Palms on the wall at chest height, whole-body lean, elbows bend down and slightly out, presses away; feet planted. Matches NHS wall press-up.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Front camera sits behind the wall; the figure is fully hidden.",
+     "fix": "Use side/three-quarter as the default view (the app default is not front); no motion change needed."
+    }
+   ]
+  },
+  "calf-raise": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Toes stay grounded (toe y 0) while heels lift ~100 mm and lower; controlled. NHS also offers chair support, optional.",
+   "defects": []
+  },
+  "shoulder-circle": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Shoulders roll forward-up-back-down (backward roll) with arms hanging; ~50 mm circle. Correct direction; subtle in front view, readable from the side.",
+   "defects": []
+  },
+  "reverse-lunge": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Alternating rearward step with front foot planted, rear knee lowers, rise and return before switching.",
+   "defects": []
+  },
+  "pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "High plank, palms under shoulders, elbows bend ~35-40 degrees from torso, body line held, press up. Clear push-up.",
+   "defects": []
+  },
+  "wide-pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Hands clearly wider than shoulders (palm x 370 mm); same descent and press. Distinct from the standard push-up.",
+   "defects": []
+  },
+  "close-pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Hands narrow (palm x 70 mm), elbows track back by the sides. Distinct variant.",
+   "defects": []
+  },
+  "staggered-pushup": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Push-up with one hand forward, but the stagger is only 130 mm and hard to see from front/side.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front/left",
+     "issue": "Hand stagger (palm_l z 350 vs palm_r z 220) is too small to identify the variant at a glance.",
+     "fix": "Increase stagger to ~250-300 mm (one hand near forehead line, the other near lower ribs), keep elbows tracking."
+    }
+   ]
+  },
+  "stacked-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "One foot stacked on the other (top toe 97 mm up) for the whole set; visible from front and three-quarter.",
+   "defects": []
+  },
+  "raised-leg-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Straight leg lifts during the push-up, alternating legs across the loop; palms and support forefoot grounded.",
+   "defects": []
+  },
+  "spiderman-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Knee draws out to the side toward the same-side elbow as the body lowers, presses back, alternates sides.",
+   "defects": []
+  },
+  "decline-pushup": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Feet on chair seat, palms on floor, lower and press. Chair support correct.",
+   "defects": []
+  },
+  "clapping-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Lower, explosive press, hands leave the floor and clap under the chest, land and reset.",
+   "defects": [
+    {
+     "phase": "0.750-0.792",
+     "view": "left",
+     "issue": "Landing reaches straight-arm plank immediately (source/code note asks to land softly).",
+     "fix": "Land on slightly bent elbows and absorb ~60-80 mm before the reset."
+    }
+   ]
+  },
+  "power-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Same explosive press with hands leaving the floor but no clap; differentiated from the clapping variant.",
+   "defects": [
+    {
+     "phase": "0.750-0.792",
+     "view": "left",
+     "issue": "Stiff straight-arm landing.",
+     "fix": "Land with soft elbows and absorb before resetting."
+    }
+   ]
+  },
+  "pike-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Inverted V with hips high; elbows bend from ~158 to ~96 degrees bringing the head toward the floor between the hands, then press.",
+   "defects": []
+  },
+  "standing-knee": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Alternating forward bent-knee lifts with stable support foot; both sides shown.",
+   "defects": []
+  },
+  "side-step": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "True step-together: lead foot lifts and steps out, trailing foot follows, then reverse; only the swing foot leaves the floor.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left",
+     "issue": "Posture is a soft athletic crouch (knees ahead of ankles ~130 mm) rather than the upright sideways walk in NHS.",
+     "fix": "Straighten knees slightly (pelvis ~30-40 mm higher) for a more upright stance."
+    }
+   ]
+  },
+  "glute-bridge": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Supine bent knees, feet and upper back grounded, hips lift to a straight thigh-torso line and lower.",
+   "defects": []
+  },
+  "bird-dog": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Quadruped; opposite arm and leg extend to about parallel (ACE), return, switch diagonal. Contralateral confirmed in joint data.",
+   "defects": []
+  },
+  "plank": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Static forearm plank from toes, elbows under shoulders, straight line. Correct hold.",
+   "defects": []
+  },
+  "sit-ups": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Bent knees, hands behind head, trunk curls up to ~60 degrees and lowers with feet and pelvis grounded.",
+   "defects": []
+  },
+  "reverse-crunches": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Tabletop legs curl toward chest with pelvis lifting ~100 mm off the floor, then lower; back and arms grounded.",
+   "defects": []
+  },
+  "bicycle-crunches": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Shoulders held up, opposite elbow travels toward the knee drawn in, alternating sides.",
+   "defects": [
+    {
+     "phase": "0.250 / 0.750",
+     "view": "threequarter",
+     "issue": "Closest elbow-to-opposite-knee gap is still ~340 mm, and the non-working leg stays half-bent instead of extending.",
+     "fix": "Add more trunk rotation so the elbow comes within ~150 mm of the knee, and extend the other leg as the knee drives in."
+    }
+   ]
+  },
+  "flutter-kicks": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Supine, legs straight and low, small alternating up-down kicks.",
+   "defects": []
+  },
+  "leg-raises": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Straight legs lift from a hover to about 45 degrees and lower, back and arms on the floor.",
+   "defects": []
+  },
+  "superman": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Prone; arms and legs lift together, hold, lower. Hips and belly stay down.",
+   "defects": []
+  },
+  "back-lifts": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Prone chest lift with hands at the temples, legs and hips stay down. Distinct from superman.",
+   "defects": []
+  },
+  "alt-arm-leg-plank": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "High plank; opposite arm and leg reach and return, switching sides; contralateral pairing confirmed.",
+   "defects": []
+  },
+  "shoulder-taps": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "High plank; a hand lifts to tap the opposite shoulder, replaces, alternates. Clear identity.",
+   "defects": []
+  },
+  "climbers": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Alternating knee drives are present, but the legs scissor at floor level and the posture reads like crawling/kneeling rather than a plank.",
+   "defects": [
+    {
+     "phase": "0.125 / 0.688",
+     "view": "left",
+     "issue": "Both knees pass ~20-55 mm above the floor at the switch, so the figure looks kneeling.",
+     "fix": "Keep knees >=150 mm off the floor during the switch by lifting the swing foot higher."
+    },
+    {
+     "phase": "0.375-0.500",
+     "view": "left",
+     "issue": "Driven knee stays low (~140 mm high) with the foot planted under the hip instead of driving toward the chest; a static hold breaks the running rhythm.",
+     "fix": "Drive the knee toward the chest (knee y ~300 mm, z ~+150 mm), and remove the hold so the switch is continuous."
+    }
+   ]
+  },
+  "plank-jump-ins": {
+   "score": 5,
+   "confidence": "high",
+   "summary": "Plank to jump-in to plank is recognisable, but the landed position looks like kneeling on all fours rather than a crouch.",
+   "defects": [
+    {
+     "phase": "0.250-0.500",
+     "view": "left",
+     "issue": "Feet land ~73 cm behind the hands with knees ~60-90 mm above the floor, so the 'in' position reads as kneeling.",
+     "fix": "Land the feet ~20-30 cm behind the hands, pelvis higher (~550-650 mm), knees under the chest and well off the floor."
+    }
+   ]
+  },
+  "tricep-extensions": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Forearm plank presses up to a high plank by straightening the elbows, then lowers to the forearms; hands/feet planted.",
+   "defects": []
+  },
+  "pseudo-planche": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "High plank shifts the shoulders ~190 mm forward of the hands, holds, returns. Lean is readable from the side.",
+   "defects": []
+  },
+  "tricep-dips": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Floor dip: hands behind, feet forward, hips up, elbows bend backward lowering ~100 mm, then press.",
+   "defects": []
+  },
+  "fly-steps": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Standing hinge with rear leg lifting behind and arms out, hold, return, switch legs. Matches the chart-defined variant.",
+   "defects": []
+  },
+  "side-leg-raises": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Standing lateral leg raise with planted support foot, alternating legs.",
+   "defects": []
+  },
+  "punches": {
+   "score": 5,
+   "confidence": "medium",
+   "summary": "Jab with the lead (left) hand and cross with the rear (right) hand from a staggered stance, but the torso rotation is reversed and the hips stay square.",
+   "defects": [
+    {
+     "phase": "0.625",
+     "view": "threequarter/joint data",
+     "issue": "During the right cross the right shoulder rotates back (shoulder_r z -67 mm, shoulder_l +65 mm); the jab at 0.250 also rotates the lead shoulder back. That reverses the hip/shoulder turn that powers the punch.",
+     "fix": "Reverse the chest yaw sign: rotate the punching-side shoulder forward (cross: right shoulder +z ~60-80 mm), and pivot the rear heel and hips with the cross."
+    }
+   ]
+  },
+  "side-to-side-chops": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Arms straight ahead, hands together, level arc side to side with shoulders turning toward the hands and hips forward; matches the generator's S54 note.",
+   "defects": []
+  },
+  "chest-expansions": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Arms open wide at shoulder height, then cross in front, alternating which arm is on top.",
+   "defects": []
+  },
+  "chin-ups": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Underhand, narrow grip; dead hang to chin at bar level, controlled lower. Elbows travel forward, consistent with a chin-up.",
+   "defects": []
+  },
+  "pull-ups": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Overhand, wider grip; hang to chin at bar, elbows out and down, controlled lower. Distinguished from chin-ups by grip and width.",
+   "defects": []
+  },
+  "doorframe-rows": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Hands grip the frame uprights, body leans back on planted feet, then pulls the chest toward the frame and lowers.",
+   "defects": []
+  },
+  "sit-stand": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Seated, leans forward, stands without arm support on planted feet, sits down. Identity is clear; setup and tempo depart from the NHS cue.",
+   "defects": [
+    {
+     "phase": "0.000-0.125",
+     "view": "left",
+     "issue": "Pelvis sits mid-seat (~190 mm behind the front edge); NHS says sit on the edge of the chair.",
+     "fix": "Move the seated pelvis forward to ~50-80 mm behind the seat front."
+    }
+   ]
+  },
+  "seated-knee": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Seated tall with pelvis on the seat; one bent knee lifts and lowers, then the other.",
+   "defects": []
+  },
+  "db-curl": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Upper arms stay at the sides while both dumbbells curl to near the shoulders (~127 degrees of flexion) and lower.",
+   "defects": []
+  },
+  "band-pull": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Arms ahead at shoulder height, band visibly fixed to both hands, arms open to the sides and return.",
+   "defects": []
+  },
+  "neck-flexion": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Chin drops toward the chest, holds, returns, shoulders still.",
+   "defects": []
+  },
+  "neck-extension": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Head tips back to look up, holds, returns. Large range but clear.",
+   "defects": []
+  },
+  "side-neck": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Ear tilts toward shoulder on each side with shoulders level, hold and return.",
+   "defects": []
+  },
+  "overhead-reach": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Arms sweep overhead and hold a tall reach, but the contract's interlaced fingers are not shown.",
+   "defects": [
+    {
+     "phase": "0.250-0.625",
+     "view": "front",
+     "issue": "Palms stay ~160 mm apart at the top; hands never join or interlace.",
+     "fix": "Bring the palms together above the head (palm x ~0 mm) with an interlaced or clasped hand state through the hold."
+    }
+   ]
+  },
+  "triceps-stretch": {
+   "score": 5,
+   "confidence": "high",
+   "summary": "The left arm bends behind the head, but the helping hand never reaches the raised elbow, so the contract's assisted stretch is missing.",
+   "defects": [
+    {
+     "phase": "0.250-0.625",
+     "view": "threequarter/front",
+     "issue": "Right palm hangs above the head (y ~1950 mm), ~330 mm from the left elbow (y 1660 mm). The right arm arches overhead and does not touch the elbow.",
+     "fix": "Place the right palm on the left elbow (target ~[150,1665,-40]) with the right elbow bent in front of the face, and hold it there."
+    }
+   ]
+  },
+  "cross-body-shoulder": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Left arm drawn across the chest at shoulder height; the right hand supports it above the elbow, hold and release.",
+   "defects": []
+  },
+  "behind-back-clasp": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Hands joined behind the hips, arms straight and lifted back, chest open, return.",
+   "defects": []
+  },
+  "torso-extension": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Hands on hips, standing back-bend and return.",
+   "defects": []
+  },
+  "side-bend": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Overhead reach with lateral trunk bend to the opposite side, return, other side; hips level.",
+   "defects": []
+  },
+  "oblique-twist": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Hands at chest, elbows out; shoulders rotate ~45 degrees left then right while the hips stay square.",
+   "defects": []
+  },
+  "cat-cow": {
+   "score": 4,
+   "confidence": "high",
+   "summary": "Quadruped with only the head moving; the spine never rounds or arches, so cat and cow are not taught.",
+   "defects": [
+    {
+     "phase": "0.125-0.250 / 0.625-0.750",
+     "view": "left",
+     "issue": "Chest and pelvis joints are identical in every frame (chest y 574 mm). Only the head drops and lifts, which reads as a nod, not cat-cow.",
+     "fix": "Raise the chest/upper back ~60-80 mm and tuck the pelvis in cat; drop the chest ~40-60 mm and tilt the pelvis in cow. If the rig lacks a mid-spine joint, add one so the back can curve."
+    }
+   ]
+  },
+  "quad-stretch": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Standing on one leg, the same-side hand holds the ankle with the knee pointing down beside the standing knee; free arm out for balance.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "threequarter",
+     "issue": "Validator flags hand/thigh interpenetration of -22 mm.",
+     "fix": "Move the grasping hand ~25 mm away from the thigh (outside of the ankle)."
+    }
+   ]
+  },
+  "hamstring-stretch": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Front leg near-straight with heel down and toes up, hinge forward with the back knee bent and hands on the thigh, hold and return.",
+   "defects": []
+  },
+  "hip-flexor-lunge": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Half-kneeling with the back knee down; pelvis shifts forward ~120 mm with an upright torso, hold and return.",
+   "defects": []
+  },
+  "reclined-twist": {
+   "score": 8,
+   "confidence": "high",
+   "summary": "Supine with shoulders and arms flat; both knees roll to one side, return, then roll to the other.",
+   "defects": []
+  }
+ }
+}
