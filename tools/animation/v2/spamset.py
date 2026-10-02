@@ -43,6 +43,34 @@ def punches(name, phase):
     return p
 
 
+def sit_stand(name, phase):
+    """Legacy sit-to-stand with the arms clear of the chair.
+
+    The legacy arms hung straight down while seated, so the hands sank into the seat (now
+    visible in 3D). Seated, the arms rest forward over the knees; they reach forward as the
+    trunk leans (counterbalance) and lower to the sides once standing. No arm support."""
+    try:
+        from ..motions import chair_prop
+        from ..rig import clamp, pulse, smooth, ANKLE_HEIGHT, SIDES
+    except ImportError:
+        from motions import chair_prop
+        from rig import clamp, pulse, smooth, ANKLE_HEIGHT, SIDES
+    t = clamp((pulse(phase) - .06) / .94)
+    rise = smooth((t - .30) / .70)
+    forward = smooth(t / .30) * (1 - rise)
+    p = Pose(name, phase).torso((-.27 + .41 * rise, 0, .55 + .395 * rise), lean=radians(38) * forward)
+    reach = radians(60 + 30 * forward) * (1 - rise) + radians(5) * rise
+    for s in SIDES:
+        ankle = p.foot(s, ankle=(.14, side_sign(s) * .15, ANKLE_HEIGHT))
+        p.leg(s, ankle)
+        p.arm_fk(s, reach, elbow_flex=radians(12))
+    p.props.append(chair_prop())
+    if rise < 1e-8:
+        p.contacts['seat'] = (-.27, 0, .515)
+    p.view = {'azimuth': 67, 'elevation': 10}
+    return p
+
+
 # Seated starts balanced by leaning the trunk forward (lean_trunk). Sit-to-stand needs its arms
 # swinging forward as it leans (the legacy arms hang into the thighs), so it is to be
 # re-authored as a v2 Lift; empty until then.
@@ -50,7 +78,7 @@ LEAN = set()
 # Body parts the hands rest on by design (pushed onto the surface, not cleared away).
 REST = {'hamstring-stretch': ('thigh_l', 'thigh_r'), 'quad-stretch': ('thigh_l', 'thigh_r')}
 # v2 replacements for legacy motions with a defect of their own.
-REPLACEMENTS = {'punches': punches}
+REPLACEMENTS = {'punches': punches, 'sit-stand': sit_stand}
 # Slower demonstration tempo where the legacy rhythm is physically too fast for a planted
 # body (climbers: each foot strike decelerated the body faster than gravity).
 TEMPO = {'climbers': 1.6, 'reverse-lunge': 1.4}
