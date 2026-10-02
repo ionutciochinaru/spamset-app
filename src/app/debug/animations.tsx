@@ -92,6 +92,9 @@ function ReviewPage({ initial }: { initial?: string }) {
   const [live, setLive] = useState(0);
   const ratings = useApp((s) => s.animationReviews);
   const rate = useApp((s) => s.rateAnimation);
+  useEffect(() => {
+    if (Platform.OS === 'web') document.title = `Animation review ${ANIMATION_REVISION}`;
+  }, []);
 
   const clip = clips[getExercise(clipId).animation];
   const frames = clip.frames.length;
@@ -122,11 +125,10 @@ function ReviewPage({ initial }: { initial?: string }) {
   return (
     <Screen>
       <View style={{ height: 40 }} />
-      <Title>Animation review</Title>
-      <Body muted style={{ fontSize: 13 }}>
-        Revision {ANIMATION_REVISION}
-        {reviews.revision && reviews.revision !== ANIMATION_REVISION ? ` · agent reviews are for ${reviews.revision}` : ''}
-      </Body>
+      <Title>Animation review {ANIMATION_REVISION}</Title>
+      {reviews.revision && reviews.revision !== ANIMATION_REVISION ? (
+        <Body muted style={{ fontSize: 13 }}>Agent reviews are for revision {reviews.revision}</Body>
+      ) : null}
       <ExercisePicker
         value={clipId}
         onChange={(id) => {

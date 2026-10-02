@@ -184,10 +184,10 @@
   ]
  },
  "kb-bent-row": {
-  "variant": "Two-hand unsupported kettlebell bent-over row",
-  "counting": "One pull and controlled lower is one repetition",
-  "phases": "Hold hinge; draw bell toward lower ribs; extend arms",
-  "contacts": "Feet planted; torso angle stable; shared handle grip",
+  "variant": "Single-arm bent-over row, left arm, staggered stance with the right hand on the front thigh",
+  "counting": "One row and lower, per side",
+  "phases": "Flat-back hinge with soft knees; row the elbow back until the bell reaches the hip; lower under control",
+  "contacts": "Both feet planted; one-hand grip; shoulder stays down",
   "sources": [
    "K4"
   ]
@@ -204,17 +204,17 @@
  "kb-side-bend": {
   "variant": "Standing kettlebell side bend, bell in the left hand, right hand on the hip",
   "counting": "One bend and return, per side",
-  "phases": "Tall; bend toward the bell as it slides down the outer thigh; return to tall",
+  "phases": "Tall; bend toward the bell as it slides down the outer thigh toward the knee; return to tall",
   "contacts": "Both feet planted; loaded arm hangs straight; bell rests against the outer thigh",
   "sources": [
    "K6"
   ]
  },
  "kb-curl": {
-  "variant": "Single-arm kettlebell curl, left arm, elbow pinned at the side",
-  "counting": "One curl and lower, per side",
-  "phases": "Arm long; curl to full flexion; lower slowly",
-  "contacts": "Both feet planted; upper arm still beside the ribs",
+  "variant": "Two-hand kettlebell curl by the horns, thumbs up",
+  "counting": "One curl and lower",
+  "phases": "Arms long, bell in front of the thighs; curl to the chest; lower slowly",
+  "contacts": "Both feet planted; both hands on the horns; upper arms still beside the ribs, elbows just in front of the hips",
   "sources": [
    "K7"
   ]
@@ -689,12 +689,22 @@
   ]
  },
  "kb-getup": {
-  "variant": "Turkish get-up with a high bridge, bell in the left hand; the knee sweeps straight into a half-kneel and the top is a tall split stance",
+  "variant": "Turkish get-up with a high bridge, bell in the left hand; the knee sweeps into a half-kneel, then the lifter stands up with the feet together",
   "counting": "One full get-up to standing and back down",
-  "phases": "Lie with the bell pressed; roll onto the planted right elbow; post on the hand; high bridge; sweep the straight leg under the hips so the knee lands with the shin pointing back; push off the hand to an upright half-kneel; stand tall into a split stance; reverse every step",
-  "contacts": "Bell-side foot planted throughout; elbow, hand, heel, knee and back toes pinned in their stages; back and forearm roll on the floor during the roll; bell arm vertical throughout",
+  "phases": "Lie with the bell pressed; roll onto the planted right elbow; post on the hand; high bridge; sweep the straight leg under the hips so the knee lands with the shin pointing back; push off the hand to an upright half-kneel; stand up from the lunge, stepping the back foot up beside the front foot, and stand tall; reverse every step",
+  "contacts": "Bell-side foot planted throughout; elbow, hand, heel, knee and back toes pinned in their stages (the back toes slide in as the weight moves forward before the step); back and forearm roll on the floor during the roll; bell arm locked and vertical throughout; eyes on the bell on the floor",
   "sources": [
-   "production choice"
+   "ACE Technique Series: Turkish get-up",
+   "Girls Gone Strong: Mastering the Turkish get-up"
+  ]
+ },
+ "kb-pullover": {
+  "variant": "Standing two-hand kettlebell pullover, hands on the horns, bell upside down",
+  "counting": "One arc over the head, lower behind the head and back to the chest",
+  "phases": "Bell upside down at the chest, hands on the horns beside the handle; carry it up over the head with the elbows bent; lower it behind the head; bring it back over the head to the chest",
+  "contacts": "Both feet planted; both hands on the horns; elbows bent throughout; ribs down, no low-back arch",
+  "sources": [
+   "user reference video"
   ]
  }
 }

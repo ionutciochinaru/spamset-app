@@ -15,4 +15,5 @@ export const thumbnails: Record<string, number> = {
   'kb-press': require('@/assets/images/exercises/kb-press.png'),
   'kb-snatch': require('@/assets/images/exercises/kb-snatch.png'),
   'kb-getup': require('@/assets/images/exercises/kb-getup.png'),
+  'kb-pullover': require('@/assets/images/exercises/kb-pullover.png'),
 };

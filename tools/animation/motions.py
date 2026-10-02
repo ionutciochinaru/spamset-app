@@ -344,12 +344,14 @@ try:
     from .v2.lifts import LIFTS
     from .v2.single_arm import SINGLE_ARM
     from .v2.getup import GETUP
+    from .v2.halo import HALO
 except ImportError:
     from v2.lifts import LIFTS
     from v2.single_arm import SINGLE_ARM
     from v2.getup import GETUP
+    from v2.halo import HALO
 MOTIONS['kb-swing'] = kb_swing_v2
-V2_LIFTS = {**LIFTS, **SINGLE_ARM, GETUP.name: GETUP}
+V2_LIFTS = {**LIFTS, **SINGLE_ARM, GETUP.name: GETUP, HALO.name: HALO}
 MOTIONS.update(V2_LIFTS)
 V2_MOTIONS = {'kb-swing', *V2_LIFTS}
 # Loop length in seconds for motions whose timing comes from simulation or v2 authoring.
@@ -361,9 +363,18 @@ ALLOWED_CONTACT = {
     # Forearms and hands hug the bell in goblet holds and the halo.
     'goblet-squat': _GOBLET, 'kb-reverse-lunge': _GOBLET, 'kb-side-lunge': _GOBLET, 'kb-halo': _GOBLET,
     # A hanging bell rests against the outer thigh.
-    'kb-side-bend': {'bell0|thigh_l': .02}, 'kb-curl': {'bell0|thigh_l': .02},
-    # Forearm brushes the belly at the hike.
-    'kb-clean': {'forearm_l|torso': .01}, 'kb-snatch': {'forearm_l|torso': .01},
+    'kb-side-bend': {'bell0|thigh_l': .02, 'hand_l|thigh_l': .02, 'forearm_l|thigh_l': .01},
+    # Arms hang long with the forearms and bell against the front of the thighs.
+    'kb-curl': {**_GOBLET, 'forearm_l|thigh_l': .02, 'forearm_r|thigh_r': .02, 'bell0|thigh_l': .02, 'bell0|thigh_r': .02},
+    # The bell rides up against the belly in the upright row.
+    'kb-upright-row': {'bell0|torso': .02},
+    # The free hand rests on the front thigh in the staggered row.
+    'kb-bent-row': {'hand_r|thigh_r': .02, 'forearm_r|thigh_r': .02, 'bell0|thigh_l': .01},
+    # Forearm brushes the belly and the inner thigh at the hike (long arm, high hike).
+    'kb-clean': {'forearm_l|torso': .01, 'forearm_l|thigh_l': .025, 'upper_arm_l|thigh_l': .01},
+    'kb-snatch': {'forearm_l|torso': .01, 'forearm_l|thigh_l': .025, 'upper_arm_l|thigh_l': .015},
     # Hanging arms rest against the front of the thighs at lockout.
-    'kb-deadlift': {'forearm_l|thigh_l': .02, 'forearm_r|thigh_r': .02, 'hand_l|thigh_l': .02, 'hand_r|thigh_r': .02},
+    # ... and the arms brush the inner thighs at the bottom (arms inside the knees).
+    'kb-deadlift': {'forearm_l|thigh_l': .02, 'forearm_r|thigh_r': .02, 'hand_l|thigh_l': .02, 'hand_r|thigh_r': .02,
+                    'upper_arm_l|thigh_l': .02, 'upper_arm_r|thigh_r': .02},
 }

@@ -179,7 +179,8 @@ def kb_halo(name,phase):
     elevation=.070*smooth(min(1.,around/.35))
     for s in SIDES:
         p.j['shoulder_'+s]=add(p.j['chest'],(0,side_sign(s)*sqrt(SHOULDER_HALF**2-elevation**2),elevation))
-    center=(.29*cos(theta)+.06*sin(theta)**2,.20*sin(theta),1.49+.12*around+.16*sin(theta)**2)
+    front=max(0.,cos(theta))**2   # front reset: bell at the chin, not over the face
+    center=(.29*cos(theta)+.06*sin(theta)**2-.04*front,.20*sin(theta),1.49+.12*around+.16*sin(theta)**2-.08*front)
     # Base up in front, rearward at BOTH sides, down behind. The horn axis
     # rolls so the cross-body hand passes above the crown at each side.
     tilt=pi*around;roll=-pi/4*sin(theta)

@@ -1,0 +1,152 @@
+{
+ "role": "anatomy",
+ "revision": "f58fcfc86e44",
+ "reviewedAt": "2026-09-30T12:00:00Z",
+ "method": "Went through all 15 contact sheets and selected native 480x480 frames: side-bend front 0.0, snatch threequarter 0.75 and left 0.625, get-up right 0.1875 and left 0.4375. Rebuilt every exported clip from clips/<id>.json. The axis order is x lateral (+ = figure's left), y up, z forward, in mm. For every frame I computed knee, elbow, wrist, hip and ankle-dorsiflexion angles, sagittal thigh and shin inclination, knee direction against foot direction, trunk forward and lateral lean, shoulder/hip twist, neck and face pitch, segment lengths, bell hang angle (handle midpoint to centre) against gravity, against the forearm and against the effective gravity-minus-acceleration direction, bell velocity and acceleration, per-joint velocity, acceleration and jerk (central differences over the looping clip), and whole-body plus 16 kg COM, static COM margin and dynamic ZMP margin from tools/animation/v2/body.py. I also ran a full per-frame capsule clearance scan with tools/animation/v2/collide.py and cross-checked it against geometry.json. Not exercised: real-time playback (timing was judged only from the sampled derivatives), the floor-contact model for rolling phases (for the get-up I added palm/elbow/knee floor contacts by hand), and wrist articulation on gripping hands, where the export collapses palm onto wrist (hand length 0). The live generators were not run and no other review scores were opened.",
+ "exercises": {
+  "kb-swing": {
+   "score": 7, "confidence": "high",
+   "summary": "Hip snap happens before the bell floats, the arms stay long (elbow 7-16 deg), the bell lines up with the arm at the float (hang 79 deg from vertical, ~16 deg off the effective-gravity direction), heels stay down and the whole body leans back slightly at the float (legs about 10 deg behind vertical, COM 3 cm ahead of the ankles). The backswing is squat-biased and the hips do not travel back.",
+   "defects": [
+    {"phase": "0.0 (backswing)", "view": "left/right", "issue": "Squatty hinge: knees 50 deg, shins 14 deg forward, thighs only 33 deg from vertical, and the pelvis stays at z=-0.12 m, the same as at the float, so the hips never load backward.", "fix": "At the hike, move the pelvis 12-15 cm back (z about -0.25 m). Reduce knee flexion to 20-30 deg with the shins within 5-8 deg of vertical. Keep the trunk about 55-60 deg from vertical."},
+    {"phase": "0.93-1.0 (backswing reversal)", "view": "all", "issue": "The head/face peaks at 3.1 g (jerk ~350 m/s^3) at the turnaround. The head whips through a sharp cusp instead of easing into the reversal.", "fix": "Ease the trunk-angle curve over the last 2-3 samples before the reversal so head acceleration stays under ~1.5 g, and keep the neck in line with the trunk instead of counter-rotating 20 deg."},
+    {"phase": "0.0", "view": "front/threequarter", "issue": "The forearms sink 1.8 cm into the inner thighs at the hike. Contact is intended, but this is visible interpenetration.", "fix": "Widen the stance about 2 cm or bring the wrists 2 cm toward the midline so the forearms brush the thighs (clearance about 0)."}
+   ]
+  },
+  "kb-deadlift": {
+   "score": 7, "confidence": "high",
+   "summary": "Balance is safe (ZMP margin at least 3 cm), the bell stays vertical and the heels stay down. The bottom position is closer to a sumo squat than a hinge, and lockout is not a full hip and knee extension.",
+   "defects": [
+    {"phase": "0.0-0.1 (floor)", "view": "left/right", "issue": "Squat-like bottom: knees 82 deg, thighs 67 deg from vertical (near parallel) with 52 deg abduction and a low pelvis (0.66 m). A kettlebell deadlift should read as a hip hinge.", "fix": "Raise the pelvis to about 0.72-0.75 m and move it back. Use 45-60 deg knee flexion, thighs about 45-50 deg from vertical and a trunk about 50-55 deg from vertical. Reduce thigh abduction to about 30 deg by narrowing the knees over the toes."},
+    {"phase": "0.5-0.6 (lockout)", "view": "left", "issue": "Lockout is soft: knees stay at 14 deg, thighs 6 deg forward, and the arms hang flexed about 15-20 deg so the bell sits ahead of the thighs instead of hanging from vertical arms.", "fix": "Lock out with knees at 0-5 deg and a stacked hip. Let the arms hang vertically with the bell touching the front of the thighs (clearance about 0)."},
+    {"phase": "0.0", "view": "front", "issue": "The upper arms sink 1.3-1.8 cm into the thighs at the floor.", "fix": "Put the arms inside the knees with at least 0 clearance, or push the knees out 2 cm."}
+   ]
+  },
+  "goblet-squat": {
+   "score": 8, "confidence": "high",
+   "summary": "Credible. Depth is just above parallel (knee 111 deg, thigh 79 deg), the trunk leans 30 deg, the ankles dorsiflex 32 deg with the heels flat, the knees track the toes (direction cosine 0.90-1.0), the COM stays inside support and the motion is smooth (peak 0.6 g). Remaining defects are minor.",
+   "defects": [
+    {"phase": "0.12 and 0.74", "view": "threequarter", "issue": "The bell sits 1.3 cm into the forearms, and the elbow-to-inner-thigh contact at the bottom is exactly 0.", "fix": "Move the bell 1.5 cm forward from the forearms, or turn the forearms into a vertical V under the bell."},
+    {"phase": "0.0 (standing)", "view": "left", "issue": "The standing start/finish keeps 14 deg of knee flexion and 15 deg of hip flexion, so it never reaches a tall stand.", "fix": "Finish at 0-5 deg knee flexion with the pelvis stacked over the ankles."}
+   ]
+  },
+  "kb-reverse-lunge": {
+   "score": 8, "confidence": "medium",
+   "summary": "Good lunge mechanics. The back knee hovers 3 cm off the floor, the back thigh is vertical, the back forefoot is loaded, the pelvis shifts 10 cm laterally over the stance leg and the COM margin is mostly positive. Minor oddities in the step initiation.",
+   "defects": [
+    {"phase": "0.03-0.06 (0.53-0.56)", "view": "left/threequarter", "issue": "Both knees dip to 37-39 deg while both feet are still flat, before the step foot leaves the floor. It reads as a pre-squat, not a step back.", "fix": "Keep the stepping leg near straight (under 15 deg) while it unloads. Bend only the stance knee to about 20 deg during the weight shift, then step."},
+    {"phase": "0.25 (0.75)", "view": "left", "issue": "The front knee reaches 112 deg with the shin 30 deg forward, 6 cm past the toes. That is knee-dominant for a reverse lunge. The back heel sits 21 cm high (foot pitch about 60 deg).", "fix": "Keep the front shin at 10-20 deg (knee over the mid-foot) by reaching the back foot about 5 cm further. Lower the back heel to about 12-15 cm."},
+    {"phase": "0.17, 0.44", "view": "all", "issue": "The ZMP falls up to 3 cm outside support during the step landing and the return, and the pelvis never tilts or rotates in single-leg stance.", "fix": "Land the rear forefoot one sample earlier. Add 3-5 deg of pelvic rotation toward the stepping side."},
+    {"phase": "0.02/0.52", "view": "threequarter", "issue": "The bell sits 1.4 cm into the forearms.", "fix": "Move the bell 1.5 cm forward."}
+   ]
+  },
+  "kb-side-lunge": {
+   "score": 7, "confidence": "high",
+   "summary": "The working knee tracks the foot (97 deg at depth, shin 24 deg), the pelvis shifts 27 cm and the COM stays well inside the wide base. The lifter never stands tall and the 'long' leg stays bent.",
+   "defects": [
+    {"phase": "0.0 / 0.5 (reset)", "view": "left/front", "issue": "No tall reset: both knees stay at 22-34 deg and the pelvis at 0.84 m (other standing clips reach 0.93-0.95 m), so the loop is a continuous crouch.", "fix": "Hold a stand of about 0.3 s with knees at 5-10 deg and the pelvis at about 0.90 m in the wide stance before each side."},
+    {"phase": "0.25 / 0.75", "view": "front", "issue": "The non-working leg keeps about 20 deg of knee flexion, but the contract asks for a long leg.", "fix": "Straighten the trailing knee to 0-5 deg at depth and let that foot's ankle evert/roll slightly."},
+    {"phase": "0.01-0.03", "view": "threequarter", "issue": "The bell sits 1.7 cm into the forearms.", "fix": "Move the bell 2 cm forward from the forearms."}
+   ]
+  },
+  "kb-upright-row": {
+   "score": 7, "confidence": "medium",
+   "summary": "At the top the elbows stay below the shoulders (81 deg abduction) and the bell hangs vertically all the way through. The start position holds a 16 kg bell out on flexed arms, the wrists are strongly flexed and the hand segment changes length.",
+   "defects": [
+    {"phase": "0.0-0.1 (bottom)", "view": "left/right", "issue": "The arms are held 24 deg forward (shoulder flexion) with the bell 3 cm clear of the thighs. That is a sustained front raise of about 38 Nm, not arms hanging with the bell resting on the thighs.", "fix": "Hang the arms at 5-10 deg of flexion with the bell touching the front of the thighs (clearance 0 to -0.5 cm allowlisted)."},
+    {"phase": "0.2-0.8", "view": "front/threequarter", "issue": "Wrist deviation reaches 43 deg during the pull, and the hand segment stretches from 73 to 90 mm.", "fix": "Keep hand length constant (about 76 mm) and wrist flexion at 25 deg or less."},
+    {"phase": "0.44 (top)", "view": "left", "issue": "The bell sits 1.7 cm into the chest at the top.", "fix": "Stop the bell 1-2 cm in front of the sternum."}
+   ]
+  },
+  "kb-bent-row": {
+   "score": 7, "confidence": "medium",
+   "summary": "Flat back at 58 deg, the elbow rows to the hip (shoulder 31 deg relative to the trunk at the top), the bell hangs vertically, and the support hand stays on the front thigh. The leg configuration is implausible and there is contact penetration.",
+   "defects": [
+    {"phase": "whole loop", "view": "left", "issue": "The rear (left) leg is bent 41-51 deg with the heel flat, which needs 36-39 deg of ankle dorsiflexion, while the front leg is nearly straight (20 deg) with the shin angled back. For a staggered-stance row this is inverted and extreme at the ankle.", "fix": "Put 25-35 deg of knee flexion on the front leg and 5-15 deg on the rear leg, keep rear-ankle dorsiflexion at 20 deg or less, or let the rear heel rise."},
+    {"phase": "0.42", "view": "front", "issue": "The support hand sinks 2.2 cm into the front thigh, the forearm 0.9 cm, and the bell grazes the rear thigh.", "fix": "Put the palm on the thigh surface (clearance about 0) and move the bell path 1-2 cm laterally."},
+    {"phase": "0.0 (bottom)", "view": "left", "issue": "The working elbow stays at 28 deg flexion at the bottom, so there is no full stretch.", "fix": "Lower until the elbow is at 5-10 deg."}
+   ]
+  },
+  "kb-side-bend": {
+   "score": 4, "confidence": "high",
+   "summary": "The lateral trunk flexion (34 deg) and the small opposite pelvic shift are credible. The bell defies gravity: it sticks out 48 deg from vertical in every frame, including the static stand, so the load does not look or act like a 16 kg weight.",
+   "defects": [
+    {"phase": "all (e.g. 0.0)", "view": "front", "issue": "The bell hangs 48.5 deg off vertical (centre 12 cm lateral to the handle) at every frame, and the angle stays constant while the trunk bends 34 deg. Holding that needs roughly 170 N of sideways force.", "fix": "Hang the bell vertically below the handle (hang under 5 deg at rest). Move the hand about 8-10 cm lateral of the thigh so the bell hangs beside the outer thigh and only touches it, instead of being levered out by it."},
+    {"phase": "0.4-0.55", "view": "front", "issue": "The loaded arm tilts 15 deg medially from vertical (wrist 15 cm inside the shoulder line) under 16 kg, and the hand sinks up to 1.9 cm into the thigh.", "fix": "Keep the loaded arm within 5 deg of vertical in world space and let the bell slide down the outer thigh at clearance about 0."},
+    {"phase": "0.0 (tall)", "view": "left", "issue": "'Tall' stand with both knees at 20 deg.", "fix": "Set knees to 0-5 deg."},
+    {"phase": "0.34", "view": "front", "issue": "The ZMP is 1 cm outside support at the fastest part of the bend.", "fix": "Shift the pelvis another 1-2 cm to the right during the bend."}
+   ]
+  },
+  "kb-curl": {
+   "score": 8, "confidence": "high",
+   "summary": "A clean elbow hinge, 7 to 132 deg, with the upper arms nearly still (shoulder 7-15 deg), smooth timing (peak 0.33 g) and the bell rotating with the horns grip. The trunk makes no counter-motion (acceptable for a strict curl). Minor contact penetration.",
+   "defects": [
+    {"phase": "0.0 (bottom)", "view": "left", "issue": "The bell sits 1.1 cm into the thighs, and the forearms/upper arms graze the thighs (-0.3 to -0.7 cm).", "fix": "Hold the bell 1-2 cm in front of the thighs or allowlist resting contact at clearance about 0."},
+    {"phase": "all", "view": "all", "issue": "The gripping hands have zero length (palm equals wrist) and the knees stay at 14 deg.", "fix": "Export a hand segment of about 7 cm wrapped on the horns. Use 0-5 deg knee flexion."}
+   ]
+  },
+  "kb-halo": {
+   "score": 7, "confidence": "medium",
+   "summary": "Trunk and gaze are steady as the contract asks, wrists stay neutral, the bell sits behind the head at head height with the elbows up, and the head moves 5 cm forward to let it pass. The elbows whip at the sides and the COM runs to the heel edge.",
+   "defects": [
+    {"phase": "0.20 / 0.30 (sides)", "view": "front/threequarter", "issue": "The leading elbow snaps up at 1.26 m/s and 1.2 g (jerk about 190 m/s^3) while the bell moves only 0.7 m/s. The elbow flips instead of tracing a smooth circle, and one arm reaches 176 deg flexion.", "fix": "Spread the elbow elevation over at least 0.6 s (peak about 0.6 m/s). Cap the high arm at about 160 deg and raise the lower elbow earlier."},
+    {"phase": "0.23 (rear)", "view": "left", "issue": "With the bell behind the head, the ZMP margin is only 1 cm at the heels and the body makes no counter-lean.", "fix": "Add 2-3 deg of forward ankle lean or a 1-2 cm forward pelvis shift while the bell passes behind."},
+    {"phase": "0.18 / 0.32", "view": "threequarter", "issue": "The hands sink 0.9 cm into the bell.", "fix": "Keep the palms on the horn surface (clearance 0)."}
+   ]
+  },
+  "kb-clean": {
+   "score": 5, "confidence": "high",
+   "summary": "The rack (elbow 150 deg, bell on the outside of the forearm), the backswing (trunk 64 deg, long arm) and the free arm hanging under gravity are credible. The bell's orientation during the pull is not physics-driven, the arm bends early, and the backswing reversal is a sharp cusp.",
+   "defects": [
+    {"phase": "0.58-0.65", "view": "left", "issue": "The bell stands out horizontally in front of the hand at waist height (hang 98-109 deg) while moving only 0.2-0.9 m/s. That is up to 119 deg away from the effective gravity-plus-inertia direction, so the bell floats unsupported.", "fix": "Drive the bell's hang from the handle's acceleration (it should point along g minus a). At low speed it must hang below the handle until the forearm rotates under it for the rack."},
+    {"phase": "0.46-0.52 (hip drive)", "view": "left", "issue": "The elbow flexes from 20 to 65 deg while the bell is still behind the knees at 0.4-0.6 m height. That is an arm curl during the hip drive, and the bell spins 5 -> 68 -> 14 deg in 0.08 s.", "fix": "Keep the elbow at 15 deg or less until the bell passes the hips (height about 0.85 m), then pull the elbow back and in. Smooth the bell rotation."},
+    {"phase": "0.45", "view": "all", "issue": "Backswing reversal: the elbow peaks at 4.5 g (jerk about 750 m/s^3) and the bell at 5.2 g. The load changes direction in one sample.", "fix": "Round the reversal over 3-4 samples (peak bell acceleration about 2.5 g)."},
+    {"phase": "0.77-0.15 (rack hold)", "view": "front", "issue": "The bell keeps rotating 17 -> 72 deg against gravity while it should sit still in the rack.", "fix": "Lock the bell's orientation relative to the forearm once it lands."},
+    {"phase": "0.25-0.40 (drop)", "view": "left", "issue": "The elbow folds to 67 deg on the drop from the rack, then re-extends at the bottom.", "fix": "Let the elbow extend progressively (at most about 30 deg flexion by the time the bell passes the hips)."}
+   ]
+  },
+  "kb-press": {
+   "score": 8, "confidence": "high",
+   "summary": "Strict press with credible mechanics. The forearm is near vertical under the bell, the elbow flares moderately, lockout is at 7 deg with the arm by the ear, the shoulder elevates 2.3 cm, the head moves out of the path, the bell stays on the back of the forearm, and acceleration peaks at 1 g. Only a small leg drive and rigid posture remain.",
+   "defects": [
+    {"phase": "0.14-0.23", "view": "left", "issue": "The knees extend from 16 to 10 deg as the press starts, a small push-press cue in a 'strict' press, and the rack stance keeps 16 deg of knee bend.", "fix": "Hold the knees locked at 0-5 deg throughout."},
+    {"phase": "0.2-0.4", "view": "front", "issue": "The trunk stays perfectly rigid (0 deg of lateral lean) with 16 kg overhead on one side.", "fix": "Add 2-4 deg of lateral lean away from the bell, or a 1-2 cm pelvis shift toward the free side, as the bell passes the head."}
+   ]
+  },
+  "kb-snatch": {
+   "score": 4, "confidence": "high",
+   "summary": "Lockout (elbow 7 deg, arm 175 deg) and the backswing hinge are fine. The high pull and punch-through contain an elbow pop, the bell floats horizontally at low speed, and the drop folds the arm like a reverse press.",
+   "defects": [
+    {"phase": "0.63-0.69", "view": "all", "issue": "Elbow pop: in about 0.07 s the elbow travels 22 cm laterally, 35 cm up and 23 cm forward, from behind the trunk to 115 deg of shoulder flexion. That is 5 m/s, 9.3 g and jerk about 2600 m/s^3, faster than the bell itself.", "fix": "In the high pull, lead with the elbow up and back (elbow slightly behind the trunk, above the wrist) over at least 0.15 s. Then rotate the hand around the bell and punch up; keep the elbow under about 3 m/s and 3 g."},
+    {"phase": "0.57-0.63", "view": "left", "issue": "The bell sits horizontally in front of the hand at waist height (hang 86-99 deg) while moving slowly (0.45-0.9 m/s), up to 97 deg off the effective gravity direction.", "fix": "Drive the bell's orientation from handle acceleration and keep it trailing the hand along the arc."},
+    {"phase": "0.10-0.26 (drop)", "view": "left/threequarter", "issue": "On the drop the elbow folds to 129 deg so the bell passes the face at 3.3 m/s, like a lowered press. The forearm then crosses the face (0.75 on the up path).", "fix": "Turn the bell over with the arm long (elbow at 40 deg or less) and a slight backward lean, dropping the bell in front of the chest, not past the face."},
+    {"phase": "0.47-0.52", "view": "left", "issue": "Early arm bend: the elbow reaches 50-69 deg while the bell is still below hip height.", "fix": "Keep the elbow at 15 deg or less until the hips are extended."},
+    {"phase": "0.40-0.44", "view": "front", "issue": "The forearm sinks 2.6 cm and the upper arm 1.1 cm into the thigh at the backswing, and the elbow reversal hits 5.5 g.", "fix": "Keep the arm along the inner thigh at clearance about 0 and round the reversal over 3-4 samples."}
+   ]
+  },
+  "kb-getup": {
+   "score": 6, "confidence": "medium",
+   "summary": "The bell arm stays locked and vertical in every frame, the eyes stay on the bell while lying, and the bridge, sweep, half-kneel and lunge are recognizable with plausible joint angles. There is a large limb interpenetration in the sweep, a pelvis bob during the stand and questionable roll balance. The robotic 0.0 deg arm deviation adds stiffness.",
+   "defects": [
+    {"phase": "0.20 (sweep)", "view": "right/threequarter", "issue": "The posted right upper arm passes 6.1 cm into the right shin while the leg sweeps under.", "fix": "Sweep the knee 8-10 cm further back and outward (or post the hand 8 cm wider) so the upper arm and shin clear."},
+    {"phase": "0.37-0.50 (and 0.55-0.65)", "view": "left", "issue": "Pelvis height bobs 0.74 -> 0.62 -> 0.95 m: the lifter half-rises out of the lunge, sinks back, then stands. It is wasted vertical motion with 16 kg overhead.", "fix": "Make the lunge-to-stand monotonic: rise straight up from the half-kneel to standing (pelvis only rising), then bring the back foot beside the front foot."},
+    {"phase": "0.05 / 0.945 (roll to elbow)", "view": "front", "issue": "The static COM is about 11 cm outside the modelled support when rolling onto the elbow. The roll has no visible momentum or push from the bell-side foot to justify it (partly a support-model limit).", "fix": "Plant the bell-side foot and add a visible heel drive. Load the forearm/elbow as contact before the trunk lifts past 45 deg."},
+    {"phase": "whole loop", "view": "all", "issue": "The posted hand's length varies from 45 to 66 mm, and the bell arm has exactly 0.0 deg deviation from vertical every frame, with no micro-adjustment.", "fix": "Keep hand length constant. Allow 2-5 deg of natural sway of the bell arm around vertical during transitions."}
+   ]
+  },
+  "kb-pullover": {
+   "score": 8, "confidence": "high",
+   "summary": "Good. The arc is smooth (peak 0.4 g), the elbows bend to 118 deg behind the head at 167 deg of shoulder flexion, the trunk leans back up to 4 deg and the pelvis shifts 5 cm to counter the forward bell with no lumbar arch, and the COM stays inside support throughout.",
+   "defects": [
+    {"phase": "0.3-0.7 (overhead)", "view": "front", "issue": "The shoulder joint never elevates, even at 167 deg of flexion, so the shoulder girdle looks mechanical. The press clip shows about 2 cm of elevation here.", "fix": "Raise the shoulder joints 1.5-2.5 cm (scapular upward rotation) when shoulder flexion is above 150 deg."},
+    {"phase": "all", "view": "all", "issue": "The gripping hands have zero length and the knees stay at 14 deg.", "fix": "Export a real hand segment on the horns and use 0-5 deg knee flexion."}
+   ]
+  }
+ },
+ "crossCutting": [
+  "The bell's orientation is not physically simulated in the dynamic lifts (clean, snatch) and is fixed in the side bend. The hang should follow the handle's g-minus-a direction unless it is resting on the forearm.",
+  "Gripping hands are exported with palm equal to wrist (zero length), so wrist posture cannot be checked. Where the hand is exported, its length varies (upright row 73-90 mm, get-up 45-66 mm).",
+  "Standing 'tall' poses keep the knees at 14-20 deg in most clips.",
+  "Several arm-thigh and bell-forearm contacts penetrate 1-2.6 cm instead of resting at 0."
+ ]
+}

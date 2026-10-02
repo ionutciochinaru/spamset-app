@@ -184,6 +184,136 @@ export const PRESET_WORKOUTS: Workout[] = [
       { kind: 'sets', exercise: 'kb-halo', sets: 3, repRange: [5, 8], rest: 45 },
     ],
   },
+  {
+    id: 'hinge-and-squat-trio',
+    name: 'Swing, Squat, Deadlift',
+    summary: 'Ten swings, ten goblet squats, ten deadlifts, back to back. Four rounds with up to two minutes rest.',
+    blocks: [
+      {
+        kind: 'circuit',
+        rounds: 4,
+        restBetweenStations: 0,
+        restBetweenRounds: 120,
+        stations: [
+          { exercise: 'kb-swing', target: { reps: 10 } },
+          { exercise: 'goblet-squat', target: { reps: 10 } },
+          { exercise: 'kb-deadlift', target: { reps: 10 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'rows-and-lunges',
+    name: 'Rows & Lunges',
+    summary: 'Metcon circuit alternating lunges and rows without a break. Five rounds with up to two minutes rest.',
+    blocks: [
+      {
+        kind: 'circuit',
+        rounds: 5,
+        restBetweenStations: 0,
+        restBetweenRounds: 120,
+        stations: [
+          { exercise: 'kb-reverse-lunge', target: { reps: 3 } },
+          { exercise: 'kb-upright-row', target: { reps: 6 } },
+          { exercise: 'kb-reverse-lunge', target: { reps: 3 } },
+          { exercise: 'kb-bent-row', target: { reps: 6 } },
+          { exercise: 'kb-upright-row', target: { reps: 6 } },
+          { exercise: 'kb-bent-row', target: { reps: 6 } },
+          { exercise: 'kb-side-lunge', target: { reps: 3 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'six-by-three',
+    name: 'Six by Three',
+    summary: 'Six exercises, three sets of ten each, 20 seconds between sets. Head to toe in one bell.',
+    blocks: [
+      { kind: 'sets', exercise: 'goblet-squat', sets: 3, repRange: [10, 12], rest: 20 },
+      { kind: 'sets', exercise: 'kb-swing', sets: 3, repRange: [10, 12], rest: 20 },
+      { kind: 'sets', exercise: 'kb-deadlift', sets: 3, repRange: [10, 12], rest: 20 },
+      { kind: 'sets', exercise: 'kb-bent-row', sets: 3, repRange: [10, 12], rest: 20 },
+      { kind: 'sets', exercise: 'kb-side-bend', sets: 3, repRange: [10, 12], rest: 20 },
+      { kind: 'sets', exercise: 'kb-curl', sets: 3, repRange: [10, 12], rest: 20 },
+    ],
+  },
+  {
+    id: 'total-body-intervals',
+    name: 'Total-Body Intervals',
+    summary: '40 seconds on, 20 off, cycling six movements. Two passes, twelve minutes.',
+    blocks: [
+      {
+        kind: 'intervals',
+        work: 40,
+        rest: 20,
+        rounds: 12,
+        stations: [
+          { exercise: 'kb-swing', target: { seconds: 40 } },
+          { exercise: 'goblet-squat', target: { seconds: 40 } },
+          { exercise: 'kb-pullover', target: { seconds: 40 } },
+          { exercise: 'kb-reverse-lunge', target: { seconds: 40 } },
+          { exercise: 'kb-upright-row', target: { seconds: 40 } },
+          { exercise: 'kb-halo', target: { seconds: 40 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'full-body-emom-20',
+    name: 'Full-Body EMOM 20',
+    summary: 'A new station every minute for twenty minutes: hinge, squat, pull, press, lunge.',
+    blocks: [
+      {
+        kind: 'emom',
+        minutes: 20,
+        stations: [
+          { exercise: 'kb-swing', target: { reps: 15 } },
+          { exercise: 'goblet-squat', target: { reps: 10 } },
+          { exercise: 'kb-bent-row', target: { reps: 8 } },
+          { exercise: 'kb-press', target: { reps: 5 } },
+          { exercise: 'kb-reverse-lunge', target: { reps: 5 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'strength-and-conditioning',
+    name: 'Strength & Conditioning',
+    summary: 'Heavy get-ups and presses first, then a 10-minute snatch, squat and pullover AMRAP.',
+    blocks: [
+      { kind: 'sets', exercise: 'kb-getup', sets: 3, repRange: [1, 2], rest: 60 },
+      { kind: 'sets', exercise: 'kb-press', sets: 3, repRange: [5, 8], rest: 60 },
+      {
+        kind: 'amrap',
+        minutes: 10,
+        stations: [
+          { exercise: 'kb-snatch', target: { reps: 5 } },
+          { exercise: 'goblet-squat', target: { reps: 10 } },
+          { exercise: 'kb-pullover', target: { reps: 8 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'clean-squat-complex',
+    name: 'Clean, Squat, Press',
+    summary: 'Cleans, goblet squats, presses, swings and side lunges. Five rounds, short transitions.',
+    blocks: [
+      {
+        kind: 'circuit',
+        rounds: 5,
+        restBetweenStations: 10,
+        restBetweenRounds: 90,
+        stations: [
+          { exercise: 'kb-clean', target: { reps: 5 } },
+          { exercise: 'goblet-squat', target: { reps: 8 } },
+          { exercise: 'kb-press', target: { reps: 5 } },
+          { exercise: 'kb-swing', target: { reps: 15 } },
+          { exercise: 'kb-side-lunge', target: { reps: 4 } },
+        ],
+      },
+    ],
+  },
 ];
 
 export function getWorkout(id: string, custom: Workout[] = []): Workout | undefined {

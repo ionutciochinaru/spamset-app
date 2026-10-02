@@ -18,7 +18,7 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[2]
 # Phase showing each movement's most recognisable position.
-PHASE = {'kb-press': .5, 'kb-clean': 0., 'kb-snatch': 0., 'kb-getup': .31, 'kb-halo': .25, 'kb-reverse-lunge': .25, 'kb-side-lunge': .25,
+PHASE = {'kb-pullover': .4, 'kb-press': .5, 'kb-clean': 0., 'kb-snatch': 0., 'kb-getup': .31, 'kb-halo': .25, 'kb-reverse-lunge': .25, 'kb-side-lunge': .25,
          'kb-side-bend': .25, 'kb-curl': .25}
 
 

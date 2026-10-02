@@ -1,8 +1,9 @@
 """Keyed lifts with load-aware balance.
 
 A Lift is authored as key states (phase -> parameters). Between keys the state
-follows a minimum-jerk profile (grinds: stop, then move smoothly) or a periodic
-Hermite spline (flowing lifts). A build function turns a state into a pose,
+follows a periodic monotone cubic: velocity is continuous through pass-through
+keys (no robotic stop at every key) and zero only at 'hold' keys and turning
+points; it never overshoots a key. smooth='minjerk' stops at every key instead. A build function turns a state into a pose,
 applying a hip shift (dx, dy) to the pelvis only; feet and floor contacts stay
 put, and everything carried by the trunk moves with it.
 
@@ -15,11 +16,20 @@ hip shift a lifter makes to carry the load, and it anticipates support changes
 from functools import cached_property
 
 try:
+    from ..rig import sub, unit
+except ImportError:
+    from rig import sub, unit
+
+try:
     from .body import centre_of_mass, support_points, convex_hull, margin, G
     from .swing import solve_cyclic
+    from . import bell as bell_sim
+    from .common import look_ahead
 except ImportError:
+    from v2.common import look_ahead
     from v2.body import centre_of_mass, support_points, convex_hull, margin, G
     from v2.swing import solve_cyclic
+    from v2 import bell as bell_sim
 
 SAMPLES_PER_SECOND = 240
 
@@ -35,8 +45,8 @@ def _lerp(a, b, t):
     return a + (b - a) * t
 
 
-def _hermite_scalar(keys, phase, param):
-    """Periodic non-uniform Catmull-Rom on one parameter; 'hold' keys have zero slope."""
+def _hermite_scalar(keys, phase, param, monotone=True):
+    """Periodic non-uniform cubic through the keys; 'hold' keys have zero slope."""
     n = len(keys)
     times = [k[0] for k in keys]
 
@@ -47,14 +57,27 @@ def _hermite_scalar(keys, phase, param):
         return times[i % n] + (i // n)
 
     def slope(i):
+        """Catmull-Rom slope, limited so the curve never overshoots a key (monotone
+        cubic): zero at holds and at turning points, capped at 3x the neighbouring secants."""
         if keys[i % n][2]:
             return 0.
-        return (value(i + 1) - value(i - 1)) / (time(i + 1) - time(i - 1))
+        before = (value(i) - value(i - 1)) / (time(i) - time(i - 1))
+        after = (value(i + 1) - value(i)) / (time(i + 1) - time(i))
+        if not monotone:
+            return (value(i + 1) - value(i - 1)) / (time(i + 1) - time(i - 1))
+        if before * after <= 0:
+            return 0.
+        m = (value(i + 1) - value(i - 1)) / (time(i + 1) - time(i - 1))
+        cap = 3 * min(abs(before), abs(after))
+        return max(-cap, min(cap, m))
 
     i = max((k for k in range(n) if times[k] <= phase), default=-1)
     t0, t1 = (time(i), time(i + 1)) if i >= 0 else (times[-1] - 1, times[0])
     h = t1 - t0
     u = (phase - t0) / h
+    if keys[i % n][2] and keys[(i + 1) % n][2]:
+        # Hold to hold: minimum jerk, so the move eases out of the hold without a jolt.
+        return value(i) + (value(i + 1) - value(i)) * minjerk(u)
     h00, h10, h01, h11 = 2 * u ** 3 - 3 * u ** 2 + 1, u ** 3 - 2 * u ** 2 + u, -2 * u ** 3 + 3 * u ** 2, u ** 3 - u ** 2
     return h00 * value(i) + h10 * h * slope(i) + h01 * value(i + 1) + h11 * h * slope(i + 1)
 
@@ -98,15 +121,22 @@ def _support_centre(pose):
 
 
 class Lift:
-    def __init__(self, name, duration, keys, build, view, balance='xy', smooth='minjerk', mirror=False):
-        """keys: [(phase, {param: value}, hold)] with phase ascending from 0; loops back to keys[0]."""
+    def __init__(self, name, duration, keys, build, view, balance='xy', smooth='hermite', mirror=False, bell=None, look=True):
+        """keys: [(phase, {param: value}, hold)] with phase ascending from 0; loops back to keys[0].
+
+        bell: for a one-hand bell, {'stiffness', 'damping'} of its swing on the handle
+        (v2/bell.py); the authored bell direction becomes the grip's target. An optional
+        'grip' state parameter (0..1) scales the stiffness: firm when the lifter sets the
+        bell (rack, lockout), loose while it is thrown."""
         self.name, self.duration, self.keys, self.build = name, duration, keys, build
         self.view, self.balance, self.smooth, self.mirror = view, balance, smooth, mirror
+        self.bell, self.look = bell, look
 
     def state(self, phase):
         phase %= 1.
         keys = self.keys
-        if self.smooth == 'hermite':
+        if self.smooth in ('hermite', 'catmull'):
+            monotone = self.smooth == 'hermite'
             params = keys[0][1].keys()
             out = {}
             for p in params:
@@ -115,10 +145,10 @@ class Lift:
                     comps = []
                     for d in range(dims):
                         sub = [(t, {p: v[p][d]}, hold) for t, v, hold in keys]
-                        comps.append(_hermite_scalar(sub, phase, p))
+                        comps.append(_hermite_scalar(sub, phase, p, monotone))
                     out[p] = tuple(comps)
                 else:
-                    out[p] = _hermite_scalar(keys, phase, p)
+                    out[p] = _hermite_scalar(keys, phase, p, monotone)
             return out
         i = max(k for k in range(len(keys)) if keys[k][0] <= phase)
         t0, a, _ = keys[i]
@@ -128,10 +158,37 @@ class Lift:
         w = minjerk((phase - t0) / (t1 - t0))
         return {p: _lerp(a[p], b[p], w) for p in a}
 
-    def raw(self, phase, dx=0., dy=0.):
+    def authored(self, phase, dx=0., dy=0.):
         pose = self.build(self.name, phase, self.state(phase), dx, dy)
+        if self.look:
+            look_ahead(pose)
         pose.view = dict(self.view)
         return pose
+
+    def raw(self, phase, dx=0., dy=0.):
+        pose = self.authored(phase, dx, dy)
+        if self.bell is not None:
+            directions, axes = self.bell_table
+            bell_sim.swing(pose, bell_sim.sample(directions, phase), bell_sim.sample(axes, phase))
+        return pose
+
+    @cached_property
+    def bell_table(self):
+        n = max(48, round(self.duration * SAMPLES_PER_SECOND))
+        hands, arms, targets, grips, bodies, lefts = [], [], [], [], [], []
+        for i in range(n):
+            pose = self.authored(i / n)
+            grips.append(max(0., min(1., self.state(i / n).get('grip', 1.))))
+            index, s = bell_sim.single_grip(pose)
+            bodies.append(bell_sim.obstacles(pose, s))
+            w = pose.j['wrist_' + s]
+            lefts.append(unit(sub(pose.j['shoulder_l'], pose.j['shoulder_r'])))
+            hands.append(w)
+            arms.append(unit(sub(w, pose.j['elbow_' + s])))
+            targets.append(unit(sub(tuple(pose.props[index]['center']), w)))
+        directions = bell_sim.simulate(hands, arms, targets, self.duration, grips=grips, bodies=bodies, **self.bell)
+        # Handle: turns as little as possible, settling side to side across the body.
+        return directions, bell_sim.handle_axes(directions, lefts)
 
     @cached_property
     def offsets(self):

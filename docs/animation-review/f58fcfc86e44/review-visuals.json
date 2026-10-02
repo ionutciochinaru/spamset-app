@@ -1,0 +1,377 @@
+{
+  "role": "visuals",
+  "revision": "f58fcfc86e44",
+  "reviewedAt": "2026-09-30T09:14:36+00:00",
+  "method": "Used only the frozen evidence in docs/animation-review/f58fcfc86e44. I inspected all 15 contact sheets. I viewed about 30 native 480x480 frames side by side at native and enlarged size: key phases of the snatch, get-up, swing, deadlift, rows, side bend, curl, halo, pullover, press, clean, lunges and goblet squat. I read geometry.json and compared the clearances with ALLOWED_CONTACT in tools/animation/motions.py. From every clips/*.json (axes: x lateral, y up, z forward) I computed numerically: per-frame peak joint speed, peak acceleration, hold windows under 0.08 m/s, loop-seam acceleration, bell height and speed profiles, and single-frame joint pops. I could not watch real-time playback, so pacing, loop and smoothness judgements come from the clip data, not viewing. I read the rubric. I did not run the live generators and did not open other reviews.",
+  "exercises": {
+    "kb-swing": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Reads instantly: deep hike with the bell behind the knees, crisp hip snap, chest-height float on straight arms. The motion is continuous, with no stall at the float (bell 0.1 m/s at the apex) and a seamless loop (seam acceleration 9 m/s\u00b2 against a 10.7 median). Arm/leg overlap at the hike is the only visible blemish.",
+      "defects": [
+        {
+          "phase": "0.0 (hike)",
+          "view": "threequarter, front",
+          "issue": "The forearms sink 17 mm into the inner thighs at the bottom of the hike (allowlisted, but visible as limbs merging at native size).",
+          "fix": "Bring the wrists 2\u20133 cm deeper between the thighs (narrow the grip path or widen the knees slightly) so the forearms touch the thigh surface without passing into it."
+        },
+        {
+          "phase": "0.83 (downswing)",
+          "view": "left, threequarter",
+          "issue": "The bell skims the thighs with 7.6 mm clearance as it drops into the backswing, so at native size it reads as the bell grazing the legs.",
+          "fix": "Let the hips hinge a frame or two earlier on the downswing so the bell passes the thighs with at least 3 cm of air."
+        },
+        {
+          "phase": "0.86\u20130.90",
+          "view": "all (clip data)",
+          "issue": "The bell slows from 2.6 to 1.5 m/s while it passes between the legs, a slight hitch before the backswing.",
+          "fix": "Keep the bell accelerating, or at a constant speed, through the legs, and decelerate only in the final backswing arc."
+        }
+      ]
+    },
+    "kb-deadlift": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "The floor pull, lockout and return read clearly from the front and side, with good holds at the bottom and top. The bottom position is knee-dominant, so the silhouette sits close to a squat, and the arms merge with the legs.",
+      "defects": [
+        {
+          "phase": "0.0 / 0.875 (bottom)",
+          "view": "left, right, threequarter",
+          "issue": "The bottom position has the knees driven far forward and the hips low, which makes the side silhouette look like a squat. This weakens differentiation from the goblet squat and the swing hike.",
+          "fix": "Raise the hips and push them back (shins more vertical, torso about 45\u00b0) so the bottom reads as a hinge."
+        },
+        {
+          "phase": "0.0 (bottom)",
+          "view": "front, threequarter",
+          "issue": "The upper arms pass 18 mm into the thighs, and the arms and legs form one cluttered mass in the front view.",
+          "fix": "Widen the stance or narrow the grip so the arms hang cleanly inside the knees with a visible gap."
+        },
+        {
+          "phase": "0.93\u20131.0",
+          "view": "all (clip data)",
+          "issue": "While the bell rests on the floor the elbows retract about 4 cm (acceleration spike of 16.6 m/s\u00b2 at 0.96), a twitch during the floor reset.",
+          "fix": "Freeze the arms once the bell lands, or blend the elbow adjustment over the whole reset window."
+        }
+      ]
+    },
+    "goblet-squat": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Clean, readable goblet hold with the bell at the chest and the elbows inside the knees at the bottom. The descent and ascent are smooth, with proper holds (0.37\u20130.4 s). Differentiates well from the deadlift and the lunges.",
+      "defects": [
+        {
+          "phase": "0.11 (leaving the top hold)",
+          "view": "all (clip data)",
+          "issue": "The descent starts abruptly out of the top hold (acceleration spike of 5.8 m/s\u00b2, three times the median), which looks mechanical on playback.",
+          "fix": "Ease in the first 3\u20134 frames of the descent (smoothstep out of the hold)."
+        },
+        {
+          "phase": "0.5 (bottom)",
+          "view": "threequarter",
+          "issue": "The upper arms touch the thighs (-0.7 mm) and the elbows merge into the knees at native size.",
+          "fix": "Nudge the elbows 1\u20132 cm forward/inward so a thin gap stays visible."
+        }
+      ]
+    },
+    "kb-reverse-lunge": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Alternating reverse lunges with a goblet hold read well in the side and three-quarter views. The rear knee drops near the floor, the torso stays tall and the two sides are symmetric.",
+      "defects": [
+        {
+          "phase": "0.07 / 0.57 (step-off)",
+          "view": "all (clip data)",
+          "issue": "The rear foot leaves the floor abruptly (0 to 1.6 m/s within about 4 frames, acceleration spike of 13.7 m/s\u00b2), so the step reads as a snap.",
+          "fix": "Add weight shift and ease-in: shift the pelvis over the front foot for 3\u20134 frames before the heel peels, and ramp the foot's velocity."
+        },
+        {
+          "phase": "0.25 / 0.75 (bottom)",
+          "view": "front",
+          "issue": "In the front view the lunge depth is ambiguous because the rear leg is hidden behind the front leg.",
+          "fix": "The default three-quarter camera is fine. Avoid using the front view for thumbnails of this exercise."
+        },
+        {
+          "phase": "0.25 / 0.75",
+          "view": "all",
+          "issue": "The bottom hold is only 0.2 s, compared with 0.37\u20130.4 s in the other strength clips, so the bottom position flashes by.",
+          "fix": "Extend the bottom hold to about 0.3\u20130.4 s."
+        }
+      ]
+    },
+    "kb-side-lunge": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "The front view shows the weight shifting over one bent knee while the other leg stays long. The depth is shallow, though, and the wide start stance makes the rest and working positions look similar.",
+      "defects": [
+        {
+          "phase": "0.25 / 0.75 (bottom)",
+          "view": "front, threequarter",
+          "issue": "The shift is shallow: the working knee bends only moderately and the hips barely travel sideways, so the lateral lunge is subtle at native size.",
+          "fix": "Increase the sideways travel of the hips and the knee flexion (thigh closer to parallel), and sit the hips back further."
+        },
+        {
+          "phase": "0.0 / 0.5 (centre)",
+          "view": "front",
+          "issue": "The centre stance is already very wide with both legs angled, so the return to centre does not read as a distinct reset.",
+          "fix": "Narrow the centre stance slightly or straighten both knees fully at centre so the working pose stands out."
+        },
+        {
+          "phase": "all",
+          "view": "left, right",
+          "issue": "The side views show almost nothing of the movement because the shift happens along the view axis.",
+          "fix": "This is acceptable because the default camera (azimuth 20) is near-frontal. Keep the thumbnails frontal."
+        }
+      ]
+    },
+    "kb-upright-row": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "The bell travels close to the body up to the lower chest with the elbows leading high. The movement is readable in every view and the holds are clean.",
+      "defects": [
+        {
+          "phase": "0.10 / 0.43",
+          "view": "all (clip data)",
+          "issue": "Each movement starts abruptly out of its hold (acceleration spikes of 6.6 and 5.8 m/s\u00b2) with a linear-looking ramp, which reads slightly robotic.",
+          "fix": "Ease out of each hold with a smoothstep ramp over 4\u20135 frames."
+        },
+        {
+          "phase": "0.5 (top)",
+          "view": "threequarter",
+          "issue": "The hands and handle are hidden behind the bell and the forearms at the top, so the shared handle grip is unclear.",
+          "fix": "Rotate the bell a few degrees or lower the camera elevation so the handle and fists read above the bell."
+        }
+      ]
+    },
+    "kb-bent-row": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "The staggered-stance single-arm row reads in the three-quarter and side views, with the elbow driving back and the free hand braced. Head and neck posture and small overlaps detract.",
+      "defects": [
+        {
+          "phase": "all",
+          "view": "left, threequarter",
+          "issue": "The head hangs low with the neck flexed, so the silhouette reads as a rounded, hunched back rather than a flat-back hinge.",
+          "fix": "Align the head with the spine (neck neutral, gaze about 1 m ahead on the floor)."
+        },
+        {
+          "phase": "0.43 (top of row)",
+          "view": "left, front",
+          "issue": "The bell passes 3 mm into the front of the left thigh at the top. This contact is not allowlisted.",
+          "fix": "Route the bell path 3\u20134 cm lateral to the thigh (elbow slightly out, or wider stance)."
+        },
+        {
+          "phase": "0.43",
+          "view": "threequarter",
+          "issue": "The free forearm and hand sink 4\u20138 mm into the right thigh.",
+          "fix": "Place the palm on the thigh surface with an offset of about 1 cm."
+        },
+        {
+          "phase": "all",
+          "view": "front",
+          "issue": "From the front the bell is mostly hidden against the leg, so the row travel is hard to see.",
+          "fix": "Keep the default three-quarter camera. Do not use a front view for thumbnails."
+        }
+      ]
+    },
+    "kb-side-bend": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "The lateral bend toward the bell and the hand-on-hip are clear in the front and three-quarter views. The bell hangs visibly off the thigh, and the range of motion is small.",
+      "defects": [
+        {
+          "phase": "0.0 (tall)",
+          "view": "front, threequarter",
+          "issue": "The bell hangs about a bell-width away from the outer thigh, with the arm abducted. The exercise definition says it rests against the thigh, so it reads as floating.",
+          "fix": "Adduct the loaded arm so the bell body sits on the outer thigh at the start and slides along it."
+        },
+        {
+          "phase": "0.5 (bend)",
+          "view": "front",
+          "issue": "The bell drops only about 15 cm (bell y 0.52\u20130.67 m) and does not visibly slide toward the knee.",
+          "fix": "Increase the trunk bend a little so the bell reaches knee height along the thigh."
+        },
+        {
+          "phase": "0.125",
+          "view": "front",
+          "issue": "The forearm and hand pass 2\u20136 mm into the thigh while the bell hangs off it: contact at the wrong point.",
+          "fix": "Resolve this together with the fix above: bell on the thigh, wrist just clear of it."
+        }
+      ]
+    },
+    "kb-curl": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "A clear two-hand horns curl with upper arms that stay still, a slow lower and good holds. Motion is smooth, with no acceleration spikes, and it differentiates well from the upright row.",
+      "defects": [
+        {
+          "phase": "0.0 (bottom)",
+          "view": "threequarter, front",
+          "issue": "The bell passes 13 mm into the thighs at the bottom (allowlisted, but visible as the bell merging with the legs).",
+          "fix": "Hang the bell 2 cm further forward, or tilt the forearms slightly forward."
+        },
+        {
+          "phase": "0.4 (top)",
+          "view": "all",
+          "issue": "The upper arms clip the thighs (-8 mm) at the hip line. This is not visible at native size, but it is unallowlisted contact.",
+          "fix": "Shift the elbows 1 cm forward or outward."
+        }
+      ]
+    },
+    "kb-halo": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "The bell visibly circles the head in both directions, with the base-down position behind the head and a steady torso. Readable in the three-quarter view.",
+      "defects": [
+        {
+          "phase": "0.0 / 0.5 (front reset)",
+          "view": "front, left",
+          "issue": "The bell sits directly in front of the face at the reset, so the face and head are occluded in the front view.",
+          "fix": "Hold the reset at chin or upper-chest height, 3\u20135 cm lower, so the head stays visible."
+        },
+        {
+          "phase": "0.20 / 0.30 / 0.70",
+          "view": "all (clip data)",
+          "issue": "The trailing elbow whips at up to 1.3 m/s with acceleration spikes of about 12 m/s\u00b2 as the bell passes each side, a flick in otherwise even motion.",
+          "fix": "Spread the elbow's lift over more frames, or lower the peak elbow height at the sides."
+        },
+        {
+          "phase": "all",
+          "view": "default camera",
+          "issue": "The exercise definition calls for a fixed three-quarter upper-body crop, but the frames are full-body. The bell is small relative to the frame.",
+          "fix": "Apply the upper-body crop so the grip on the horns and the bell rotation read larger."
+        }
+      ]
+    },
+    "kb-clean": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "The backswing and hip drive read well and the rack is recognisable. The arrival into the rack is a slow creep instead of a crisp clean, and the arm passes into the leg at the hike.",
+      "defects": [
+        {
+          "phase": "0.64\u20130.98 (rack arrival)",
+          "view": "all (clip data), threequarter",
+          "issue": "After the hip drive the bell reaches about 1.07 m and then climbs the last 25 cm to the rack over about 0.9 s at under 0.8 m/s, with a dip at 0.72. It reads as a curl into the rack rather than the bell rotating onto the forearm.",
+          "fix": "Complete the rack within about 0.2 s of the float (bell accelerating around the hand to the rack), then hold still in the rack."
+        },
+        {
+          "phase": "0.42 (hike)",
+          "view": "threequarter, left",
+          "issue": "The upper arm and forearm pass 10\u201313 mm into the thigh, exceeding the 10 mm allowlist.",
+          "fix": "Hike higher between the legs with the elbow tucked to the torso so the arm clears the thigh."
+        },
+        {
+          "phase": "0.625",
+          "view": "front",
+          "issue": "The bell covers the hand and pelvis mid-pull, so the handle grip is unreadable.",
+          "fix": "Keep the bell a little further from the body, or rely on the three-quarter view."
+        }
+      ]
+    },
+    "kb-press": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Rack, press path and a locked-out overhead position with a hold are all clear. The free arm and legs are stable. It differentiates from the snatch and the clean.",
+      "defects": [
+        {
+          "phase": "0.42 (lockout arrival)",
+          "view": "all (clip data)",
+          "issue": "The press stops abruptly at lockout (acceleration spike of 10.2 m/s\u00b2).",
+          "fix": "Decelerate over the last 5\u201310 cm of the press."
+        },
+        {
+          "phase": "0.25",
+          "view": "left",
+          "issue": "The bell covers the face as it passes the head in the side view.",
+          "fix": "Keep the forearm vertical with the bell slightly lateral to the head."
+        },
+        {
+          "phase": "0.125\u20130.16",
+          "view": "all (clip data)",
+          "issue": "Repeated small acceleration bumps (about 6 m/s\u00b2) during the press drive make the rise look stepped.",
+          "fix": "Smooth the elbow-angle curve (single ease-in/ease-out)."
+        }
+      ]
+    },
+    "kb-snatch": {
+      "score": 5,
+      "confidence": "medium",
+      "summary": "The hike and overhead lockout are recognisable. The pull-to-lockout transition contains a visible elbow pop and a wide, flailing arm path, which undermines clarity.",
+      "defects": [
+        {
+          "phase": "0.62\u20130.68 (pull to punch)",
+          "view": "threequarter, front",
+          "issue": "The left elbow snaps 26 cm sideways and 24 cm up within about 3 frames (peak 5.4 m/s, acceleration 91 m/s\u00b2), a clear pop. At 0.75 the elbow is flung out at head height with the bell beside or behind the head, reading as a wide arc around the head rather than a close vertical punch.",
+          "fix": "Keep the elbow close and high in front of the torso during the pull. Rotate the hand around the handle, then punch straight up, so the elbow rises in a smooth path with no lateral excursion over about 30 cm."
+        },
+        {
+          "phase": "0.60 (mid-pull)",
+          "view": "all (clip data)",
+          "issue": "The bell stalls at 0.4 m/s at belly height before the pop, which makes the pull look hesitant.",
+          "fix": "Keep the bell's velocity continuous through the pull (the ballistic phase should not decelerate before the punch)."
+        },
+        {
+          "phase": "0.41 (hike)",
+          "view": "threequarter, left",
+          "issue": "The forearm passes 26 mm and the upper arm 17 mm into the thigh, beyond the 25/10 mm allowlist.",
+          "fix": "Tuck the elbow in and hike higher between the thighs."
+        },
+        {
+          "phase": "0.75",
+          "view": "threequarter",
+          "issue": "The bell occludes the face.",
+          "fix": "This resolves with the corrected punch path."
+        }
+      ]
+    },
+    "kb-getup": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "A long (34.8 s) but clearly staged get-up: roll to elbow, post, high bridge, leg sweep, half-kneel, lunge stand, and the reverse. The bell arm stays vertical, and the holds let each stage read. There is a single-frame knee pop, and some poses read awkwardly.",
+      "defects": [
+        {
+          "phase": "0.330 and 0.669 (half-kneel)",
+          "view": "all (clip data)",
+          "issue": "The right knee jumps 6 cm sideways in one frame (1.8 m/s) while every other joint is frozen, a visible pop.",
+          "fix": "Interpolate the knee swivel over 8\u201310 frames, or fix the swivel axis during the half-kneel."
+        },
+        {
+          "phase": "0.25 (post to half-kneel)",
+          "view": "front",
+          "issue": "The torso slumps sideways with the head dropping below shoulder level toward the posting hand, which reads as collapse rather than a controlled lean.",
+          "fix": "Keep the head in line with the torso and reduce the side tilt."
+        },
+        {
+          "phase": "0.0\u20130.19 (floor stages)",
+          "view": "all",
+          "issue": "The framing covers standing height, so during the floor stages the figure occupies a small part of the frame and the elbow and hand contacts are hard to read at native size.",
+          "fix": "Use stage-aware camera framing (zoom or lower target while on the floor), or accept it and rely on the enlarged thumbnails."
+        },
+        {
+          "phase": "0.97",
+          "view": "all (clip data)",
+          "issue": "The lying hold is 2.1 s, noticeably longer than the other holds (about 1 s).",
+          "fix": "Trim it to about 1 s for even pacing."
+        }
+      ]
+    },
+    "kb-pullover": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Standing horns-grip pullover: the straight-arm arc up in front of the face and the elbow bend behind the head read clearly in the three-quarter and side views, with smooth motion and no spikes.",
+      "defects": [
+        {
+          "phase": "0.5 (behind head)",
+          "view": "front, threequarter",
+          "issue": "The key end position (bell behind the head, elbows bent up) looks like an overhead triceps extension, and in the front view the bell is fully hidden behind the head, so differentiation from the halo's rear position and from a triceps extension is weak.",
+          "fix": "Keep more shoulder flexion with the elbows pointing forward and up, and lower the bell less deep behind the head, so the arc remains the main cue. Use the side or three-quarter view for thumbnails."
+        },
+        {
+          "phase": "0.125 / 0.875",
+          "view": "all (clip data)",
+          "issue": "The bell reaches 1.6 m/s during the arc, which is fast for a controlled pullover and reads as swung.",
+          "fix": "Slow the arc to under about 1 m/s with a gentler ease."
+        }
+      ]
+    }
+  }
+}

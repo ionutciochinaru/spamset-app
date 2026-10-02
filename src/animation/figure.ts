@@ -1,7 +1,7 @@
 /**
  * The watch stick figure, built in 3D. Proportions, widths and colours follow
  * tools/animation/render.py: tapered limbs, the orange "dorito" shirt, pants
- * with cuffs, rounded shoes, a featureless head and a sloped kettlebell, all
+ * with cuffs, rounded shoes, a low-poly faceted head and a sloped kettlebell, all
  * with a thin black outline. As on the watch, the side nearer the camera is
  * drawn in ivory and the far side in grey; here that follows the orbit live.
  */
@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { ConvexGeometry } from 'three/examples/jsm/geometries/ConvexGeometry.js';
 
 import { HandModel, type Grip } from './hand-model';
+import { HeadModel } from './head-model';
 import { KettlebellModel } from './kettlebell-model';
 import { Chain, lambert, outlineMaterial, Solid } from './parts';
 import type { Pose, Vec3 } from './types';
@@ -65,7 +66,7 @@ export class Figure {
   private sides = {} as Record<Side, SideParts>;
   private waist: Chain;
   private neck: Chain;
-  private head: Solid;
+  private head: HeadModel;
   private shirt: THREE.Mesh;
   private shirtOutline: THREE.Mesh;
   private bells: KettlebellModel[] = [];
@@ -100,7 +101,7 @@ export class Figure {
     }
     const ink = lambert(FIGURE_COLORS.ink);
     this.neck = new Chain(this.group, [0.048, 0.048], ink, false);
-    this.head = new Solid(this.group, new THREE.SphereGeometry(1, 28, 20), ink, [1.07, 1.055, 1.065]);
+    this.head = new HeadModel(this.group, ink);
 
     const shirtMaterial = lambert(FIGURE_COLORS.accent);
     this.shirt = new THREE.Mesh(new THREE.BufferGeometry(), shirtMaterial);
@@ -139,7 +140,12 @@ export class Figure {
 
       const [shoulder, elbow, wrist, palm] = [j[`shoulder_${side}`], j[`elbow_${side}`], j[`wrist_${side}`], j[`palm_${side}`]];
       parts.arm.update([shoulder, mix(shoulder, elbow, 0.43), elbow, wrist]);
-      parts.hand.update(wrist, palm, this.gripFor(wrist, palm, pose));
+      const lateral = j[`shoulder_${side}`].clone().sub(j.chest).normalize();
+      const state = pose.hands?.[side] ?? 0;
+      parts.hand.update({
+        shoulder, elbow, wrist, palm, lateral, left: sideways, anterior: forward, state,
+        grip: state === 1 ? this.gripFor(side, pose) : undefined,
+      });
 
       const heel = j[`heel_${side}`];
       const along = j[`toe_${side}`].clone().sub(heel).normalize();
@@ -151,12 +157,12 @@ export class Figure {
     this.updateShirt(j, offset);
     this.neck.update([mix(j.chest, j.neck, 0.66), mix(j.neck, j.head, 0.36)]);
 
-    // Featureless head: taller than wide, facing the authored gaze.
+    // Faceted head facing the authored gaze.
     const headUp = j.head.clone().sub(j.neck).normalize();
     const headFront = j.face.clone().sub(j.head);
     headFront.addScaledVector(headUp, -headFront.dot(headUp)).normalize();
     const headSide = new THREE.Vector3().crossVectors(headUp, headFront);
-    this.head.place(j.head.clone().addScaledVector(headFront, 0.004), headSide, headUp, headFront, [0.08, 0.108, 0.091]);
+    this.head.place(j.head.clone().addScaledVector(headFront, -0.004), headSide, headUp, headFront);
 
     this.bells.forEach((model, i) => {
       const bell = pose.bells[i];
@@ -171,27 +177,37 @@ export class Figure {
     });
   }
 
-  /** A hand grips when its wrist or palm sits on a handle or horn segment. */
-  private gripFor(wrist: THREE.Vector3, palm: THREE.Vector3, pose: Pose): Grip | undefined {
-    let best: Grip | undefined;
-    let bestDistance = 0.035;
+  /** The bar this hand holds (exported grip point) and its direction. */
+  private gripFor(side: Side, pose: Pose): Grip | undefined {
     for (const bell of pose.bells) {
+      const held = bell.grips?.[side];
+      if (!held) continue;
+      const point = v(held);
       const [h0, h1] = bell.handle.map(v);
-      const segments: [THREE.Vector3, THREE.Vector3][] = [[h0, h1]];
-      if (bell.horns) segments.push([v(bell.horns[0]), h0], [v(bell.horns[1]), h1]);
-      for (const [a, b] of segments) {
-        const line = new THREE.Line3(a, b);
-        for (const joint of [wrist, palm]) {
-          const point = line.closestPointToPoint(joint, true, new THREE.Vector3());
-          const distance = point.distanceTo(joint);
-          if (distance < bestDistance) {
-            bestDistance = distance;
-            best = { point, axis: b.clone().sub(a).normalize() };
-          }
+      const bars: { a: THREE.Vector3; b: THREE.Vector3; horn: boolean }[] = [{ a: h0, b: h1, horn: false }];
+      if (bell.horns) bars.push({ a: v(bell.horns[0]), b: h0, horn: true }, { a: v(bell.horns[1]), b: h1, horn: true });
+      let best = bars[0];
+      let bestDistance = Infinity;
+      for (const bar of bars) {
+        const distance = new THREE.Line3(bar.a, bar.b).closestPointToPoint(point, true, new THREE.Vector3()).distanceTo(point);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = bar;
         }
       }
+      const axis = best.b.clone().sub(best.a).normalize();
+      const center = v(bell.center);
+      if (best.horn) {
+        // Hands on the horns: palms toward the bell, thumbs up toward the handle.
+        return { point, axis, horn: true, twoHand: true, center, thumb: 1 };
+      }
+      // Overhand on the handle; thumbs toward the other hand (the handle's middle).
+      const middle = h0.clone().add(h1).multiplyScalar(0.5);
+      const thumb = middle.clone().sub(point).dot(axis) >= 0 ? 1 : -1;
+      const twoHand = Object.keys(bell.grips ?? {}).length === 2;
+      return { point, axis, horn: false, twoHand, center, thumb };
     }
-    return best;
+    return undefined;
   }
 
   private updateShirt(j: Record<string, THREE.Vector3>, offset: (p: THREE.Vector3, side?: number, along?: number, front?: number) => THREE.Vector3) {

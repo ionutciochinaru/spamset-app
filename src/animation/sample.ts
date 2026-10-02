@@ -33,12 +33,22 @@ export function samplePose(clip: Clip, seconds: number, speed = 1): Pose {
       horns: bell.horns && next.horns
         ? ([lerp3(bell.horns[0], next.horns[0], t), lerp3(bell.horns[1], next.horns[1], t)] as [Vec3, Vec3])
         : undefined,
+      grips: bell.g
+        ? Object.fromEntries(
+            Object.entries(bell.g).map(([s, g]) => [s, lerp3(g, next.g?.[s as 'l' | 'r'] ?? g, t)]),
+          )
+        : undefined,
     };
   });
-  return { joints, bells };
+  // Hand states are discrete: take the nearer sample (no blending, no flicker).
+  const hs = (t < 0.5 ? a : b).hs;
+  return { joints, bells, hands: hs ? { l: hs[0], r: hs[1] } : undefined };
 }
 
 /** Bounding box over every frame, used to frame the camera once per clip. */
+/** Smallest framed size (m): a standing figure plus headroom. */
+const MIN_FRAME = 1.9;
+
 export function clipBounds(clip: Clip): { center: Vec3; size: number } {
   const min = [Infinity, 0, Infinity];
   const max = [-Infinity, -Infinity, -Infinity];
@@ -54,6 +64,10 @@ export function clipBounds(clip: Clip): { center: Vec3; size: number } {
   }
   // Include the head's top and the floor.
   max[1] += 0.12;
-  const size = Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
+  const crop = clip.view.cropBelow;
+  if (crop !== undefined) min[1] = Math.max(min[1], crop);
+  // Never frame tighter than a standing adult (unless the drill is framed as upper body only),
+  // so every exercise shows at a consistent scale.
+  const size = Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2], crop === undefined ? MIN_FRAME : 0);
   return { center: [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2], size };
 }

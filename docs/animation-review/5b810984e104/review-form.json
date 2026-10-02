@@ -1,0 +1,153 @@
+{
+  "role": "form",
+  "revision": "5b810984e104",
+  "reviewedAt": "2026-09-30T12:00:00Z",
+  "method": "Independent exercise-form review of the frozen evidence only. For all 15 exercises I inspected the contact sheets (4 views x 8 phases, 16 for kb-getup) and enlarged native 480x480 frames at key phases (start, peak, bottom/lockout, transitions). I parsed clips/<id>.json to measure joint and bell positions, knee/elbow/trunk angles, bell height relative to shoulders/hips, grip/handle orientation, foot contacts and phase timing from the frame index and duration. I read geometry.json for validator results and limb/bell clearances. Cues and contracts come from src/core/exercises.ts and tools/animation/contracts.json; the rubric and source index come from skills/exercise-animation/references. I did not watch real-time playback, so tempo, smoothness and loop feel are inferred from sampled clip data only; that part of the review is partial. I ran no Python generators. I did not open earlier reviews. Technique judgments rely on established coaching conventions (ACE/NASM/StrongFirst-style hinge, rack, press, snatch and Turkish get-up standards) as indexed in form-contracts.md; I did not run new web lookups in this pass, so source confidence is medium where the contract says only 'production choice' or 'user reference video'. Coordinates are in mm: x is lateral (+ = figure's left), y is up, z is forward.",
+  "exercises": {
+    "kb-swing": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Clearly a two-hand hardstyle swing. The hinge backswing has the forearms against the inner thighs and the bell behind the heels (trunk ~60 deg from vertical, knees ~143 deg). The hip snap reaches a tall, vertical plank with knees ~173 deg. The float has straight arms and the bell at about chest height (bell centre 1217 vs shoulder 1357; wrists ~110 mm below the shoulders). The lifter waits for the bell before re-hinging (trunk stays vertical until the bell drops to about hip height at phase ~0.77). The 1.43 s rep is realistic. Feet stay planted, the grip stays shared, and there is no squat or front-raise pattern. Only minor refinements remain.",
+      "defects": [
+        {"phase": "0.0 (backswing)", "view": "left/right", "issue": "The hike sits slightly low. The bell centre is at knee height (y 512 vs knee 510) and the wrists sit at lower-thigh level (y 645), so the cue 'hike the bell back high between the thighs' is only partly shown.", "fix": "Raise the backswing so the wrists contact the upper inner thigh (wrist y ~720-760, about 150 mm below the hip joint) and the bell centre sits above the knees (y ~580-620), still behind the heel line. Keep the trunk at ~55-60 deg."},
+        {"phase": "0.40-0.60 (float)", "view": "left", "issue": "The float is a well-held horizontal-ish arm but reads slightly 'lifted'. The elbows soften to ~164 deg at the apex, which can suggest the arms are raising the bell.", "fix": "Keep the elbows at >=170 deg through the float so the arms read as 'guides' and the bell's height comes visibly from the hip snap."}
+      ]
+    },
+    "kb-deadlift": {
+      "score": 7,
+      "confidence": "high",
+      "summary": "The hinge pattern, bell between the feet on the floor, brief floor reset, standing lockout and hinged lowering are all present and timed well (3.6 s with pauses at floor and top). Two things weaken the lockout and setup: the arms do not hang, and the elbows are bent at the floor.",
+      "defects": [
+        {"phase": "0.44-0.61 (standing lockout)", "view": "left/right", "issue": "At lockout the arms angle ~24 deg forward and the hands and bell sit ~200 mm in front of the hip line (wrist z 200 vs pelvis z -5). This reads like holding the bell out in a partial front raise rather than a hanging lockout close to the thighs.", "fix": "At lockout let the arms hang vertically from the shoulders. Put the wrists at z ~= shoulder z + 40-60 mm and the handle just in front of the groin/upper thighs, with the bell body between the thighs (bell centre z ~60-100)."},
+        {"phase": "0.0-0.11 (floor setup)", "view": "left/threequarter", "issue": "The elbows are bent (~148 deg) while gripping the bell on the floor. That contradicts 'long arms' in a deadlift setup and suggests pulling with the arms.", "fix": "Lengthen the arms to >=170 deg at the floor by lowering the hips slightly or deepening the hinge (trunk ~70-75 deg, knees ~105-110 deg) so the handle is reached with straight arms."},
+        {"phase": "0.17-0.44 (ascent)", "view": "left", "issue": "The bell path drifts forward ~130 mm (z 70 at the floor to z 200 at the top) instead of rising roughly vertically between the feet.", "fix": "Keep the bell centre within about +/-40 mm of its floor z (~70) through the lift so the path is vertical and close to the legs."}
+      ]
+    },
+    "goblet-squat": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "A credible goblet squat. The bell is held upright by the horns at the chest and the elbows point down. The bottom reaches roughly parallel (hip joint just above knee height, knees ~69 deg). The knees track over the toes (knee lateral position aligned with the foot direction), the elbows sit just inside the knees, the torso stays fairly tall (~30 deg lean), the feet stay flat, and there is a short bottom hold. The 3.4 s rep is controlled. Minor presentation issues remain.",
+      "defects": [
+        {"phase": "0.0 and 0.9 (standing)", "view": "left", "issue": "The bell floats in front of the sternum with a visible gap. The hands are at chin height, which reads more like a curl-top hold than 'close to the chest'.", "fix": "Bring the bell body against the sternum (bell centre z ~140-160 instead of 223). Lower the hands so the horns are at mid-sternum (wrist y ~1250-1300)."},
+        {"phase": "0.47-0.55 (bottom)", "view": "left/right", "issue": "The trunk lean increases to ~30 deg and the head follows forward. This is acceptable, but a 'tall chest' cue would show better with a slightly more upright torso.", "fix": "Cap the trunk lean at ~20-25 deg at the bottom by letting the knees travel a little further forward (knee z +20-30 mm). Keep the heels down."}
+      ]
+    },
+    "kb-reverse-lunge": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Reads well as an alternating goblet reverse lunge. The rear foot clearly lifts and steps back ~600 mm while the front sole stays fixed. Feet stay in their own lanes (hip-width, no tightrope). The back knee lowers under the hip to just above the floor, and the rise and return happen before switching legs. Both sides are shown, the goblet hold is constant, and there is a short bottom pause. The 3.7 s per rep is well controlled.",
+      "defects": [
+        {"phase": "0.23-0.32 and 0.72-0.81 (bottom)", "view": "left/right", "issue": "The front shin angles ~31 deg forward (knee ~220 mm ahead of the ankle, past the toes). This is acceptable, but it conflicts with the more vertical front shin usually shown for a reverse lunge. The trunk also leans ~15 deg.", "fix": "Lengthen the step by ~60-80 mm or shift the pelvis back ~40 mm so the front knee sits over the midfoot/toes (knee z ~120-150). Keep the trunk <=10-12 deg from vertical."},
+        {"phase": "0.00-0.09", "view": "front", "issue": "The pelvis shifts ~100 mm laterally toward the stance leg before the step. This is plausible, but it is large enough to read as a sway.", "fix": "Reduce the pre-step lateral pelvis shift to ~40-60 mm."}
+      ]
+    },
+    "kb-side-lunge": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "A clear wide-stance goblet lateral lunge. Both feet stay planted, the working knee bends to ~72 deg and tracks over its foot, the hips sit back (trunk ~32 deg), and the other leg stays long (~170 deg). The bell stays at the chest and both sides alternate. The main weakness is that the centre 'return' is only a pass-through.",
+      "defects": [
+        {"phase": "0.0 / 0.52 (centre)", "view": "front", "issue": "No pause at centre. The body flows straight from one side to the other with both knees still bent (~152-164 deg), so the per-rep 'return to centre' boundary is weak.", "fix": "Add a 0.3-0.4 s centre hold with the pelvis at x=0, both knees at ~168-170 deg and the trunk upright, before shifting to the next side."},
+        {"phase": "0.22-0.30 / 0.74-0.82 (bottom)", "view": "front/threequarter", "issue": "The bell drifts with the pelvis toward the working leg (bell x up to +/-345). This is fine, but combined with the 32 deg hinge the bell ends up over the working knee, which blurs 'chest up'.", "fix": "Keep the trunk lean at ~20-25 deg and hold the bell at mid-sternum (bell centre ~100 mm below the shoulders) so the chest stays visibly up."}
+      ]
+    },
+    "kb-upright-row": {
+      "score": 6,
+      "confidence": "high",
+      "summary": "The lift-and-lower is present, the torso stays still, and the elbows stay just below shoulder height at the top. However, the elbow path makes it read as a bent-arm front raise rather than an upright row, and the bell does not stay close.",
+      "defects": [
+        {"phase": "0.40-0.60 (top)", "view": "left/threequarter", "issue": "The elbows travel mostly forward instead of up and out. At the top the elbow is ~260 mm in front of the shoulder and only ~130 mm lateral (elbow (323,1348,275) vs shoulder (190,1381,14)), and the upper arm points forward horizontally. In an upright row the elbows lead up and out to the sides, above the hands.", "fix": "At the top place the elbows ~250-300 mm lateral of the shoulder and within ~50-80 mm forward of the shoulder line (roughly the scapular plane), at or just below shoulder height. Keep the forearms angled down-and-in to the hands so the elbows sit ~80-120 mm higher than the wrists."},
+        {"phase": "0.33-0.67", "view": "left", "issue": "The bell travels ~100+ mm in front of the torso instead of close to the body (cue: 'keeping the bell close').", "fix": "Keep the handle within ~40-60 mm of the torso surface throughout. Wrists at z ~90-110 at chest height, with the bell body brushing the lower sternum/abdomen."},
+        {"phase": "0.0-0.13 (start)", "view": "left", "issue": "The arms hang ~20 deg forward with the hands ~190 mm in front of the hips, so the bell hangs away from the thighs instead of 'in front of the thighs'.", "fix": "Start with the arms vertical and the handle at the upper thighs (wrist z ~70-100), the bell body just touching the thighs."},
+        {"phase": "top", "view": "front", "issue": "The hands finish at about upper-sternum/clavicle height (wrist y 1285, shoulder 1381), above the contract's 'lower chest'.", "fix": "Stop the hands at lower-to-mid chest (wrist y ~1180-1230) or change the contract. Keep the elbows below the shoulders."}
+      ]
+    },
+    "kb-bent-row": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "It matches the chosen variant: left-arm single-arm row, right leg forward, right hand braced on the front thigh, flat back, square shoulders, long arm at the bottom, and the elbow driving back until the bell reaches hip level (bell at hip level along the trunk axis at the top). There are brief holds at top and bottom, and the timing is good. The hinge is too upright for 'toward horizontal' and the stance is lunge-length.",
+      "defects": [
+        {"phase": "all", "view": "left/right", "issue": "The trunk is only ~55 deg from vertical (~35 deg above horizontal). The cue says 'hinge toward horizontal'. At this angle the row pulls partly upward and resembles a high-incline row.", "fix": "Deepen the hinge to a trunk angle of ~65-75 deg from vertical (15-25 deg above horizontal) by sending the hips back ~80-100 mm and lowering the chest. Keep the right hand on the thigh above the knee and the neck in line."},
+        {"phase": "all", "view": "threequarter/left", "issue": "The stance is very long (front and rear ankles ~640 mm apart), so it reads as a lunge stance rather than a staggered hinge stance.", "fix": "Shorten the stagger to ~300-400 mm heel-to-heel with the rear foot about hip-width. Keep both soles flat and the rear knee soft (~160 deg)."},
+        {"phase": "0.44-0.53 (top)", "view": "front", "issue": "The elbow flares slightly (~50 mm outboard of the shoulder).", "fix": "Keep the elbow path close to the ribs (elbow x <= shoulder x + 20 mm)."}
+      ]
+    },
+    "kb-side-bend": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "A pure lateral bend with no forward flexion (chest z stays within 6 mm of the pelvis). The hips stay level, the right hand stays on the hip, the loaded arm hangs straight, and the bell slides down the outer thigh to about knee level and returns to tall with a short hold at the bottom. It clearly teaches the exercise. The main refinement is range.",
+      "defects": [
+        {"phase": "0.39-0.55 (bottom)", "view": "front", "issue": "The bend is ~40 deg (pelvis-to-chest), which is at the upper end of normal trunk side-bend range. The bend also reads as the whole torso tipping rigidly from the pelvis, with the head tipped further. That can teach over-reaching.", "fix": "Reduce the peak lateral bend to ~25-30 deg so the bell reaches just above the knee (wrist y ~620-650). Keep the head in line with the trunk rather than adding neck side-bend."},
+        {"phase": "0.0 (tall)", "view": "front", "issue": "The loaded arm is angled ~12 deg away from the body because of the bell width, so the bell is not 'resting against the outer thigh' at the start.", "fix": "Hang the arm vertically (wrist x ~= shoulder x + 30 mm) and rotate the handle so the bell body sits against the lateral thigh."}
+      ]
+    },
+    "kb-curl": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "A clear two-hand horns curl. The bell is upright with the hands on the horns and starts resting against the front of the thighs. The elbows stay at the sides, just in front of the hips, without drifting forward. The curl finishes with the bell in front of the chest, with a top hold and a slow lower (3.6 s). There is no hip swing (pelvis drift <20 mm). The 'thumbs up' grip cannot be confirmed at native size.",
+      "defects": [
+        {"phase": "0.37-0.52 (top)", "view": "left", "issue": "The bell body sits ~100 mm in front of the sternum rather than finishing 'to the chest'.", "fix": "Finish with the bell centre at z ~150-170 (bell body near the chest) by flexing the elbows to ~40-45 deg while keeping the upper arms vertical."},
+        {"phase": "all", "view": "front/threequarter", "issue": "At display size the grip reads as a generic two-hand hold. The 'thumbs up' horn grip is not legible.", "fix": "Orient the hands with the palms facing medially on the horns and the thumbs up along the horns so the neutral grip is visible in the front and three-quarter views."}
+      ]
+    },
+    "kb-halo": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "It matches the detailed contract. The bell is inverted (base up) at the front reset, rotates base-rearward at the sides and base-down behind the head with the elbows raised, circles closely around the head (~0 to 90 mm gap), and reverses direction on the second circle, with brief front resets. The torso stays upright and the feet stay planted. Remaining issues are small body sway and a timing mismatch with the written contract.",
+      "defects": [
+        {"phase": "0.19-0.25 and 0.69-0.75 (rear)", "view": "left/right", "issue": "The whole body shifts forward ~45 mm as the bell passes behind the head (pelvis z up to +47). This is a small counterbalance sway against the cue 'torso does not sway'.", "fix": "Hold the pelvis and chest within +/-15 mm in z through the rear pass. Absorb the balance with the ankles, or accept a <=15 mm shift."},
+        {"phase": "timing", "view": "n/a", "issue": "The export is 9.0 s / 270 frames at 30 fps, but contracts.json specifies 128 frames at 16 fps for an 8-second loop.", "fix": "Update the contract timing to the exported 9 s loop, or retime the export to 8 s. Keep the brief front resets."}
+      ]
+    },
+    "kb-clean": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "It has the right sequence for a single-arm clean: rack, drop into a one-arm hike (straight arm, bell behind the heels, trunk ~63 deg), hip snap to vertical, then the elbow pulls back and the hand comes around into a rack with the elbow tucked, followed by a rack hold (2.6 s). Two things limit it as a model: the rack position and a somewhat wide path before the elbow pulls in.",
+      "defects": [
+        {"phase": "0.0-0.15 and 0.82-1.0 (rack)", "view": "front/threequarter", "issue": "The bell sits outboard of the shoulder (bell centre x 231 vs shoulder x 183, so it protrudes ~150 mm beyond the torso outline). It reads as hanging off the side of the forearm rather than nested between the forearm, biceps and chest.", "fix": "Nest the bell so its centre sits roughly in front of the shoulder joint (x ~= shoulder x - 20 to +20, z ~= shoulder z + 150). The handle runs diagonally across the palm, the forearm is vertical, the wrist is straight, and the elbow stays against the ribs."},
+        {"phase": "0.56-0.64 (after hip snap)", "view": "left/right", "issue": "The arm stays straight until the torso is vertical and the bell reaches ~300 mm in front of the hips at waist height. This looks like the start of a swing and invites the bell to flop onto the forearm.", "fix": "Start the elbow flexion as the hips finish (trunk ~10-15 deg). Keep the bell within ~150 mm of the body (bell z <= 180) as the elbow pulls back past the ribs and the hand spears through."},
+        {"phase": "all", "view": "front", "issue": "The free right arm hangs abducted ~15 deg away from the body.", "fix": "Let the free arm hang relaxed at the side (wrist x ~ -220) or follow the body naturally."}
+      ]
+    },
+    "kb-press": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "A good strict single-arm press. The start is a tucked rack, the forearm stays vertical under the bell through the sticking zone (the elbow and wrist line up in x/z at mid-press), the lockout is straight (~173 deg) with the hand medial of the shoulder and the biceps near the ear, and the bell rests on the back of the forearm at the top. The pelvis and legs do not drive. The tempo is sensible (~1.4 s up, 0.6 s hold, ~1.8 s down). The rack defect is shared with the clean.",
+      "defects": [
+        {"phase": "0.0-0.09 and 0.95 (rack)", "view": "front", "issue": "Same rack issue as the clean: the bell centre sits ~65 mm outboard of the shoulder and protrudes beyond the torso outline.", "fix": "Nest the bell in front of the shoulder with the forearm vertical, the wrist straight and the elbow on the ribs (see the kb-clean fix)."},
+        {"phase": "0.18-0.32 (drive)", "view": "front", "issue": "The elbow travels ~200 mm lateral of the shoulder early in the press, a fairly wide path. It is acceptable, but a slightly more forward/scapular-plane path is usually cued.", "fix": "Keep the elbow ~100-150 mm lateral and ~150 mm forward of the shoulder at mid-press, then let it open as the bell passes the face."},
+        {"phase": "all", "view": "front", "issue": "The free arm hangs abducted ~15 deg.", "fix": "Relax the free arm at the side or make a light fist by the hip."}
+      ]
+    },
+    "kb-snatch": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "The core identity is present: lockout with the bell behind the forearm and the biceps by the ear, drop into a straight-arm backswing (trunk ~63 deg), hip drive, high pull, punch-through, and return to lockout with a hold (2.8 s). Two paths weaken it as a model: the drop and the high pull.",
+      "defects": [
+        {"phase": "0.10-0.25 (drop)", "view": "left/right", "issue": "From lockout the straight arm swings forward in a wide pendulum to shoulder height in front (wrist z ~490 at shoulder level). It reads like a reversed swing float rather than the bell turning over and dropping close to the body into the backswing.", "fix": "On the drop, turn the palm in and let the bell fall in a tighter path. Keep the wrist within ~250 mm in front of the shoulder while descending from overhead to chest height (a slight elbow bend is allowed), then let the arm lengthen into the hike with the forearms meeting the thighs."},
+        {"phase": "0.68-0.79 (high pull)", "view": "front/threequarter", "issue": "The elbow flares ~220 mm lateral and rises above the shoulder (elbow y ~1515-1530 vs shoulder 1331) with the hand beside the face. At native size it reads like a one-arm upright row or a hand-behind-head pose rather than a close high pull and punch-through.", "fix": "Keep the high-pull elbow ~80-150 mm lateral, pulling up and back near shoulder height (not above). Start the punch-through as the hand passes the chin (wrist y ~1500) so the hand spears up quickly beside the head."},
+        {"phase": "all", "view": "front", "issue": "The free arm hangs abducted ~15 deg.", "fix": "Relax the free arm at the side, or let it counter-swing slightly as many coaches show."}
+      ]
+    },
+    "kb-getup": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "The floor half is strong: supine with the bell pressed and the bell-side knee bent, roll to the right elbow, post on the hand, a real high bridge (pelvis ~350 mm), a leg sweep with the knee landing and the shin pointing back, a windmill to an upright half-kneel, and a mirrored descent. The bell arm stays locked and vertical throughout. The stand-up does not follow the contract and would mislead: after partly rising from the half-kneel, the lifter drops into a deep single-leg crouch on the front leg, steps the back foot in from that crouch, then stands up from a squat.",
+      "defects": [
+        {"phase": "0.36-0.47 (stand-up) and mirrored 0.53-0.64 (descent)", "view": "left/front", "issue": "From the half-kneel the pelvis rises only to ~740 mm (rear knee ~400 mm off the floor), then moves forward and DROPS to ~620 mm with the front knee at ~79 deg. The rear foot slides and steps forward while the body is crouched on one bent leg, and the lifter then stands from a feet-together squat. The contract says to stand up out of the lunge and then step the back foot up beside the front foot and stand tall. This sequence teaches a loaded single-leg crouch under an overhead bell.", "fix": "Stand straight up out of the lunge: drive through the front foot until the front knee is ~165-170 deg and the pelvis is at ~900-940 mm, with the rear leg long on its forefoot. Then step the rear foot forward beside the front foot at that height (pelvis stays >=880 mm), and finish tall. Reverse exactly on the way down: step back into a tall lunge, then lower the rear knee to the floor."},
+        {"phase": "0.40-0.45", "view": "front", "issue": "During the crouch the free right hand reaches down toward the floor in front of the knee, which looks like an extra support or balance grab that is not part of the get-up.", "fix": "Once the hand leaves the floor at the half-kneel, keep the free arm relaxed at the side or slightly out for balance, above knee height."},
+        {"phase": "0.50 (standing)", "view": "all", "issue": "The standing top is held only ~0.5 s of a 36 s rep, so the 'stand tall' goal is under-emphasised compared with the floor stages.", "fix": "Hold the standing position ~1.0-1.5 s with the bell arm vertical and the feet together."},
+        {"phase": "all", "view": "threequarter", "issue": "The cue 'eyes on the bell' is not readable. The head orientation looks mostly neutral or forward.", "fix": "Tilt the face toward the bell during the floor stages (face vector aimed at the bell) until the half-kneel, then look forward."}
+      ]
+    },
+    "kb-pullover": {
+      "score": 8,
+      "confidence": "low",
+      "summary": "It follows the stated contract closely. The bell starts at the hips on long arms with a horns grip, arcs up in front of the face on straight arms to overhead, the elbows bend with the upper arms vertical to lower the bell behind the head (with a hold), then the arms extend and arc back down. The torso stays upright with no visible lumbar arch. Confidence is low because the only cited source is a user reference video and a standing pullover is an uncommon variant, so exercise identity cannot be checked against a primary coaching source.",
+      "defects": [
+        {"phase": "0.11-0.20 and 0.74-0.83 (front arc at shoulder height)", "view": "left/right", "issue": "The hips shift back ~50 mm (pelvis z -47) to counterbalance the bell at arm's length in front. This is a small hinge-like sway against 'ribs down, no low-back arch'.", "fix": "Hold the pelvis within +/-15 mm of neutral in z through the arc. Use a slightly slower arc if a counterbalance is needed."},
+        {"phase": "0.40-0.55 (behind head)", "view": "front", "issue": "The elbows flare slightly (~35 mm outside shoulder width). The 'elbows toward the ceiling' position could be tighter.", "fix": "Keep the elbows at about shoulder width (elbow x ~= shoulder x) and pointing up during the behind-head lowering."},
+        {"phase": "source", "view": "n/a", "issue": "No primary coaching source is indexed for this variant, so it cannot be scored as an exceptional reference.", "fix": "Add a primary source (ACE/NASM or a certified kettlebell organisation) for the standing pullover or overhead extension, or relabel the exercise to match a source-backed name."}
+      ]
+    }
+  }
+}

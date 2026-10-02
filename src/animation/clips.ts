@@ -16,4 +16,5 @@ export const clips: Record<string, Clip> = {
   'kb-press': require('@/assets/animations/kb-press.json'),
   'kb-snatch': require('@/assets/animations/kb-snatch.json'),
   'kb-getup': require('@/assets/animations/kb-getup.json'),
+  'kb-pullover': require('@/assets/animations/kb-pullover.json'),
 };

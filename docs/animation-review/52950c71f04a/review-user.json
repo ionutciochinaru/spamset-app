@@ -1,0 +1,96 @@
+{
+  "revision": "52950c71f04a",
+  "exportedAt": "2026-09-30T10:36:34.579Z",
+  "ratings": {
+    "kb-swing": {
+      "score": 9,
+      "note": "",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:29:46.681Z"
+    },
+    "kb-deadlift": {
+      "score": 9,
+      "note": "",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:30:03.078Z"
+    },
+    "goblet-squat": {
+      "score": 9,
+      "note": "",
+      "revision": "ff146f3a9d79",
+      "updatedAt": "2026-09-29T15:31:47.663Z"
+    },
+    "kb-reverse-lunge": {
+      "score": 9,
+      "note": "",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:30:23.041Z"
+    },
+    "kb-side-lunge": {
+      "score": 9,
+      "note": "",
+      "revision": "ff146f3a9d79",
+      "updatedAt": "2026-09-29T15:32:36.701Z"
+    },
+    "kb-upright-row": {
+      "score": 8,
+      "note": "it looks like the hands are in a supinated position, the should be over the handle",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:31:48.155Z"
+    },
+    "kb-bent-row": {
+      "score": 9,
+      "note": "",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:31:55.319Z"
+    },
+    "kb-side-bend": {
+      "score": 9,
+      "note": "",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:32:04.449Z"
+    },
+    "kb-curl": {
+      "score": 9,
+      "note": "",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:32:16.062Z"
+    },
+    "kb-halo": {
+      "score": 9,
+      "note": "",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:32:40.672Z"
+    },
+    "kb-clean": {
+      "score": 8,
+      "note": "",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:32:53.353Z"
+    },
+    "kb-press": {
+      "score": 8,
+      "note": "",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:33:06.635Z"
+    },
+    "kb-snatch": {
+      "score": 8,
+      "note": "",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:33:23.175Z"
+    },
+    "kb-getup": {
+      "score": 7,
+      "note": "the problem is at sec 5, the leg bends in an unnatural way and goes inside the torso",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:34:49.572Z"
+    },
+    "kb-pullover": {
+      "score": 7,
+      "note": "start is wrong, it should start with the hands to the side of the handle with the kettle bell upside down and the chest area, then it goes over the head with the bend in the arms",
+      "revision": "52950c71f04a",
+      "updatedAt": "2026-09-30T10:36:31.459Z"
+    }
+  }
+}

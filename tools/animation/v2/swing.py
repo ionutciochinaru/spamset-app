@@ -19,36 +19,39 @@ try:
     from ..rig import (Pose, SIDES, ANKLE_HEIGHT, SHOULDER_HALF, UPPER_ARM, FOREARM,
                        side_sign, add, sub, mul, unit, clamp, smooth)
     from .body import centre_of_mass, BODY_MASS, G
+    from .common import tall, look_ahead
 except ImportError:
     from rig import (Pose, SIDES, ANKLE_HEIGHT, SHOULDER_HALF, UPPER_ARM, FOREARM,
                      side_sign, add, sub, mul, unit, clamp, smooth)
     from v2.body import centre_of_mass, BODY_MASS, G
+    from v2.common import tall, look_ahead
 
 # A 16 kg cast-iron bell (dimensions from common manufacturer specs).
 BELL = {'mass': 16., 'radius': .105, 'handle_to_center': .165, 'handle_half': .095}
 GRIP_HALF = .045              # hands side by side on the handle
 STANCE = .25                  # ankle distance from the midline
 TOE_OUT = radians(14)
-MAX_REACH = UPPER_ARM + FOREARM - .006
+MAX_REACH = UPPER_ARM + FOREARM - .0012     # elbow ~173 deg: a locked-out arm
 MID_FOOT_X = .04              # heel -0.075 .. toe +0.16 around the ankle
 ARM_MASS = 2 * (.0271 + .0162 + .0061) * BODY_MASS
 
 THETA_FLOAT = radians(78)     # target float: arms a little below horizontal
-HINGE_TRIGGER = radians(35)   # arms reach the body: lats connect, hips go back
+HINGE_TRIGGER = radians(30)   # arms reach the body: lats connect, hips go back
 HINGE_OMEGA = 9.
 SNAP_OMEGA = 14.  # unused by the min-jerk hip planner; kept for the simulate() signature
-HINGE_TIME = .45
+HINGE_TIME = .36
 SNAP_TIME = .46
 CATCH_TIME = .1
 LAT_STIFFNESS = 60.
 LAT_DAMPING = 8.
-BACK_STOP = radians(-38)      # forearms meet the inner thighs: the hike ends here
+BACK_STOP = radians(-52)      # forearms meet the inner thighs: the hike ends here
 DT = 1 / 1000
+TALL = tall(STANCE, .14)           # standing and at the float: knees ~166 degrees
 
 
 def pelvis_for(h, dx):
-    """Hinge h in [0, 1]: hips back and slightly down, trunk forward. Knees soften, not squat."""
-    return (-.25 * h + dx, 0., .915 - .075 * h), radians(68) * h
+    """Hinge h in [0, 1]: hips well back and only slightly down, trunk forward (a hinge, not a squat)."""
+    return (-.32 * h + dx, 0., TALL - (TALL - .88) * h), radians(68) * h
 
 
 def foot(p, s):
@@ -96,6 +99,7 @@ def build(name, phase, h, theta, phi, soft, pack, dx):
     p.props.append({'type': 'kettlebell', 'center': list(add(grip, mul(bell_dir, BELL['handle_to_center']))),
                     'handle': [list(x) for x in handle], 'radius': BELL['radius'], 'mass': BELL['mass'],
                     'grips': {s: list(grips[s]) for s in SIDES}})
+    look_ahead(p)
     p.view = {'azimuth': 62, 'elevation': 10}
     return p, pivot, grip, length
 
@@ -176,7 +180,7 @@ def simulate(snap_omega, seconds=10., record=False, adapt=True):
     while t < seconds:
         # Elbows soften as the bell goes weightless; shoulders pack under load (smoothed, 80 ms).
         k = min(1., DT / .08)
-        soft += (.025 * clamp(1 - tension_ratio, 0., 1.) - soft) * k
+        soft += (.006 * clamp(1 - tension_ratio, 0., 1.) - soft) * k
         pack += (radians(6) * clamp(tension_ratio - .6, 0., 1.4) - pack) * k
         # The pendulum's pivot comes from the hinge only; balance is applied afterwards.
         dx = 0.

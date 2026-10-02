@@ -302,5 +302,9 @@
   "kb-getup": {
     "frames": 200,
     "fps": 10
+  },
+  "kb-pullover": {
+    "frames": 36,
+    "fps": 10
   }
 }

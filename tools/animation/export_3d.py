@@ -29,7 +29,8 @@ CONTRACTS = json.loads((Path(__file__).parent / 'contracts.json').read_text())
 
 EXERCISES = ['kb-swing', 'kb-deadlift', 'goblet-squat', 'kb-reverse-lunge',
              'kb-side-lunge', 'kb-upright-row', 'kb-bent-row', 'kb-side-bend',
-             'kb-curl', 'kb-halo', 'kb-clean', 'kb-press', 'kb-snatch', 'kb-getup']
+             'kb-curl', 'kb-halo', 'kb-clean', 'kb-press', 'kb-snatch', 'kb-getup',
+             'kb-pullover']
 JOINTS = ['pelvis', 'chest', 'neck', 'head', 'face',
           *[f'{name}_{side}' for side in ('l', 'r')
             for name in ('hip', 'knee', 'ankle', 'heel', 'toe',
@@ -63,9 +64,15 @@ def export(exercise):
                           'h': [to_three(p) for p in prop['handle']],
                           'r': round(prop.get('radius', .10) * 1000),
                           **({'horns': [to_three(h[0]) for h in prop['horns']]}
-                             if 'horns' in prop else {})})
+                             if 'horns' in prop else {}),
+                          # Where each gripping hand holds this bell (the renderer wraps it there).
+                          **({'g': {s: to_three(g) for s, g in prop['grips'].items()}}
+                             if prop.get('grips') else {})})
+        # Hand state per side, left then right: 0 free, 1 gripping a bell, 2 flat on the floor.
+        gripping = {s for prop in pose['props'] for s in prop.get('grips', {})}
+        hands = [1 if s in gripping else 2 if 'palm_' + s in pose['contacts'] else 0 for s in ('l', 'r')]
         frames.append({'j': [coord for name in JOINTS for coord in to_three(joints[name])],
-                       'b': bells})
+                       'b': bells, 'hs': hands})
     if errors:
         raise ValueError(f'{exercise}: {errors} IK errors; fix the motion before export')
     if exercise in V2_MOTIONS:
@@ -73,7 +80,8 @@ def export(exercise):
         if failures:
             raise ValueError(f'{exercise}: validator v2 failed: {failures}')
     return {'id': exercise, 'duration': round(duration, 3), 'joints': JOINTS,
-            'view': {'azimuth': view.get('azimuth', 65), 'elevation': view.get('elevation', 8)},
+            'view': {'azimuth': view.get('azimuth', 65), 'elevation': view.get('elevation', 8),
+                     **({'cropBelow': view['crop_below']} if 'crop_below' in view else {})},
             'contract': CONTRACTS.get(exercise), 'frames': frames}
 
 

@@ -1,5 +1,6 @@
 import { BLOCK_KINDS, defaultBlock, describeWorkout, emptyWorkout, moveItem, normalizeBlock, validateWorkout } from '../builder';
 import { compileWorkout, estimateSeconds } from '../timeline';
+import { PRESET_WORKOUTS } from '../workouts';
 
 describe('builder', () => {
   it('every default block compiles into a runnable timeline', () => {
@@ -8,6 +9,11 @@ describe('builder', () => {
       expect(validateWorkout(workout)).toEqual([]);
       expect(compileWorkout(workout, { load: () => 16, reps: (_, [min]) => min }).length).toBeGreaterThan(0);
     }
+  });
+
+  it('every preset workout is valid with a unique id', () => {
+    expect(new Set(PRESET_WORKOUTS.map((w) => w.id)).size).toBe(PRESET_WORKOUTS.length);
+    for (const workout of PRESET_WORKOUTS) expect(validateWorkout(workout)).toEqual([]);
   });
 
   it('requires a name, blocks and exercises', () => {

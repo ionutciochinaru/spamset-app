@@ -9,28 +9,30 @@ stance: with this leg length the back foot cannot step up without single-leg
 support outside the balance margin, so both feet stay down. Every floor contact is pinned while declared,
 and the bell arm stays vertical over its shoulder throughout.
 """
-from math import sin, cos, pi, sqrt, radians, acos
+from math import sin, cos, pi, sqrt, radians, acos, atan2
 
 try:
-    from ..rig import (Pose, SIDES, ANKLE_HEIGHT, SHOULDER_HALF, UPPER_ARM, FOREARM, THIGH, SHIN, HIP_HALF,
+    from ..rig import (solve_two_bone, Pose, SIDES, ANKLE_HEIGHT, SHOULDER_HALF, UPPER_ARM, FOREARM, THIGH, SHIN, HIP_HALF,
                        side_sign, add, sub, mul, unit, norm, cross, dot, smooth, clamp)
-    from .common import MAX_REACH, foot, toe_from, one_hand
+    from .common import MAX_REACH, foot, toe_from, one_hand, tall, gaze
     from .framework import Lift, minjerk
 except ImportError:
-    from rig import (Pose, SIDES, ANKLE_HEIGHT, SHOULDER_HALF, UPPER_ARM, FOREARM, THIGH, SHIN, HIP_HALF,
+    from rig import (solve_two_bone, Pose, SIDES, ANKLE_HEIGHT, SHOULDER_HALF, UPPER_ARM, FOREARM, THIGH, SHIN, HIP_HALF,
                      side_sign, add, sub, mul, unit, norm, cross, dot, smooth, clamp)
-    from v2.common import MAX_REACH, foot, toe_from, one_hand
+    from v2.common import MAX_REACH, foot, toe_from, one_hand, tall, gaze
     from v2.framework import Lift, minjerk
 
 BELL_SIDE, SUPPORT = 'l', 'r'
 FLOOR_PELVIS = .10
 FOOT_L = (.40, .17, ANKLE_HEIGHT)            # bell-side foot, planted until standing
-STRAIGHT_ANKLE = (.58, -.60, .075)           # straight support leg, heel down
+STRAIGHT_ANKLE = (.655, -.672, .075)           # straight support leg at ~45 deg, heel down, knee long
 HAND = (-.36, -.56, .032)                    # posted support hand (wrist), level with the chest
 HAND_PALM = (-.305, -.575, .02)
 KNEE = (-.16, -.34, .048)                    # support knee after the sweep, in line behind the hand
 KNEEL_PITCH = radians(58)                    # toes tucked, heel up, foot behind the knee
 RIB_POLE = (.3, -.1, .4)                     # posted arm: elbow bends back toward the ribs, above the floor
+SWEEP_WAY = (.30, .40, .40)                   # shin direction halfway through the sweep (foot under the hips)
+BLADE_ROLL = .12                             # support shoulder blade rolls on the floor until this high
 STAND_R = (.40, -.17, ANKLE_HEIGHT)
 
 
@@ -118,7 +120,7 @@ def _twist_for_planted(pelvis, up, twist):
     return twist if best is None else best
 
 
-def _up_for_planted(pelvis, up, twist):
+def _up_for_planted(pelvis, up, twist, reference=None):
     """Same heading as `up`, with the elevation that keeps the elbow planted."""
     from math import atan2, asin
     heading = atan2(up[1], up[0])
@@ -130,21 +132,21 @@ def _up_for_planted(pelvis, up, twist):
         q = Pose('s', 0)
         trunk(q, pelvis, with_elevation(e), twist)
         return norm(sub(q.j['shoulder_' + SUPPORT], PLANTED)) - UPPER_ARM
+    current = asin(max(-1., min(1., unit(reference or up)[2])))
     grid = [k * .01 for k in range(0, 141)]
-    prev = gap(grid[0])
-    if abs(prev) < 1e-9:
-        return with_elevation(0.)
-    for e0, e1 in zip(grid, grid[1:]):
-        cur = gap(e1)
-        if prev * cur <= 0:
-            lo, hi, g0 = e0, e1, prev
+    values = [gap(e) for e in grid]
+    roots = []
+    for (e0, g0), (e1, g1) in zip(zip(grid, values), zip(grid[1:], values[1:])):
+        if g0 == 0 or g0 * g1 < 0:
+            lo, hi = e0, e1
             for _ in range(40):
                 mid = (lo + hi) / 2
-                gm = gap(mid)
-                lo, hi, g0 = (mid, hi, gm) if gm * g0 > 0 else (lo, mid, g0)
-            return with_elevation((lo + hi) / 2)
-        prev = cur
-    return up
+                lo, hi = (mid, hi) if gap(mid) * g0 > 0 else (lo, mid)
+            roots.append((lo + hi) / 2)
+    if not roots:
+        return up
+    # The rise nearest the interpolated pose keeps the roll continuous.
+    return with_elevation(min(roots, key=lambda e: abs(e - current)))
 
 
 def kneel_pelvis(thigh):
@@ -161,7 +163,7 @@ def _k(name, **params):
 LIE = _k('lie', pelvis=(0., 0., FLOOR_PELVIS), up=(-1., 0., 0.), leg='straight', hand='lie_arm')
 ELB = _k('elbow', pelvis=(0., 0., FLOOR_PELVIS), up=unit((-.45, -.834, .319)), twist=-.385, leg='straight', hand='forearm')
 POST = _k('post', pelvis=(0., 0., FLOOR_PELVIS), up=unit((.115, -.713, .692)), twist=-.552, leg='straight', hand='floor')
-BRIDGE = _k('bridge', pelvis=(.113, .002, .334), up=unit((-.343, -.799, .494)), twist=-.278, leg='straight', hand='floor')
+BRIDGE = _k('bridge', pelvis=(.07, .002, .334), up=unit((-.343, -.799, .494)), twist=-.278, leg='straight', hand='floor')
 SWEEP = _k('sweep', thigh=(.318, .395, .862), up=unit((.176, -.882, .437)), twist=-.245, leg='kneel',
            shin=(-1., -.02, .325), hand='floor')
 # Push off the hand: trunk rises over the knee and front foot before the hand lifts.
@@ -171,13 +173,74 @@ PUSH = _k('push', thigh=(0.337, 0.369, 0.866), up=unit((-0.703, -0.534, 0.470)),
 KNEEL_SIDE = _k('kneel_side', thigh=(0.238, 0.236, 0.942), up=unit((0.132, 0.058, 0.989)), leg='kneel', shin=(.35, -.90, .33), hand='free')
 KNEEL = _k('kneel', twist=0.000, thigh=(0.238, 0.236, 0.942), up=unit((0.132, 0.058, 0.989)), leg='kneel', shin=(-1., -.02, .325), hand='free')
 TOP = _k('top', twist=0.000, pelvis=(0.066, -0.057, 0.742), up=unit((0.188, 0.012, 0.982)), leg='toes', hand='free')
+# Standing tall, feet together under the hips, bell locked out overhead.
+STAND = _k('stand', twist=0.000, pelvis=(0.42, 0., 0.947), up=unit((.03, .0, 1.)), leg='stand',
+           hand='free')
 
-ASCENT = [(0.00, LIE), (0.03, LIE), (0.075, ELB), (0.10, ELB), (0.145, POST), (0.19, BRIDGE), (0.245, SWEEP),
-          (0.29, PUSH), (0.34, KNEEL), (0.36, KNEEL), (0.42, TOP), (0.50, TOP)]
+# Stage times in seconds (the descent reverses them with the same timing).
+STEP_S = 3.8                   # lunge -> standing (STEP_KEYS below)
+_ASCENT_S = [(0.00, LIE), (0.50, LIE), (2.10, ELB), (2.50, ELB), (3.78, POST), (5.22, BRIDGE), (7.74, SWEEP),
+             (9.18, PUSH), (10.78, KNEEL), (11.18, KNEEL), (12.78, TOP), (12.78 + STEP_S, STAND),
+             (12.78 + STEP_S + .8, STAND)]
+LOOP = 2 * _ASCENT_S[-2][0] + (_ASCENT_S[-1][0] - _ASCENT_S[-2][0])   # rise, hold, same-speed descent
+ASCENT = [(t / LOOP, k) for t, k in _ASCENT_S]
+# The roll onto the elbow (and back) rides on rotational momentum the point-mass balance
+# model does not capture; the validator reports these windows instead of checking them.
+ROLL = (_ASCENT_S[1][0] / LOOP, _ASCENT_S[2][0] / LOOP)
+MOMENTUM_WINDOWS = [ROLL, (1 - ROLL[1], 1 - ROLL[0])]
 
 
-# The elbow stage is exactly the planted-elbow pose (the roll solve ends on it).
+# The roll and elbow stages are exactly planted-elbow poses (the roll solve passes through them).
 ELB[1]['up'] = _up_for_planted(ELB[1]['pelvis'], ELB[1]['up'], ELB[1]['twist'])
+
+
+def _support_shoulder(pelvis, up, twist):
+    q = Pose('s', 0)
+    trunk(q, pelvis, up, twist)
+    return q.j['shoulder_' + SUPPORT]
+
+
+def _roll_trunk(p, t):
+    """Roll with the elbow planted: the support shoulder moves along the circle where the
+    sphere around the pelvis (fixed shoulder distance) meets the sphere around the planted
+    elbow (upper-arm length); the trunk's spin about the pelvis->shoulder line is interpolated."""
+    pelvis = LIE[1]['pelvis']
+    s0 = _support_shoulder(pelvis, LIE[1]['up'], LIE[1]['twist'])
+    s1 = _support_shoulder(pelvis, ELB[1]['up'], ELB[1]['twist'])
+    axis = unit(sub(PLANTED, pelvis))
+    centre = add(pelvis, mul(axis, dot(sub(s0, pelvis), axis)))
+    r0, r1 = sub(s0, centre), sub(s1, centre)
+    e1 = unit(r0)
+    e2 = unit(cross(axis, e1))
+    ang = atan2(dot(r1, e2), dot(r1, e1))
+    radius = norm(r0)
+    shoulder = add(centre, add(mul(e1, radius * cos(ang * t)), mul(e2, radius * sin(ang * t))))
+
+    def frame(d):
+        d = unit(d)
+        a = cross(axis, d) if norm(cross(axis, d)) > 1e-6 else cross((0., 0., 1.), d)
+        a = unit(a)
+        return d, a, cross(d, a)
+
+    def coords(up, f):
+        """Trunk up as (component along the shoulder line, spin angle about it)."""
+        return dot(up, f[0]), atan2(dot(up, f[2]), dot(up, f[1]))
+
+    c0, psi0 = coords(unit(LIE[1]['up']), frame(sub(s0, pelvis)))
+    c1, psi1 = coords(unit(ELB[1]['up']), frame(sub(s1, pelvis)))
+    psi = psi0 + ((psi1 - psi0 + pi) % (2 * pi) - pi) * t
+    c = c0 + (c1 - c0) * t
+    f = frame(sub(shoulder, pelvis))
+    up = unit(add(mul(f[0], c), mul(add(mul(f[1], cos(psi)), mul(f[2], sin(psi))), sqrt(max(0., 1 - c * c)))))
+    p.torso(pelvis, up=up)
+    chest = p.j['chest']
+    # Shoulders: the support shoulder exactly on the circle; the other mirrored through the chest.
+    lateral = unit(sub(chest, shoulder))
+    lateral = unit(sub(lateral, mul(up, dot(lateral, up))))
+    for sd in SIDES:
+        p.j['shoulder_' + sd] = add(chest, mul(lateral, side_sign(sd) * SHOULDER_HALF))
+    p.forward = unit(cross(lateral, up))
+    p.j['face'] = add(p.j['head'], mul(p.forward, .075))
 
 
 def _keys():
@@ -201,7 +264,53 @@ def _pelvis(params):
     return kneel_pelvis(params['thigh']) if 'thigh' in params else params['pelvis']
 
 
+# Lunge -> standing, in seconds. The back leg is already long in the lunge, so the
+# lifter drops and drives the hips forward while the back toes push (double support),
+# lifts the back foot and decelerates over the front foot while it swings through
+# (single support), lands it beside the front foot and centres the hips.
+STEP_KEYS = [  # (time s, pelvis, unused velocity)
+    (0.00, (0.066, -0.057, 0.742), (0., 0., 0.)),
+    (1.30, (0.270, .125, .72), (0., 0., 0.)),     # sink over the front foot, back toes down
+    (1.60, (0.270, .125, .72), (0., 0., 0.)),     # back foot lifts
+    (2.60, (0.310, .125, .72), (0., 0., 0.)),     # ... and lands beside the front foot
+    (3.80, (0.420, 0.000, 0.947), (0., 0., 0.)),     # stand up tall
+]
+STEP_LEAN = [0., .55, .55, .40, 0.]
+TOE_SLIDE = (.32, .20, 0.)             # back toes slide in (on the floor) as the weight comes forward
+STEP_TIME = STEP_KEYS[-1][0]
+assert abs(STEP_TIME - STEP_S) < 1e-9
+LIFT_T, LAND_T = STEP_KEYS[2][0] / STEP_TIME, STEP_KEYS[3][0] / STEP_TIME
+
+
+def _step_pelvis(t):
+    """Pelvis at fraction t of the step: minimum-jerk between STEP_KEYS (zero velocity and
+    acceleration at each key; a controlled grind)."""
+    time = t * STEP_TIME
+    for (t0, p0, _), (t1, p1, _) in zip(STEP_KEYS, STEP_KEYS[1:]):
+        if time <= t1 + 1e-12:
+            w = minjerk((time - t0) / (t1 - t0))
+            return tuple(a + (b - a) * w for a, b in zip(p0, p1))
+    return STEP_KEYS[-1][1]
+
+
+def _step_up(t):
+    """Trunk up during the step: TOP -> STAND, plus a forward lean that carries the chest
+    and the overhead bell over the front foot (smoothstep between keys)."""
+    time = t * STEP_TIME
+    lean = STEP_LEAN[-1]
+    for (t0, *_), (t1, *_), l0, l1 in zip(STEP_KEYS, STEP_KEYS[1:], STEP_LEAN, STEP_LEAN[1:]):
+        if time <= t1 + 1e-12:
+            u = (time - t0) / (t1 - t0)
+            lean = l0 + (l1 - l0) * minjerk(u)
+            break
+    base = unit(tuple(x + (y - x) * minjerk(t) for x, y in zip(TOP[1]['up'], STAND[1]['up'])))
+    return unit(add(base, (sin(lean), 0., 0.)))
+
+
 def _mix(a, b, u):
+    if {a['leg'], b['leg']} == {'toes', 'stand'}:
+        t = u if a['leg'] == 'toes' else 1 - u
+        return {'twist': 0., 'up': _step_up(t), 'pelvis': _step_pelvis(t)}
     out = {'twist': a['twist'] + (b['twist'] - a['twist']) * u, 'up': unit(tuple(x + (y - x) * u for x, y in zip(a['up'], b['up'])))}
     if 'thigh' in a and 'thigh' in b:
         out['thigh'] = unit(tuple(x + (y - x) * u for x, y in zip(a['thigh'], b['thigh'])))
@@ -258,22 +367,25 @@ def _support_leg(p, a, b, u, out):
         return
     if set(modes) == {'straight', 'kneel'}:
         # Sweep low along the floor: the thigh rotates about the hip, the knee stays near the floor.
-        straight_dir = unit(sub(STRAIGHT_ANKLE, hip))
+        # Start from the knee the planted straight leg actually has (no jump into the sweep).
+        errors = []
+        knee0, _ = solve_two_bone(hip, STRAIGHT_ANKLE, THIGH, SHIN, add(hip, (0., 0., 1.)), errors, 'sweep')
+        straight_dir = unit(sub(knee0, hip))
         kneel_dir = unit(sub(KNEE, hip))
         t = u if modes[0] == 'straight' else 1 - u
         thigh_dir = unit(tuple(x + (y - x) * t for x, y in zip(straight_dir, kneel_dir)))
         knee = add(hip, mul(thigh_dir, THIGH))
-        if knee[2] < .045:
-            knee = (knee[0], knee[1], .045)
-        shin_start = straight_dir
+        if knee[2] < .045 and t > 0:
+            knee = (knee[0], knee[1], max(knee[2], .045 * min(1., t * 20)))
+        shin_start = unit(sub(STRAIGHT_ANKLE, knee0))
         shin_end = unit(out.get('shin') or (a.get('shin') or b.get('shin')))
         # The knee bends and the foot comes up and back under the hips (through a raised
         # shin) instead of swinging wide around the posted hand.
-        raised = unit((.1, .15, 1.))
-        if t < .5:
-            shin_dir = unit(tuple(x + (y - x) * smooth(2 * t) for x, y in zip(shin_start, raised)))
-        else:
-            shin_dir = unit(tuple(x + (y - x) * smooth(2 * t - 1) for x, y in zip(raised, shin_end)))
+        # One smooth curve (quadratic Bezier on the shin direction) through a low bent-knee
+        # waypoint: the foot slides under the hips close to the floor.
+        raised = unit(SWEEP_WAY)
+        shin_dir = unit(tuple((1 - t) ** 2 * a + 2 * t * (1 - t) * m + t ** 2 * b
+                              for a, m, b in zip(shin_start, raised, shin_end)))
         ankle = add(knee, mul(shin_dir, SHIN))
         pitch = -pi / 2 + (KNEEL_PITCH + pi / 2) * t
         ankle = (ankle[0], ankle[1], max(ankle[2], _clearance(pitch)))
@@ -290,7 +402,9 @@ def _support_leg(p, a, b, u, out):
         ankle = toe_from(s, TOES, 0., pitch)
         foot(p, s, ankle, 0., pitch, contact=False)
         p.contacts['toe_' + s] = TOES
-        p.leg(s, ankle, pole=add(hip, (.3, 0., -1.)))
+        # The knee lifts straight off its floor spot (pole blends from the kneeling knee).
+        pole = tuple(a + (b - a) * smooth(t) for a, b in zip(KNEE, add(hip, (.3, 0., -1.))))
+        p.leg(s, ankle, pole=pole)
         return
     if modes == ('toes', 'toes'):
         ankle = toe_from(s, TOES, 0., radians(62))
@@ -298,12 +412,24 @@ def _support_leg(p, a, b, u, out):
         p.contacts['toe_' + s] = TOES
         p.leg(s, ankle, pole=add(hip, (.4, 0., -1.)))
         return
-    # toes <-> stand: step the back foot up beside the front foot (in the air).
+    # toes <-> stand: the back toes push until the leg is long, then the foot steps up
+    # beside the front foot.
     t = u if modes[0] == 'toes' else 1 - u
-    start = toe_from(s, TOES, 0., radians(62))
-    ankle = add(tuple(x + (y - x) * t for x, y in zip(start, STAND_R)), (0., 0., .10 * sin(pi * t)))
-    foot(p, s, ankle, 0., radians(62) * (1 - t), contact=False)
-    p.leg(s, ankle, pole=add(hip, (1., 0., 0.)))
+    # As the weight moves onto the front leg the unloaded back toes slide in behind it.
+    slide = minjerk(min(1., t / (.65 * STEP_KEYS[1][0] / STEP_TIME)))   # the toes lead the hips
+    toes = add(TOES, mul(TOE_SLIDE, slide))
+    start = toe_from(s, toes, 0., radians(62))
+    if t <= LIFT_T:
+        foot(p, s, start, 0., radians(62), contact=False)
+        p.contacts['roll_toe' if 0. < slide < 1. else 'toe_' + s] = toes
+        p.leg(s, start, pole=add(hip, (.4, 0., -1.)))
+        return
+    k = minjerk(min(1., (t - LIFT_T) / (LAND_T - LIFT_T)))
+    ankle = add(tuple(x + (y - x) * k for x, y in zip(start, STAND_R)), (0., 0., .09 * sin(pi * k)))
+    pitch = radians(62) * (1 - k)
+    foot(p, s, ankle, 0., pitch, contact=k > 1 - 1e-9)
+    # The knee drives forward as the foot swings through (pole blends from the push-off).
+    p.leg(s, ankle, pole=add(hip, tuple(x + (y - x) * k for x, y in zip((.4, 0., -1.), (1., 0., -.2)))))
 
 
 def _arm_on_floor(p, s, shoulder, rest=.05, near=None):
@@ -356,10 +482,10 @@ def _support_arm(p, a, b, u):
     s = SUPPORT
     shoulder = p.j['shoulder_' + s]
     modes = (a['hand'], b['hand'])
-    down = add(shoulder, (.35, -.15, -.6))     # elbow bends back toward the ribs
     free_pole = add(shoulder, (-.3, -.3, -.3))
     if set(modes) <= {'lie_arm', 'forearm'}:
-        # Lying, rolling and the elbow hold: forearm on the floor, elbow planted.
+        # Lying and the elbow hold: forearm on the floor, elbow planted. During the roll the
+        # forearm rests on the floor and slides into place (a rolling contact).
         p.arm(s, HAND, pole=PLANTED, palm=HAND_PALM, contact=True)
         if norm(sub(p.j['elbow_' + s], PLANTED)) < 1e-6:
             p.contacts['elbow_' + s] = PLANTED
@@ -391,22 +517,25 @@ def _support_arm(p, a, b, u):
     d = norm(offset)
     if d > MAX_REACH:
         target = add(shoulder, mul(offset, MAX_REACH / d))
-    p.arm(s, target, pole=tuple(x + (y - x) * t for x, y in zip(down, free_pole)))
+    # Starts from the posted arm's rib-side elbow, so lifting the hand does not jump the elbow.
+    rib = add(shoulder, RIB_POLE)
+    p.arm(s, target, pole=tuple(x + (y - x) * smooth(t) for x, y in zip(rib, free_pole)))
     w = p.j['wrist_' + s]
     rest_dir = mul(unit(sub(w, p.j['elbow_' + s])), .065)
-    p.j['palm_' + s] = add(w, tuple(x + (y - x) * smooth(t) for x, y in zip(sub(HAND_PALM, HAND), rest_dir)))
+    # Rigid hand: blend the direction, keep the length.
+    hand_dir = unit(tuple(x + (y - x) * smooth(t) for x, y in zip(unit(sub(HAND_PALM, HAND)), unit(rest_dir))))
+    p.j['palm_' + s] = add(w, mul(hand_dir, .065))
 
 
 def _build(name, phase, st, dx, dy):
     a, b, u = st['a'], st['b'], st['u']
     out = _mix(a, b, u)
-    if {a['hand'], b['hand']} <= {'lie_arm', 'forearm'}:
-        # Roll around the planted elbow: the trunk rises just enough that the shoulder
-        # stays one upper arm from the elbow (the upper arm pivots on it).
-        # Roll toward the elbow side from the start (heading of the elbow stage).
-        out['up'] = _up_for_planted(out['pelvis'], ELB[1]['up'], out['twist'])
+    roll = {id(a), id(b)} == {id(LIE[1]), id(ELB[1])}
     p = Pose(name, phase)
-    trunk(p, out['pelvis'], out['up'], out['twist'])
+    if roll:
+        _roll_trunk(p, u if b is ELB[1] else 1 - u)
+    else:
+        trunk(p, out['pelvis'], out['up'], out['twist'])
     # Lying on the back: the hips rest on the floor; the upper back rolls off it
     # (a rolling contact, not pinned) until the chest has lifted.
     if out['pelvis'][2] <= FLOOR_PELVIS + 1e-9:
@@ -416,15 +545,21 @@ def _build(name, phase, st, dx, dy):
             p.contacts['upper_back'] = (p.j['chest'][0], p.j['chest'][1], 0.)
         for s in SIDES:
             blade = tuple(c + (q - c) * .6 for c, q in zip(p.j['chest'], p.j['shoulder_' + s]))
-            if blade[2] < FLOOR_PELVIS + .05:
+            # The support-side blade rolls along the floor until the elbow takes the weight.
+            if blade[2] < FLOOR_PELVIS + (BLADE_ROLL if s == SUPPORT else .05):
                 p.contacts['roll_blade_' + s] = (blade[0], blade[1], 0.)
     ankle = foot(p, BELL_SIDE, FOOT_L)
     p.leg(BELL_SIDE, FOOT_L, pole=add(p.j['hip_' + BELL_SIDE], (.3, .2, 1.)))
     _support_leg(p, a, b, u, out)
     _support_arm(p, a, b, u)
     shoulder = p.j['shoulder_' + BELL_SIDE]
-    wrist = add(shoulder, (0., 0., MAX_REACH - .002))
+    wrist = add(shoulder, (0., 0., MAX_REACH))
     one_hand(p, BELL_SIDE, wrist, (-.6, .25, -.6), pole=add(shoulder, (-.3, .3, .1)))
+    # Eyes on the bell on the floor; standing, the gaze drops toward the horizon.
+    high = min(1., max(0., (out['pelvis'][2] - .45) / .4))
+    target = add(p.j['wrist_' + BELL_SIDE], (0., 0., .1))
+    target = tuple(x + (y - x) * high for x, y in zip(target, add(p.j['head'], (2., 0., .6))))
+    gaze(p, target, limit=radians(70), gain=.85)
     return p
 
 
@@ -438,7 +573,12 @@ class GetUp(Lift):
         t1, (_, b) = KEYS[(i + 1) % len(KEYS)]
         if i == len(KEYS) - 1:
             t1 += 1.
-        return {'a': a, 'b': b, 'u': minjerk((phase - t0) / (t1 - t0))}
+        u = (phase - t0) / (t1 - t0)
+        if {a['leg'], b['leg']} == {'toes', 'stand'}:
+            return {'a': a, 'b': b, 'u': u}         # the step has its own time law
+        return {'a': a, 'b': b, 'u': minjerk(u)}
 
 
-GETUP = GetUp('kb-getup', 32., None, _build, {'azimuth': 48, 'elevation': 26}, balance='')
+# The bell is held firmly overhead; it settles behind the forearm. A 32 s loop damps out in one pass.
+GETUP = GetUp('kb-getup', LOOP, None, _build, {'azimuth': -40, 'elevation': 24}, balance='',
+              bell={'stiffness': 150., 'damping': .8, 'loops': 2}, look=False)

@@ -5,6 +5,7 @@ import * as THREE from 'three';
 
 import { clips } from '@/animation/clips';
 import { Figure } from '@/animation/figure';
+import { PSXPass, snapVertices } from '@/animation/psx';
 import { clipBounds, samplePose } from '@/animation/sample';
 import { Canvas, useFrame, useThree } from '@/animation/three-canvas';
 import { Palette, Radius } from '@/constants/theme';
@@ -27,11 +28,18 @@ type SceneProps = {
   zoom?: number;
   /** Joint to centre on (e.g. 'wrist_l'); default is the motion's bounding box. */
   focus?: string;
+  /** PlayStation-style rendering (low-res pixels, vertex wobble, dithered 15-bit colour). */
+  psx: boolean;
 };
 
-function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus }: SceneProps) {
+function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, psx }: SceneProps) {
   const clip = clips[clipId];
   const figure = useMemo(() => new Figure(), []);
+  const pass = useMemo(() => new PSXPass(), []);
+  useEffect(() => () => pass.dispose(), [pass]);
+  useEffect(() => {
+    if (psx) snapVertices(figure.group);
+  }, [figure, psx]);
   const bounds = useMemo(() => clipBounds(clip), [clip]);
   const { camera } = useThree();
   const time = useRef(0);
@@ -63,6 +71,13 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus }
     figure.update(pose, camera.position);
   });
 
+  // With PSX on, draw the frame ourselves through the low-res pass (a positive priority
+  // takes over rendering from react-three-fiber).
+  useFrame(({ gl, scene, camera: eye, size }) => {
+    if (psx) pass.render(gl, scene, eye, size.width, size.height);
+    else gl.render(scene, eye);
+  }, 1);
+
   return (
     <>
       <color attach="background" args={[Palette.stage]} />
@@ -91,6 +106,7 @@ export function FigureViewer({
   onPhase,
   zoom,
   focus,
+  psx = true,
 }: {
   clipId: string;
   style?: ViewStyle;
@@ -103,6 +119,8 @@ export function FigureViewer({
   onPhase?: (phase: number) => void;
   zoom?: number;
   focus?: string;
+  /** PlayStation-style rendering; on by default. */
+  psx?: boolean;
 }) {
   const clip = clips[clipId];
   // Start from the watch camera, so the side it draws near (and single-arm work) faces you.
@@ -147,7 +165,7 @@ export function FigureViewer({
         onResponderGrant={onGrant}
         onResponderMove={onMove}>
         <Canvas camera={{ fov: FOV, near: 0.05, far: 20 }} style={{ flex: 1 }}>
-          <Scene clipId={clipId} orbit={orbit} speed={speed} paused={paused} phase={phase} onPhase={onPhase} zoom={zoom} focus={focus} />
+          <Scene clipId={clipId} orbit={orbit} speed={speed} paused={paused} phase={phase} onPhase={onPhase} zoom={zoom} focus={focus} psx={psx} />
         </Canvas>
       </View>
       {controls && (

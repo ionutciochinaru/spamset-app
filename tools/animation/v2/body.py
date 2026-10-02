@@ -61,6 +61,20 @@ def support_points(pose, floor=.03):
     for name, p in pose.get('contacts', {}).items():
         if p[2] < floor and not name.startswith(('heel_', 'toe_')):
             points.append((p[0], p[1]))
+    # Any drawn body part resting on the floor also supports (lying, rolling, sitting):
+    # sample each capsule and keep points whose surface is within 2 cm of the floor.
+    try:
+        from .collide import PARTS
+    except ImportError:
+        from v2.collide import PARTS
+    for part, (a, b, radius) in PARTS.items():
+        if part.startswith(('hand_', 'forearm_')) or a not in j or b not in j:
+            continue
+        pa, pb = j[a], j[b]
+        for k in range(6):
+            q = [x + (y - x) * k / 5 for x, y in zip(pa, pb)]
+            if q[2] - radius < .02:
+                points.append((q[0], q[1]))
     return points
 
 
