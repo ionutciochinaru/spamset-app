@@ -58,6 +58,32 @@ HANG_SWAY=.12
 # only if it is ballistic, i.e. the centre of mass falls at g within FLIGHT_TOLERANCE.
 FLIGHT_TOLERANCE=2.5
 STATIC_HOLD_SECONDS=2.
+# Leaning back on a fixed handle (doorframe rows): the arms can only pull, along the line
+# from shoulders to hands; the feet push with friction. The pose is feasible if some
+# centre of pressure on the soles, an arm tension >= 0 and friction within GRIP_FRICTION
+# balance gravity plus the body's acceleration (sagittal plane).
+GRIP_PULL={'doorframe-rows'}
+GRIP_FRICTION=.8
+
+def grip_pull_margin(pose,row):
+    j=pose['joints'];c=row['com'];a=row['acc']
+    hand=[(j['palm_l'][k]+j['palm_r'][k])/2 for k in range(3)]
+    shoulder=[(j['shoulder_l'][k]+j['shoulder_r'][k])/2 for k in range(3)]
+    ux,uz=hand[0]-shoulder[0],hand[2]-shoulder[2];n=sqrt(ux*ux+uz*uz) or 1.;ux,uz=ux/n,uz/n
+    fx,fz=-a[0],-(v2body.G+a[2])  # per unit mass: gravity plus inertial force at the COM
+    heels=[j['heel_l'][0],j['heel_r'][0]];toes=[j['toe_l'][0],j['toe_r'][0]]
+    lo,hi=max(heels),min(toes)
+    best=-1.
+    for k in range(41):
+        px=lo+(hi-lo)*k/40
+        lever=(hand[0]-px)*uz-hand[2]*ux
+        torque=(c[0]-px)*fz-c[2]*fx
+        if abs(lever)<1e-9:continue
+        t=-torque/lever
+        rz=-fz-t*uz;rx=-fx-t*ux
+        if t>=0 and rz>0 and abs(rx)<=GRIP_FRICTION*rz:
+            best=max(best,min(px-lo,hi-px))
+    return best
 
 
 def check_v2(name,samples=240):
@@ -80,7 +106,11 @@ def check_v2(name,samples=240):
     failures=[]
     if clearance < -PENETRATION_TOLERANCE:failures.append(f'interpenetration {pair} {raw:.3f} m at {phase:.3f}')
     zmp=com=None;flight=0;hang_sway=None
-    if name in HANGING:
+    if name in GRIP_PULL:
+        worst=min(grip_pull_margin(poses[i],r) for i,r in checked)
+        zmp=worst
+        if worst<0:failures.append('grip pull: no feasible foot pressure and arm tension')
+    elif name in HANGING:
         for i,r in checked:
             j=poses[i]['joints'];grip=[(j['palm_l'][k]+j['palm_r'][k])/2 for k in range(2)]
             sway=sqrt((r['com'][0]-grip[0])**2+(r['com'][1]-grip[1])**2)

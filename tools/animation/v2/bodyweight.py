@@ -14,6 +14,7 @@ one is a Lift (framework.py) that wraps its legacy motion, like the halo:
   pose, so it adds no jerk. Arms whose hand is a declared contact (floor, wall, chair)
   or holds a prop are left exactly as authored.
 """
+import math
 from math import cos, sin, radians, sqrt, log, exp
 
 from functools import cached_property
@@ -64,9 +65,19 @@ def _arm_clearance(j, s):
     return worst
 
 
+def _carried(p, s):
+    """Dumbbells held in this hand: they move rigidly with the arm."""
+    palm = p.j['palm_' + s]
+    return [prop for prop in p.props if prop.get('type') == 'dumbbell'
+            and norm(sub(tuple(prop['center']), palm)) < .12]
+
+
 def _holds_prop(p, s):
+    """Holding something the arm cannot carry by itself (a bell, both ends of a band)."""
     palm = p.j['palm_' + s]
     for prop in p.props:
+        if prop.get('type') == 'dumbbell':
+            continue
         for key in ('grips', 'grip'):
             grips = prop.get(key)
             if isinstance(grips, dict) and s in grips:
@@ -138,10 +149,14 @@ def _abduct(p, s, clearance):
     forward = unit(cross(left, up))
     origin = j['shoulder_' + s]
     base = {k: j[f'{k}_{s}'] for k in ARM_JOINTS}
+    carried = [(prop, list(prop['center']), [list(h) for h in prop['handle']]) for prop in _carried(p, s)]
 
     def apply(angle):
         for k, v in base.items():
             j[f'{k}_{s}'] = _rotate(v, origin, forward, angle)
+        for prop, center, handle in carried:
+            prop['center'] = list(_rotate(tuple(center), origin, forward, angle))
+            prop['handle'] = [list(_rotate(tuple(h), origin, forward, angle)) for h in handle]
 
     best = None
     for sign in (1., -1.):
@@ -198,7 +213,8 @@ def clear_arms(p, clearance=ARM_CLEARANCE):
     for s in SIDES:
         if 'palm_' + s in p.contacts or _holds_prop(p, s):
             continue
-        _push_from_head(p, s)
+        if not _carried(p, s):
+            _push_from_head(p, s)
         if _arm_clearance(p.j, s) < clearance:
             _abduct(p, s, clearance)
     if not any('palm_' + s in p.contacts or _holds_prop(p, s) for s in SIDES):
@@ -320,6 +336,33 @@ def shift_upper_body(p, dx, dy):
     return p
 
 
+def hang_under_grip(p):
+    """Hanging from a bar the body is a pendulum: rotate the whole body rigidly about the
+    bar (the line through both hands) so the centre of mass sits directly below it. The
+    hands lie on that line, so they stay on the bar and no bone changes length. Hanging
+    moves are left-right symmetric, so no sideways correction is needed."""
+    try:
+        from .body import centre_of_mass
+    except ImportError:
+        from v2.body import centre_of_mass
+    grip = mul(add(p.j['palm_l'], p.j['palm_r']), .5)
+    bar = unit(sub(p.j['palm_l'], p.j['palm_r']))
+    com = centre_of_mass(p.result())[0]
+    rel = sub(com, grip)
+    # Component of the COM offset perpendicular to the bar, in the vertical plane.
+    forward = unit(cross(bar, (0., 0., 1.)))
+    ahead, below = dot(rel, forward), -rel[2]
+    if below <= 1e-6:
+        return p
+    angle = math.atan2(ahead, below)
+    for k, v in list(p.j.items()):
+        p.j[k] = _rotate(v, grip, bar, angle)
+    if abs(dot(sub(centre_of_mass(p.result())[0], grip), forward)) > abs(ahead):
+        for k, v in list(p.j.items()):
+            p.j[k] = _rotate(v, grip, bar, -2 * angle)
+    return p
+
+
 class Wrapped(Lift):
     """A legacy motion as a v2 Lift: balance-solved hip shift plus arm clearance.
 
@@ -329,8 +372,10 @@ class Wrapped(Lift):
     lift a leg). Legacy reps start and end at rest, so a pause there adds no velocity jump.
     """
 
-    def __init__(self, name, legacy, duration, balance='xy', mirror=False, clear=True, holds=(), iterations=3):
-        self.legacy, self.clear, self.iterations = legacy, clear, iterations
+    def __init__(self, name, legacy, duration, balance='xy', mirror=False, clear=True, holds=(), iterations=3, hang=False,
+                 grip=False):
+        """grip: the hands hold a fixed support (doorframe) and are declared contacts."""
+        self.legacy, self.clear, self.iterations, self.hang, self.grip = legacy, clear, iterations, hang, grip
         self.legacy_duration = duration
         self.holds = sorted(holds)
         total = duration + sum(seconds for _, seconds in self.holds)
@@ -418,6 +463,14 @@ class Wrapped(Lift):
 
     def _build(self, name, phase, st, dx, dy):
         p = self.legacy(name, self.legacy_phase(phase))
+        if self.grip:
+            for side in SIDES:
+                p.contacts['palm_' + side] = p.j['palm_' + side]
+        if self.hang:
+            hang_under_grip(p)
+            if self.clear:
+                clear_arms(p)
+            return p
         shift_upper_body(p, dx, dy)
         if self.clear:
             clear_arms(p)

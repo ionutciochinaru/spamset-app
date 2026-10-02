@@ -27,6 +27,8 @@ BILATERAL = {'standing-knee', 'reverse-lunge', 'bird-dog', 'seated-knee', 'side-
 STATIC_SECONDS = 2.
 
 
+# Suspended from a bar: the body hangs as a pendulum under the grip.
+HANGING = {'chin-ups', 'pull-ups'}
 # Held by the hands although only the feet are declared contacts (hands on the frame).
 HAND_SUPPORTED = {'doorframe-rows'}
 
@@ -62,5 +64,7 @@ def build(motions, skip):
             balance='xy' if standing else '',
             mirror=standing and name in BILATERAL,
             holds=weight_shift_holds(legacy, name) if standing else (),
-            iterations=3 if standing else 1)
+            iterations=3 if standing else 1,
+            hang=name in HANGING,
+            grip=name in HAND_SUPPORTED)
     return wrapped
