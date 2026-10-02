@@ -541,9 +541,20 @@ class Wrapped(Lift):
             before = centres[(first + start - 1) % n]
             after = centres[(first + k) % n]
             length = k - start
+            # Near a single-leg phase the target glides from or to the standing foot; in the
+            # middle of a long double support (the bottom of a lunge) it relaxes to the usual
+            # target anywhere safely inside both feet.
+            ramp = max(1, round(.3 / self.duration * n))
             for m in range(length):
+                index = (first + start + m) % n
                 w = minjerk((m + 1) / (length + 1))
-                targets[(first + start + m) % n] = tuple(x + (y - x) * w for x, y in zip(before, after))
+                glide = tuple(x + (y - x) * w for x, y in zip(before, after))
+                edge = min(m + 1, length - m)
+                keep = minjerk(max(0., 1 - (edge - 1) / ramp))
+                pose = poses[index]
+                com = centre_of_mass(pose)[0]
+                free = _inside((com[0], com[1]), convex_hull(support_points(pose)), SAFE_KEEP)
+                targets[index] = tuple(f + (g - f) * keep for f, g in zip(free, glide))
         return targets
 
     TARGET_SMOOTHING = .3  # seconds: the balance target anticipates support changes
@@ -570,12 +581,20 @@ class Wrapped(Lift):
                         for d in range(2)) for i in range(n)]
         # Keep the smoothed target inside the smallest support nearby in time (the ball of the
         # foot while the heels are up), so anticipation never aims outside a narrow support.
+        # Every support in the window pulls the target inside it, weighted by closeness in
+        # time (zero at the window edge), so constraints fade in and out instead of
+        # switching: the target, and the hip shift solved from it, stay smooth.
         hulls = [convex_hull(support_points(self.raw(i / n).result())) for i in range(n)]
-        areas = [_area(h) for h in hulls]
+        stride = max(1, half // 8)
+        ks = sorted(range(-half, half + 1, stride), key=abs, reverse=True)
         out = []
         for i in range(n):
-            k = min(range(-half, half + 1), key=lambda k: areas[(i + k) % n])
-            out.append(_inside(smooth[i], hulls[(i + k) % n]))
+            q = smooth[i]
+            for k in ks:
+                w = minjerk(1 - abs(k) / (half + 1))
+                inside = _inside(q, hulls[(i + k) % n])
+                q = (q[0] + w * (inside[0] - q[0]), q[1] + w * (inside[1] - q[1]))
+            out.append(_inside(q, hulls[i]))
         return out
 
     def balance_target(self, phase, pose, com):

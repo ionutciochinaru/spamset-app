@@ -12,10 +12,42 @@ Spamset app's exercise data.
 import json
 from pathlib import Path
 
+from math import sin, pi, radians
+
 try:
     from .bodyweight import Wrapped, weight_shift_holds
+    from ..rig import Pose, add, side_sign
+    from ..bodyweight_standing import stance, guard, twist, stage, mix_point, FRONT_VIEW
 except ImportError:
     from v2.bodyweight import Wrapped, weight_shift_holds
+    from rig import Pose, add, side_sign
+    from bodyweight_standing import stance, guard, twist, stage, mix_point, FRONT_VIEW
+
+
+def punches(name, phase):
+    """Legacy punches with each punch starting from that hand's own guard position.
+
+    The legacy cross started 5 cm in front of the rear hand's guard, so the arm snapped
+    between the guard pose and the punch when a punch began and ended."""
+    jab = sin(pi * stage(phase, .05, .40))
+    cross_ = sin(pi * stage(phase, .45, .85))
+    p = stance(Pose(name, phase))
+    twist(p, -radians(22) * cross_ + radians(6) * jab)
+    guard(p)
+    for s, amount, lead in (('l', jab, True), ('r', cross_, False)):
+        sg = side_sign(s)
+        start = add(p.j['chest'], (.20 if lead else .15, sg * .10, .16))
+        fist = mix_point(start, add(p.j['shoulder_' + s], (.54, -sg * .14, .02)), amount)
+        p.arm(s, fist, pole=add(p.j['shoulder_' + s], (-.1, sg * .4, -.5)))
+    p.view = dict(FRONT_VIEW, azimuth=75, elevation=10)
+    return p
+
+
+# v2 replacements for legacy motions with a defect of their own.
+REPLACEMENTS = {'punches': punches}
+# Slower demonstration tempo where the legacy rhythm is physically too fast for a planted
+# body (climbers: each foot strike decelerated the body faster than gravity).
+TEMPO = {'climbers': 1.6, 'reverse-lunge': 1.4}
 
 CATALOG = json.loads((Path(__file__).resolve().parents[1] / 'spamset-catalog.json').read_text())
 PROFILES = json.loads((Path(__file__).resolve().parents[1] / 'profiles.json').read_text())
@@ -59,9 +91,10 @@ def build(motions, skip):
         name = entry['id']
         if name in skip or name not in motions:
             continue
-        legacy = motions[name]
+        legacy = REPLACEMENTS.get(name, motions[name])
         profile = PROFILES.get(name, {})
         duration = profile['frames'] / profile['fps'] if profile.get('fps') else STATIC_SECONDS
+        duration *= TEMPO.get(name, 1.)
         standing = _standing(legacy, name)
         shifting = standing or name in PLANK_SHIFT
         # Mirroring averages the two halves; only valid if the legacy loop really alternates.
