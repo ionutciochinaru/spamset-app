@@ -45,6 +45,72 @@ def to_three(point):
     return [round(y * 1000), round(z * 1000), round(x * 1000)]
 
 
+# Equipment colours follow render.py: wall, chair seat/legs, bar default, band and dumbbell plates.
+WALL, CHAIR_SEAT, CHAIR_FRAME, BAR, BAND, PLATE = '#6b6a62', '#aaa99f', '#838279', '#aaa99f', '#ff6b2b', '#ff6b2b'
+# A hand this close (m) to a bar, dumbbell handle or band end holds it.
+GRIP_REACH = .06
+# Underhand (supinated) bar grips; every other bar grip is overhand.
+UNDERHAND = {'chin-ups'}
+
+
+def tube(points, width, color):
+    """A round bar through points; width is the watch stroke width (m), stored as radius in mm."""
+    return {'k': 'tube', 'pts': [to_three(p) for p in points], 'r': round(width * 500), 'c': color}
+
+
+def equipment(pose):
+    """Every non-kettlebell prop as tubes, slabs and dumbbells (three.js mm)."""
+    shapes = []
+    for prop in pose['props']:
+        kind = prop['type']
+        if kind == 'wall':
+            shapes.append({'k': 'slab', 'pts': [to_three(p) for p in prop['corners']], 't': 40, 'c': WALL})
+        elif kind == 'chair':
+            shapes.append({'k': 'slab', 'pts': [to_three(p) for p in prop['seat']], 't': 30, 'c': CHAIR_SEAT})
+            shapes += [tube(segment, .026, CHAIR_FRAME) for segment in prop.get('legs', []) + prop.get('back', [])]
+        elif kind == 'lines':
+            shapes += [tube(segment, prop.get('width', .03), prop.get('color', BAR)) for segment in prop['segments']]
+        elif kind == 'band':
+            shapes.append(tube(prop['points'], .025, BAND))
+        elif kind == 'dumbbell':
+            shapes.append({'k': 'db', 'h': [to_three(p) for p in prop['handle']], 'c': PLATE})
+    return shapes
+
+
+def _closest(point, a, b):
+    ab = [y - x for x, y in zip(a, b)]
+    t = sum((q - x) * d for q, x, d in zip(point, a, ab)) / max(1e-12, sum(d * d for d in ab))
+    t = max(0., min(1., t))
+    c = [x + d * t for x, d in zip(a, ab)]
+    return c, sum((q - x) ** 2 for q, x in zip(point, c)) ** .5, ab
+
+
+def equipment_grips(exercise, pose):
+    """Hands holding a bar, dumbbell handle or band end: grip point and bar direction per side."""
+    bars = []  # (a, b, hanging bar): a horizontal bar overhead is gripped overhand or underhand.
+    for prop in pose['props']:
+        if prop['type'] == 'lines':
+            bars += [(a, b, abs(a[2] - b[2]) < .01) for a, b in prop['segments']]
+        elif prop['type'] == 'dumbbell':
+            bars.append((*prop['handle'], False))
+        elif prop['type'] == 'band':
+            bars.append((*prop['points'], False))
+    grips = {}
+    j = pose['joints']
+    for s in ('l', 'r'):
+        best = None
+        for a, b, hanging in bars:
+            for joint in ('wrist_' + s, 'palm_' + s):
+                point, distance, axis = _closest(j[joint], a, b)
+                if distance < GRIP_REACH and (best is None or distance < best[1]):
+                    best = (point, distance, axis, hanging)
+        if best:
+            # w: palm facing for a hanging bar, 1 overhand (palms forward), -1 underhand (toward the face).
+            mode = (-1 if exercise in UNDERHAND else 1) if best[3] else 0
+            grips[s] = {'p': to_three(best[0]), 'a': to_three(best[2]), **({'w': mode} if mode else {})}
+    return grips
+
+
 def export(exercise, review=False):
     """One clip. review=True records IK and validator failures in the clip instead of raising."""
     profile = PROFILES[exercise]
@@ -71,17 +137,29 @@ def export(exercise, review=False):
                           # Where each gripping hand holds this bell (the renderer wraps it there).
                           **({'g': {s: to_three(g) for s, g in prop['grips'].items()}}
                              if prop.get('grips') else {})})
-        # Hand state per side, left then right: 0 free, 1 gripping a bell, 2 flat on the floor.
-        gripping = {s for prop in pose['props'] for s in prop.get('grips', {})}
+        # Hand state per side, left then right: 0 free, 1 gripping a bell or bar, 2 flat on the floor.
+        held = equipment_grips(exercise, pose)
+        gripping = {s for prop in pose['props'] for s in prop.get('grips', {})} | set(held)
         hands = [1 if s in gripping else 2 if 'palm_' + s in pose['contacts'] else 0 for s in ('l', 'r')]
-        frames.append({'j': [coord for name in JOINTS for coord in to_three(joints[name])],
-                       'b': bells, 'hs': hands})
+        frame = {'j': [coord for name in JOINTS for coord in to_three(joints[name])], 'b': bells, 'hs': hands}
+        shapes = equipment(pose)
+        if shapes:
+            frame['p'] = shapes
+        if held:
+            frame['g'] = held
+        frames.append(frame)
     failures = [f'{errors} IK errors'] if errors else []
     if exercise in V2_MOTIONS:
         failures += check_v2(exercise)[1]
     if failures and not review:
         raise ValueError(f'{exercise}: {"; ".join(failures)}; fix the motion before export')
-    return {'id': exercise, 'duration': round(duration, 3), 'joints': JOINTS,
+    # Equipment that never moves (bar, doorframe, chair, wall) is stored once for the clip.
+    scene = None
+    if frames and 'p' in frames[0] and all(f.get('p') == frames[0]['p'] for f in frames):
+        scene = frames[0]['p']
+        for f in frames:
+            del f['p']
+    return {**({'scene': scene} if scene else {}),'id': exercise, 'duration': round(duration, 3), 'joints': JOINTS,
             'view': {'azimuth': view.get('azimuth', 65), 'elevation': view.get('elevation', 8),
                      **({'cropBelow': view['crop_below']} if 'crop_below' in view else {})},
             'contract': CONTRACTS.get(exercise),

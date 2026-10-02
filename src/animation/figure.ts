@@ -8,6 +8,7 @@
 import * as THREE from 'three';
 import { ConvexGeometry } from 'three/examples/jsm/geometries/ConvexGeometry.js';
 
+import { EquipmentModel } from './equipment-model';
 import { HandModel, type Grip } from './hand-model';
 import { HeadModel } from './head-model';
 import { KettlebellModel } from './kettlebell-model';
@@ -70,6 +71,7 @@ export class Figure {
   private shirt: THREE.Mesh;
   private shirtOutline: THREE.Mesh;
   private bells: KettlebellModel[] = [];
+  private equipment = new EquipmentModel();
   private colors = {
     ink: new THREE.Color(FIGURE_COLORS.ink),
     far: new THREE.Color(FIGURE_COLORS.far),
@@ -109,6 +111,7 @@ export class Figure {
     this.group.add(this.shirt, this.shirtOutline);
 
     for (let i = 0; i < 2; i++) this.bells.push(new KettlebellModel(this.group));
+    this.group.add(this.equipment.group);
   }
 
   /** Pose the figure. `camera` is the eye position, for near/far side shading. */
@@ -144,7 +147,7 @@ export class Figure {
       const state = pose.hands?.[side] ?? 0;
       parts.hand.update({
         shoulder, elbow, wrist, palm, lateral, left: sideways, anterior: forward, state,
-        grip: state === 1 ? this.gripFor(side, pose) : undefined,
+        grip: state === 1 ? this.gripFor(side, pose, forward) : undefined,
       });
 
       const heel = j[`heel_${side}`];
@@ -164,6 +167,8 @@ export class Figure {
     const headSide = new THREE.Vector3().crossVectors(headUp, headFront);
     this.head.place(j.head.clone().addScaledVector(headFront, -0.004), headSide, headUp, headFront);
 
+    this.equipment.update(pose.equipment ?? [], j.pelvis);
+
     this.bells.forEach((model, i) => {
       const bell = pose.bells[i];
       model.visible = !!bell;
@@ -178,7 +183,17 @@ export class Figure {
   }
 
   /** The bar this hand holds (exported grip point) and its direction. */
-  private gripFor(side: Side, pose: Pose): Grip | undefined {
+  private gripFor(side: Side, pose: Pose, forward: THREE.Vector3): Grip | undefined {
+    const bar = pose.barGrips?.[side];
+    if (bar) {
+      // Pull-up bar, doorframe, dumbbell or band. On a hanging bar the palms face forward
+      // (overhand) or toward the face (underhand).
+      const point = v(bar.point);
+      return {
+        point, axis: v(bar.axis).normalize(), horn: false, twoHand: false, center: point, thumb: 1,
+        palm: bar.facing ? forward.clone().multiplyScalar(bar.facing) : undefined,
+      };
+    }
     for (const bell of pose.bells) {
       const held = bell.grips?.[side];
       if (!held) continue;

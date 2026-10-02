@@ -26,6 +26,8 @@ export type Grip = {
   center: THREE.Vector3;
   /** Where the thumb points along the bar: +1 along `axis`, -1 against it. */
   thumb: 1 | -1;
+  /** Explicit palm facing (hanging bar: forward overhand, backward underhand). */
+  palm?: THREE.Vector3;
 };
 
 export type HandInput = {
@@ -142,7 +144,9 @@ export class HandModel {
     // Horns: palms toward the bell. Two hands on the handle: overhand, palms toward the body
     // (and down when the arms are out in front) in every pose, so they never flip. One hand:
     // the back of the hand faces the front of the forearm (it turns over for the rack/lockout).
-    const want = grip.horn
+    const want = grip.palm
+      ? grip.palm.clone()
+      : grip.horn
       ? grip.center.clone().sub(grip.point)
       : grip.twoHand
         ? input.anterior.clone().negate().addScaledVector(DOWN, 0.4)

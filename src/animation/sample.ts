@@ -1,9 +1,16 @@
-import type { Clip, Pose, Vec3 } from './types';
+import type { Clip, ClipShape, Pose, Shape, Vec3 } from './types';
 
 const MM = 0.001;
 
 function lerp3(a: number[], b: number[], t: number): Vec3 {
   return [(a[0] + (b[0] - a[0]) * t) * MM, (a[1] + (b[1] - a[1]) * t) * MM, (a[2] + (b[2] - a[2]) * t) * MM];
+}
+
+function shape(a: ClipShape, b: ClipShape | undefined, t: number): Shape {
+  const at = (points: number[][], next: number[][] | undefined) => points.map((p, i) => lerp3(p, next?.[i] ?? p, t));
+  if (a.k === 'tube') return { kind: 'tube', points: at(a.pts, b?.k === 'tube' ? b.pts : undefined), radius: a.r * MM, color: a.c };
+  if (a.k === 'slab') return { kind: 'slab', corners: at(a.pts, b?.k === 'slab' ? b.pts : undefined), thickness: a.t * MM, color: a.c };
+  return { kind: 'dumbbell', handle: at(a.h, b?.k === 'db' ? b.h : undefined) as [Vec3, Vec3], color: a.c };
 }
 
 /**
@@ -42,7 +49,21 @@ export function samplePose(clip: Clip, seconds: number, speed = 1): Pose {
   });
   // Hand states are discrete: take the nearer sample (no blending, no flicker).
   const hs = (t < 0.5 ? a : b).hs;
-  return { joints, bells, hands: hs ? { l: hs[0], r: hs[1] } : undefined };
+  const equipment = [
+    ...(clip.scene ?? []).map((s) => shape(s, undefined, 0)),
+    ...(a.p ?? []).map((s, k) => shape(s, b.p?.[k], t)),
+  ];
+  // Which hands hold a bar follows the hand states (nearer sample); the grip point blends.
+  const held = (t < 0.5 ? a : b).g;
+  const barGrips = held
+    ? Object.fromEntries(
+        (Object.keys(held) as ('l' | 'r')[]).map((side) => {
+          const g = held[side]!;
+          return [side, { point: lerp3(a.g?.[side]?.p ?? g.p, b.g?.[side]?.p ?? g.p, t), axis: lerp3(g.a, g.a, 0), facing: g.w }];
+        }),
+      )
+    : undefined;
+  return { joints, bells, hands: hs ? { l: hs[0], r: hs[1] } : undefined, equipment, barGrips };
 }
 
 /** Bounding box over every frame, used to frame the camera once per clip. */
@@ -55,6 +76,7 @@ export function clipBounds(clip: Clip): { center: Vec3; size: number } {
   for (const frame of clip.frames) {
     const points = [...Array(frame.j.length / 3).keys()].map((k) => frame.j.slice(k * 3, k * 3 + 3));
     for (const bell of frame.b) points.push(bell.c);
+    for (const s of [...(clip.scene ?? []), ...(frame.p ?? [])]) points.push(...(s.k === 'db' ? s.h : s.pts));
     for (const p of points) {
       for (let axis = 0; axis < 3; axis++) {
         min[axis] = Math.min(min[axis], p[axis] * MM);
