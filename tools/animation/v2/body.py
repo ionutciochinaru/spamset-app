@@ -49,7 +49,10 @@ def support_points(pose, floor=.03, resting=.035):
 
     - A flat planted foot contributes its sole outline.
     - A foot on its ball (calf raise, plank, feet on a chair) contributes the ball of
-      the foot: a short strip across the toes, not a single point.
+      the foot: a short strip across the toes, not a single point; a foot on its heel
+      with the toes up contributes a strip at the heel.
+    - A seat contact contributes the area of the buttocks; a palm, kneeling knee or
+      forearm-plank elbow a small square.
     - Every declared contact counts at any height (hands on a wall, toes on a chair
       seat, a seat under the hips), projected onto the ground plane. This is the
       standard static approximation for multi-contact support.
@@ -68,12 +71,24 @@ def support_points(pose, floor=.03, resting=.035):
         if heel[2] < floor and toe[2] < floor:
             points += [(heel[0] + ox, heel[1] + oy), (heel[0] - ox, heel[1] - oy),
                        (toe[0] + ox * 1.2, toe[1] + oy * 1.2), (toe[0] - ox * 1.2, toe[1] - oy * 1.2)]
-        elif toe[2] < floor or f'toe_{s}' in contacts or f'heel_{s}' in contacts:
+        elif toe[2] < floor or f'toe_{s}' in contacts:
             ball = (toe[0] - ux * .05, toe[1] - uy * .05)
             points += [(toe[0] + ox * 1.2, toe[1] + oy * 1.2), (toe[0] - ox * 1.2, toe[1] - oy * 1.2),
                        (ball[0] + ox, ball[1] + oy), (ball[0] - ox, ball[1] - oy)]
+        elif heel[2] < floor or f'heel_{s}' in contacts:
+            # On the heel with the toes up (hamstring stretch): a short strip at the heel.
+            back = (heel[0] + ux * .04, heel[1] + uy * .04)
+            points += [(heel[0] + ox, heel[1] + oy), (heel[0] - ox, heel[1] - oy),
+                       (back[0] + ox, back[1] + oy), (back[0] - ox, back[1] - oy)]
     for name, p in contacts.items():
-        if not name.startswith(('heel_', 'toe_')):
+        if name == 'seat':
+            # Sitting: the buttocks bear weight over an area, not a point.
+            points += [(p[0] + dx, p[1] + dy) for dx in (-.07, .07) for dy in (-.13, .13)]
+        elif name.startswith(('palm_', 'knee_', 'elbow_')):
+            # A hand flat on the floor, a kneeling knee or a forearm-plank elbow bears weight
+            # over a small area, not a point.
+            points += [(p[0] + dx, p[1] + dy) for dx in (-.035, .035) for dy in (-.035, .035)]
+        elif not name.startswith(('heel_', 'toe_')):
             points.append((p[0], p[1]))
     try:
         from .collide import PARTS

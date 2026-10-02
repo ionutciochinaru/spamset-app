@@ -27,6 +27,11 @@ BILATERAL = {'standing-knee', 'reverse-lunge', 'bird-dog', 'seated-knee', 'side-
 STATIC_SECONDS = 2.
 
 
+# Planks where one hand leaves the floor: the body shifts over the supporting hand.
+# Planks where one hand leaves the floor. Shifting the hips sideways over the supporting hand
+# (shift_hips) needed 14-18 cm swings and still failed; these two are to be re-authored as
+# v2 Lifts (wider stance, slower tempo). Empty: they keep the legacy motion for now.
+PLANK_SHIFT = set()
 # Suspended from a bar: the body hangs as a pendulum under the grip.
 HANGING = {'chin-ups', 'pull-ups'}
 # Held by the hands although only the feet are declared contacts (hands on the frame).
@@ -58,13 +63,18 @@ def build(motions, skip):
         profile = PROFILES.get(name, {})
         duration = profile['frames'] / profile['fps'] if profile.get('fps') else STATIC_SECONDS
         standing = _standing(legacy, name)
+        shifting = standing or name in PLANK_SHIFT
         # Mirroring averages the two halves; only valid if the legacy loop really alternates.
         wrapped[name] = Wrapped(
             name, legacy, duration,
-            balance='xy' if standing else '',
-            mirror=standing and name in BILATERAL,
-            holds=weight_shift_holds(legacy, name) if standing else (),
-            iterations=3 if standing else 1,
+            # Planks shift the hips sideways only: along the body, moving the hips just
+            # raises or lowers them (a pike), it barely moves the centre of mass.
+            balance='y' if name in PLANK_SHIFT else 'xy' if shifting else '',
+            mirror=shifting and name in BILATERAL,
+            holds=weight_shift_holds(legacy, name) if standing
+            else weight_shift_holds(legacy, name, hands=True) if name in PLANK_SHIFT else (),
+            iterations=3 if shifting else 1,
             hang=name in HANGING,
-            grip=name in HAND_SUPPORTED)
+            grip=name in HAND_SUPPORTED,
+            hips=name in PLANK_SHIFT)
     return wrapped

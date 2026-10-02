@@ -23,10 +23,12 @@ try:
     from ..rig import add, sub, mul, unit, cross, dot, norm, side_sign, SIDES, UPPER_ARM, FOREARM
     from .collide import PARTS, segment_distance
     from .framework import Lift, SAMPLES_PER_SECOND, minjerk, _safe_target, _support_centre
+    from .body import centre_of_mass, support_points, convex_hull, margin
 except ImportError:
     from rig import add, sub, mul, unit, cross, dot, norm, side_sign, SIDES, UPPER_ARM, FOREARM
     from v2.collide import PARTS, segment_distance
     from v2.framework import Lift, SAMPLES_PER_SECOND, minjerk, _safe_target, _support_centre
+    from v2.body import centre_of_mass, support_points, convex_hull, margin
 
 ARM_CLEARANCE = .01
 MAX_ABDUCTION = radians(40)
@@ -336,6 +338,40 @@ def shift_upper_body(p, dx, dy):
     return p
 
 
+def shift_hips(p, dx, dy):
+    """Planks: the hips move by (dx, dy) while the chest stays over the planted hands.
+
+    The pelvis swings about the chest at fixed trunk length; hip joints and a lifted leg
+    follow it, so no straight arm is stretched. A planted straight leg takes up the
+    resulting (millimetre) change in length at the foot."""
+    j = p.j
+    original = dict(j)
+    chest, pelvis = j['chest'], j['pelvis']
+    length = norm(sub(pelvis, chest))
+    follow = {s: _follow(p, s) for s in SIDES}
+    legs = {s: norm(sub(original['hip_' + s], original['ankle_' + s])) for s in SIDES}
+    moved = add(chest, mul(unit(sub(add(pelvis, (dx, dy, 0.)), chest)), length))
+    delta = sub(moved, pelvis)
+    j['pelvis'] = moved
+    for s in SIDES:
+        j['hip_' + s] = add(original['hip_' + s], delta)
+        for k in ('ankle', 'heel', 'toe'):
+            j[f'{k}_{s}'] = add(original[f'{k}_{s}'], mul(delta, follow[s]))
+        # Plank legs are straight and nearly horizontal, so moving the hips can only be
+        # absorbed by the foot: it slides toward the hip by the (millimetre) stretch, plus
+        # 1 mm so the leg is never exactly at the IK reach limit.
+        v = sub(j['ankle_' + s], j['hip_' + s])
+        stretch = _smooth_hinge(norm(v) - (legs[s] - .001))
+        slide = mul(unit(v), -stretch)
+        for k in ('ankle', 'heel', 'toe'):
+            j[f'{k}_{s}'] = add(j[f'{k}_{s}'], slide)
+        if follow[s] >= 1.:
+            j['knee_' + s] = add(original['knee_' + s], delta)
+        else:
+            p.leg(s, j['ankle_' + s], pole=add(_pole(original['hip_' + s], original['knee_' + s], original['ankle_' + s]), delta))
+    return p
+
+
 def hang_under_grip(p):
     """Hanging from a bar the body is a pendulum: rotate the whole body rigidly about the
     bar (the line through both hands) so the centre of mass sits directly below it. The
@@ -363,6 +399,57 @@ def hang_under_grip(p):
     return p
 
 
+def _area(hull):
+    if len(hull) < 3:
+        return 0.
+    return abs(sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(hull, hull[1:] + hull[:1]))) / 2
+
+
+def _nearest_inside(point, hull, keep):
+    """Nearest point to `point` that is at least `keep` inside the convex hull.
+
+    Projects onto the hull's edges moved inward by `keep` (alternating projection onto the
+    violated half-planes, which converges for a convex polygon). If the hull is too thin
+    for that margin, the margin is halved until it fits. Unlike stepping toward the
+    centroid, this moves the target straight across a long, thin support (one hand and two
+    feet), sideways rather than along it."""
+    if len(hull) < 3:
+        return point
+    ccw = sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(hull, hull[1:] + hull[:1])) > 0
+    edges = []
+    for a, b in zip(hull, hull[1:] + hull[:1]):
+        ex, ey = b[0] - a[0], b[1] - a[1]
+        length = sqrt(ex * ex + ey * ey) or 1e-9
+        nx, ny = (-ey / length, ex / length) if ccw else (ey / length, -ex / length)  # inward
+        edges.append((a, nx, ny))
+    centre = (sum(q[0] for q in hull) / len(hull), sum(q[1] for q in hull) / len(hull))
+    while keep > 1e-4:
+        if all((centre[0] - a[0]) * nx + (centre[1] - a[1]) * ny >= keep for a, nx, ny in edges):
+            break
+        keep /= 2
+    x, y = point
+    for _ in range(200):
+        moved = False
+        for a, nx, ny in edges:
+            depth = (x - a[0]) * nx + (y - a[1]) * ny
+            if depth < keep - 1e-7:
+                x, y = x + (keep - depth) * nx, y + (keep - depth) * ny
+                moved = True
+        if not moved:
+            break
+    return (x, y)
+
+
+def _inside(point, hull, keep=.02):
+    """Keep a ground point at least `keep` inside the hull (nearest such point)."""
+    if len(hull) < 3 or margin(point, hull) >= keep:
+        return point
+    return _nearest_inside(point, hull, keep)
+
+
+SAFE_KEEP = .06  # preferred balance margin inside the support (as framework.SAFE_MARGIN)
+
+
 class Wrapped(Lift):
     """A legacy motion as a v2 Lift: balance-solved hip shift plus arm clearance.
 
@@ -373,9 +460,13 @@ class Wrapped(Lift):
     """
 
     def __init__(self, name, legacy, duration, balance='xy', mirror=False, clear=True, holds=(), iterations=3, hang=False,
-                 grip=False):
-        """grip: the hands hold a fixed support (doorframe) and are declared contacts."""
+                 grip=False, hips=False):
+        """grip: the hands hold a fixed support (doorframe) and are declared contacts.
+        hips: balance by moving the hips only (planks), not the whole body."""
         self.legacy, self.clear, self.iterations, self.hang, self.grip = legacy, clear, iterations, hang, grip
+        self.hips = hips
+        # Thin supports (one hand and two feet) cannot hold the standing margin.
+        self.keep = .015 if hips else SAFE_KEEP
         self.legacy_duration = duration
         self.holds = sorted(holds)
         total = duration + sum(seconds for _, seconds in self.holds)
@@ -455,10 +546,40 @@ class Wrapped(Lift):
                 targets[(first + start + m) % n] = tuple(x + (y - x) * w for x, y in zip(before, after))
         return targets
 
-    def balance_target(self, phase, pose, com):
+    TARGET_SMOOTHING = .3  # seconds: the balance target anticipates support changes
+
+    @cached_property
+    def smooth_targets(self):
+        """The balance target per solver sample, low-pass filtered over the loop.
+
+        A support change (heels lifting, a hand leaving the floor) makes the raw target jump;
+        a centred minimum-jerk-shaped window lets the body start moving before it."""
+        n = max(48, round(self.duration * SAMPLES_PER_SECOND))
+        n += n % 2
         table = self.stance_targets
         if table is None:
-            return _safe_target(pose, com)
+            table = []
+            for i in range(n):
+                pose = self.raw(i / n).result()
+                com = centre_of_mass(pose)[0]
+                table.append(_inside((com[0], com[1]), convex_hull(support_points(pose)), self.keep))
+        half = max(1, round(self.TARGET_SMOOTHING / 2 / self.duration * n))
+        weights = [minjerk(1 - abs(k) / (half + 1)) for k in range(-half, half + 1)]
+        total = sum(weights)
+        smooth = [tuple(sum(w * table[(i + k) % n][d] for w, k in zip(weights, range(-half, half + 1))) / total
+                        for d in range(2)) for i in range(n)]
+        # Keep the smoothed target inside the smallest support nearby in time (the ball of the
+        # foot while the heels are up), so anticipation never aims outside a narrow support.
+        hulls = [convex_hull(support_points(self.raw(i / n).result())) for i in range(n)]
+        areas = [_area(h) for h in hulls]
+        out = []
+        for i in range(n):
+            k = min(range(-half, half + 1), key=lambda k: areas[(i + k) % n])
+            out.append(_inside(smooth[i], hulls[(i + k) % n]))
+        return out
+
+    def balance_target(self, phase, pose, com):
+        table = self.smooth_targets
         return table[int(round(phase * len(table))) % len(table)]
 
     def _build(self, name, phase, st, dx, dy):
@@ -471,7 +592,10 @@ class Wrapped(Lift):
             if self.clear:
                 clear_arms(p)
             return p
-        shift_upper_body(p, dx, dy)
+        if self.hips:
+            shift_hips(p, dx, dy)
+        else:
+            shift_upper_body(p, dx, dy)
         if self.clear:
             clear_arms(p)
         return p
@@ -482,12 +606,15 @@ class Wrapped(Lift):
         return pose
 
 
-def weight_shift_holds(legacy, name, seconds=.5, samples=480):
+def weight_shift_holds(legacy, name, seconds=.5, samples=480, hands=False):
     """Pauses for Wrapped(holds=...): the middle of each double-support stretch of the
-    legacy motion that borders a single-support stretch (a foot about to leave or just
-    back on the floor). Moves that never stand on one foot get none."""
+    legacy motion that borders a single-support stretch (a foot, or with hands=True a hand,
+    about to leave or just back on the floor). Moves that never lift one get none."""
     def single(phase):
-        j = legacy(name, phase).j
+        p = legacy(name, phase)
+        if hands:
+            return sum(('palm_' + s) in p.contacts for s in SIDES) == 1
+        j = p.j
         free = [s for s in SIDES if min(j[f'heel_{s}'][2], j[f'toe_{s}'][2]) > .02]
         return len(free) == 1
     flags = [single(i / samples) for i in range(samples)]

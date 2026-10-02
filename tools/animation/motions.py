@@ -391,6 +391,10 @@ ALLOWED_CONTACT = {
     'stacked-pushup': {'thigh_l|thigh_r': .04, 'shin_l|shin_r': .04, 'shin_l|thigh_r': .03, 'shin_r|thigh_l': .03},
     # Knees together, rolled side to side.
     'reclined-twist': {'shin_l|shin_r': .03, 'thigh_l|thigh_r': .03},
+    # The hand wraps the ankle and pulls the heel toward the bottom.
+    # Knees stay together.
+    'quad-stretch': {'hand_l|shin_l': .065, 'hand_r|shin_r': .065, 'forearm_l|shin_l': .03, 'forearm_r|shin_r': .03,
+                     'thigh_l|thigh_r': .015},
     # The free hand presses the straight arm across the chest.
     'cross-body-shoulder': {'forearm_l|forearm_r': .03, 'hand_l|forearm_r': .02, 'hand_r|forearm_l': .02},
     'kb-deadlift': {'forearm_l|thigh_l': .02, 'forearm_r|thigh_r': .02, 'hand_l|thigh_l': .02, 'hand_r|thigh_r': .02,

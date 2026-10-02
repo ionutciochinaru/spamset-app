@@ -50,6 +50,20 @@ try:
 except ImportError:
     from v2.getup import MOMENTUM_WINDOWS as _GETUP_WINDOWS
 MOMENTUM_WINDOWS={'kb-getup':_GETUP_WINDOWS}
+# Explosive push-ups: while the hands are in the air the body pivots on the toes, which the
+# point-mass ZMP model does not describe; those samples are reported, not checked.
+HANDS_OFF_MOMENTUM={'clapping-pushup','power-pushup'}
+
+def hands_off_windows(name,samples=240):
+    off=[not any(k.startswith('palm_') for k in pose_for(name,i/samples)['contacts']) for i in range(samples)]
+    windows=[];i=0
+    while i<samples:
+        if off[i]:
+            j=i
+            while j<samples and off[j]:j+=1
+            windows.append((max(0.,(i-1)/samples),min(1.,(j+1)/samples)));i=j
+        else:i+=1
+    return windows
 # Suspended from a bar: no floor support, so instead of the ZMP the centre of mass must
 # hang under the hands (a pendulum), within HANG_SWAY.
 HANGING={'chin-ups','pull-ups'}
@@ -102,6 +116,7 @@ def check_v2(name,samples=240):
     # Momentum phases (e.g. the get-up's roll onto the elbow) rely on rotational momentum
     # that the point-mass ZMP model does not capture; they are excluded and reported.
     windows=MOMENTUM_WINDOWS.get(name,[])
+    if name in HANDS_OFF_MOMENTUM:windows=windows+hands_off_windows(name)
     checked=[(i,r) for i,r in enumerate(balance) if not any(a<=i/samples<b for a,b in windows)]
     failures=[]
     if clearance < -PENETRATION_TOLERANCE:failures.append(f'interpenetration {pair} {raw:.3f} m at {phase:.3f}')
