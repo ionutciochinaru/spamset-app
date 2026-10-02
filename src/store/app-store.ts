@@ -63,6 +63,17 @@ export type RemoteState = Pick<State, 'settings' | 'prescriptions' | 'customWork
 
 export const DEFAULT_SETTINGS: Settings = { units: 'kg', bells: [8, 12, 16, 20, 24], haptics: true };
 
+const STORAGE_KEY = 'spamset';
+// The app was called Kettlebell Swing: move data saved under the old key on first launch.
+const LEGACY_STORAGE_KEY = 'kettlebell-swing';
+try {
+  const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+  if (legacy !== null && localStorage.getItem(STORAGE_KEY) === null) localStorage.setItem(STORAGE_KEY, legacy);
+  if (legacy !== null) localStorage.removeItem(LEGACY_STORAGE_KEY);
+} catch {
+  // Storage unavailable: start fresh under the new key.
+}
+
 const now = () => new Date().toISOString();
 const newId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
@@ -154,8 +165,7 @@ export const useApp = create<State & Actions>()(
       markSynced: (ids) => set((s) => ({ syncedSessionIds: [...new Set([...s.syncedSessionIds, ...ids])], lastSyncedAt: now() })),
     }),
     {
-      // Storage key kept from the app's former name (kettlebell-swing) so saved data survives the rename.
-      name: 'kettlebell-swing',
+      name: STORAGE_KEY,
       version: 1,
       storage: createJSONStorage(() => localStorage),
     },
