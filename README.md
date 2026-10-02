@@ -1,4 +1,4 @@
-# Kettlebell Swing
+# Spamset
 
 A kettlebell training app for iOS, Android and web, built with Expo. It runs circuits, EMOMs, AMRAPs, intervals, ladders and strength sets, tracks every set, and applies progressive overload using the bells you own. Each exercise is demonstrated by a looping 3D figure you can drag to inspect the form from any angle.
 
@@ -38,7 +38,7 @@ Without Supabase keys the app runs offline-only. To enable sign-in:
 1. Create a Supabase project, or run `eas integrations:supabase:connect`.
 2. Copy `.env.example` to `.env.local` and fill in `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 3. Apply `supabase/migrations/0001_init.sql`. It creates the tables with row-level security.
-4. In Supabase Auth, enable the Google and Apple providers. Add redirect URLs: `kettlebellswing://auth-callback` and your web origin.
+4. In Supabase Auth, enable the Google and Apple providers. Add redirect URLs: `spamset://auth-callback` and your web origin.
 
 On iOS, Apple sign-in is native; on Android and web it uses browser OAuth. Google uses browser OAuth everywhere.
 

@@ -154,6 +154,7 @@ export const useApp = create<State & Actions>()(
       markSynced: (ids) => set((s) => ({ syncedSessionIds: [...new Set([...s.syncedSessionIds, ...ids])], lastSyncedAt: now() })),
     }),
     {
+      // Storage key kept from the app's former name (kettlebell-swing) so saved data survives the rename.
       name: 'kettlebell-swing',
       version: 1,
       storage: createJSONStorage(() => localStorage),

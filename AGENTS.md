@@ -1,4 +1,4 @@
-# Kettlebell Swing
+# Spamset (app)
 
 Expo (SDK 57) app for iOS, Android and web. Kettlebell workouts with a live 3D form demonstration. See README.md for features and setup.
 

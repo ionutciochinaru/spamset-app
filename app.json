@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "Kettlebell Swing",
-    "slug": "kettlebell-swing",
+    "name": "Spamset",
+    "slug": "spamset-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "kettlebellswing",
+    "scheme": "spamset",
     "userInterfaceStyle": "dark",
     "ios": {
       "icon": "./assets/images/icon.png",
-      "bundleIdentifier": "com.ionutciochinaru.kettlebellswing",
+      "bundleIdentifier": "com.cjohnd.spamset",
       "usesAppleSignIn": true,
       "supportsTablet": true
     },
@@ -21,7 +21,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.ionutciochinaru.kettlebellswing"
+      "package": "com.cjohnd.spamset"
     },
     "web": {
       "output": "single",

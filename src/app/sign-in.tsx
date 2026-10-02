@@ -30,7 +30,7 @@ export default function SignIn() {
       <View style={styles.hero}>
         <FigureViewer clipId="kb-swing" controls={false} style={styles.viewer} />
       </View>
-      <Title>Kettlebell Swing</Title>
+      <Title>Spamset</Title>
       <Body muted>
         Circuits, EMOMs, ladders and strength sets for your kettlebells. It tracks every set and tells you when to move up
         a bell. Drag the figure to check the form from any angle.
