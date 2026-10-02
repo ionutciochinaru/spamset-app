@@ -82,6 +82,8 @@ class Pose:
         heel=add(ankle,rotate_y((-.075,0,-ANKLE_HEIGHT),pitch))
         toe=add(ankle,toe_from_ankle)
         self.j['ankle_'+s]=tuple(ankle);self.j['heel_'+s]=heel;self.j['toe_'+s]=toe
+        # Re-placing a foot replaces its contacts: a lifted foot leaves no stale floor contact.
+        self.contacts.pop('toe_'+s,None);self.contacts.pop('heel_'+s,None)
         if contact:
             self.contacts['toe_'+s]=toe
             if abs(pitch)<1e-7:self.contacts['heel_'+s]=heel

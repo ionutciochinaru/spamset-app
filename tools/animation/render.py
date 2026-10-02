@@ -61,7 +61,11 @@ class Camera:
         self.depth = (cos(az)*cos(el), sin(az)*cos(el), sin(el))
         self.right = (sin(az), -cos(az), 0)
         self.up = (-cos(az)*sin(el), -sin(az)*sin(el), cos(el))
-        self.near = 'l' if sin(az) >= 0 else 'r'
+        # The camera-side limbs get the bright near tone. Decide from the body's
+        # actual depth over the clip: prone poses put the person's left at -y.
+        lean = sum(dot(pose['joints'][f'{part}_l'], self.depth)-dot(pose['joints'][f'{part}_r'], self.depth)
+                   for pose in poses for part in ('hip', 'shoulder') if f'{part}_l' in pose['joints'])
+        self.near = ('l' if sin(az) >= 0 else 'r') if abs(lean) < 1e-6 else ('l' if lean > 0 else 'r')
         self.crop_below = view.get('crop_below', -1e9)
         support = [p for pose in poses for p in pose['joints'].values() if p[2] < .13]
         for pose in poses:

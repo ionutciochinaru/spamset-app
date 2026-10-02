@@ -339,7 +339,8 @@ def side_bend(name, phase):
             # Abduct in the frontal plane: out to its own side, then overhead.
             angle = radians(165)*t
             direction = (0, ss*sin(angle), -cos(angle))
-            direction = rotate(direction, (1, 0, 0), sg*radians(48)*t)
+            # ...and over the head toward the bending side.
+            direction = rotate(direction, (1, 0, 0), -sg*radians(48)*t)
             p.arm(s, add(shoulder, mul(direction, .545)), pole=add(shoulder, (-.3, ss*.3, 0)))
         else:
             thigh = mix_point(p.j['hip_'+s], p.j['knee_'+s], .25+.25*t)

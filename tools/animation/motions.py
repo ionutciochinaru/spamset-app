@@ -73,9 +73,10 @@ def db_curl(name,phase):
     p=standing(name,phase);flex=radians(10+115*pulse(phase))
     for s in SIDES:
         p.arm_fk(s,shoulder_angle=.025,elbow_flex=flex)
-        wrist=p.j['wrist_'+s]
-        p.props.append({'type':'dumbbell','center':list(wrist),
-            'handle':[list(add(wrist,(0,-.13,0))),list(add(wrist,(0,.13,0)))],'radius':.055})
+        grip=p.j['wrist_'+s]
+        # A real dumbbell (~15 cm handle) in each hand: two separate weights, not one bar.
+        p.props.append({'type':'dumbbell','center':list(grip),
+            'handle':[list(add(grip,(0,-.075,0))),list(add(grip,(0,.075,0)))],'radius':.055})
     # Front three-quarter: the two dumbbells stand apart instead of lining up.
     p.view={'azimuth':30,'elevation':10}
     return p
@@ -117,13 +118,13 @@ def shoulder_circle(name,phase):
     p=standing(name,phase)
     # A modest ellipse stays readable at 280x156 without turning the relaxed
     # shoulder roll into an arm circle. The clavicle radius remains fixed.
-    theta=phase*2*pi;x=.035*cos(theta);z=.042*sin(theta)
+    theta=phase*2*pi;x=.055*cos(theta);z=.065*sin(theta)
     side=sqrt(SHOULDER_HALF**2-x*x-z*z)
     for s in SIDES:
         p.j['shoulder_'+s]=add(p.j['chest'],(x,side_sign(s)*side,z))
         p.arm_fk(s,elbow_flex=.065)
     # A more frontal view keeps the far arm visible beside the broad shirt.
-    p.view={'azimuth':40,'elevation':7,'crop_below':1.00}
+    p.view={'azimuth':60,'elevation':7,'crop_below':1.00}
     return p
 
 def reverse_lunge(name,phase):

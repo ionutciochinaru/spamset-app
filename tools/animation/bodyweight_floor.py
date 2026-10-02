@@ -32,6 +32,10 @@ def toward_head(angle):
 def curl(p, lower, upper):
     """Supine trunk curl: lower/upper spine lift angles (radians) from the floor."""
     articulate(p, toward_head(lower), toward_head(upper))
+    if upper > 1e-6:
+        # Curled up: the upper back and head have left the floor.
+        p.contacts.pop('upper_back', None)
+        p.contacts.pop('head_ground', None)
     return p
 
 
@@ -104,8 +108,14 @@ def reverse_crunches(name, phase):
     # The back and arms stay still on the floor; only the legs move (user note).
     p = supine(Pose(name, phase))
     arms_along_floor(p)
+    # At the top the hips curl off the floor (posterior tilt); chest and shoulders stay put.
+    lift = smooth(stage(t, .35, 1.))
+    mid = mix_point(p.j['chest'], p.j['pelvis'], .5)
+    pelvis = add(mid, rotate((TORSO/2, 0, 0), (0, 1, 0), -radians(28)*lift))
+    p.j['pelvis'], p.j['spine_mid'] = pelvis, mid
     for s in SIDES:
-        thigh = rotate((0, 0, 1), (0, 1, 0), -radians(45)*t)
+        p.j['hip_'+s] = add(pelvis, (0, side_sign(s)*HIP_HALF, 0))
+        thigh = rotate((0, 0, 1), (0, 1, 0), -radians(45+15*lift)*t)
         leg_from_hip(p, s, thigh, knee_bend=radians(90), pole=(1, 0, 0))
     set_head(p)
     p.view = dict(SUPINE_VIEW)
@@ -118,20 +128,29 @@ def bicycle_crunches(name, phase):
     local = (phase*2) % 1.
     t = pulse(local)
     p = supine(Pose(name, phase))
-    curl(p, radians(12), radians(34))
-    # Rotate the shoulders toward the driving knee.
-    up = p.up
-    turn = side_sign(side)*radians(24)*t
-    for s in SIDES:
-        p.j['shoulder_'+s] = add(p.j['chest'], rotate((0, side_sign(s)*SHOULDER_HALF, 0), up, turn))
-    hands_behind_head(p)
+    curl(p, radians(12), radians(38))
     for s in SIDES:
         drive = t if s == side else 0.
-        bent = rotate((0, 0, 1), (0, 1, 0), -radians(35)*drive)
+        bent = rotate((0, 0, 1), (0, 1, 0), -radians(40)*drive)
         long = rotate((1, 0, 0), (0, 1, 0), -radians(25))
         d = unit(mix_point(long, bent, max(drive, .15)))
         leg_from_hip(p, s, d, knee_bend=radians(10+95*drive), pole=(1, 0, 0))
-    p.view = {'azimuth': 55, 'elevation': 24}
+    # Rotate the shoulders toward the driving knee; the opposite elbow leads across to meet it.
+    up, forward = p.up, p.forward
+    turn = side_sign(side)*radians(40)*t
+    side_axis = rotate(unit(cross(up, forward)), up, turn)
+    forward = rotate(forward, up, turn)
+    lead = 'r' if side == 'l' else 'l'
+    for s in SIDES:
+        sg = side_sign(s)
+        p.j['shoulder_'+s] = add(p.j['chest'], mul(side_axis, sg*SHOULDER_HALF))
+        wrist = add(add(p.j['head'], mul(forward, -.07)), mul(side_axis, sg*.07))
+        pole = add(p.j['shoulder_'+s], add(mul(side_axis, sg*.6), mul(forward, .1)))
+        if s == lead:
+            pole = mix_point(pole, p.j['knee_'+side], t)
+        p.arm(s, wrist, pole=pole)
+    # More side-on: each leading elbow reads crossing toward the opposite knee.
+    p.view = {'azimuth': 70, 'elevation': 14}
     return p
 
 
@@ -271,13 +290,34 @@ def shoulder_taps(name, phase):
     return p
 
 
+def climber_leg(q):
+    """(progress back->front 0..1, clearance 0..1) for one leg's running stride; q in [0, 1)."""
+    if q < .35:
+        k = smooth(q/.35)
+        return k, sin(pi*k)
+    if q < .5:
+        return 1., 0.
+    if q < .85:
+        k = smooth((q-.5)/.35)
+        return 1-k, sin(pi*k)
+    return 0., 0.
+
+
 def climbers(name, phase):
-    """S44: push-up position; drive the knees toward the chest alternately in a running rhythm."""
+    """S44: push-up position; drive the knees toward the chest alternately in a running rhythm.
+
+    One knee drives in while the other foot pushes back; they pass each other
+    in the air, then the front foot taps under the hips as the back foot plants.
+    """
     p = Pose(name, phase)
+    strides = {s: climber_leg((phase + (0 if s == 'l' else .5)) % 1.) for s in SIDES}
     plank_body(p, TOP)
     for s in SIDES:
-        drive = pulse((phase*2 + (0 if s == 'l' else .5)) % 1.)
-        knee_drive(p, s, drive, (.30, side_sign(s)*.06, -.34), (1, 0, -.4))
+        sg = side_sign(s)
+        k, air = strides[s]
+        toe = add(mix_point((-1.0, sg*HIP_HALF, 0.), (-.20, sg*HIP_HALF, 0.), k), (0, 0, .14*air))
+        ankle = p.foot(s, toe=toe, pitch=radians(60-35*k), contact=air < 1e-6)
+        p.leg(s, ankle, pole=add(p.j['hip_'+s], (1, 0, 0)))
     plant_hands(p, {s: (.24, side_sign(s)*.225) for s in SIDES})
     p.view = dict(PLANK_VIEW)
     return p
@@ -285,55 +325,122 @@ def climbers(name, phase):
 
 def plank_jump_ins(name, phase):
     """S45: from a plank, jump both feet in to a crouch under the hips, then jump back out."""
-    t = hold_cycle(phase, into=.3, hold=.15)
+    # Feet travel only while airborne: in over 0-.30, crouch, out over .45-.75, plank.
+    t = stage(phase, 0, .30) if phase < .45 else 1-stage(phase, .45, .75)
     p = Pose(name, phase)
     hands = {s: (.24, side_sign(s)*.24) for s in SIDES}
     angle = TOP+radians(40)*t
     toe_x = -.99+.55*t
-    airborne = sin(pi*stage(phase, 0, .30))*.5+sin(pi*stage(phase, .45, .75))*.5
+    # A real hop each way: both feet leave the floor (~12 cm) between takeoff and landing.
+    airborne = sin(pi*stage(phase, 0, .30))+sin(pi*stage(phase, .45, .75))
     u, ankles = plank_body(p, TOP)
     # Crouch: feet land under the hips, knees tucked toward the chest.
     pelvis = mix_point(p.j['pelvis'], (-.30, 0, .42), t)
     lean = mix_point(u, unit((.95, 0, .30)), t)
-    p.torso(add(pelvis, (0, 0, .04*airborne)), up=unit(lean))
+    p.torso(add(pelvis, (0, 0, .025*airborne)), up=unit(lean))
     for s in SIDES:
         sg = side_sign(s)
-        toe = (toe_x, sg*.13, .04*airborne)
-        ankle = p.foot(s, toe=toe, pitch=radians(60), contact=airborne < 1e-3)
-        p.leg(s, ankle, pole=add(p.j['hip_'+s], (1, sg*.2, -.2)))
+        toe = (toe_x, sg*.13, .12*airborne)
+        ankle = p.foot(s, toe=toe, pitch=radians(60), contact=airborne < 1e-9)
+        p.leg(s, ankle, pole=add(p.j['hip_'+s], (1, sg*.2, 0)))
     plant_hands(p, hands)
     p.view = dict(PLANK_VIEW)
     return p
 
 
+def plank_shoulder_z(z, toe_x=-1.02):
+    """Body angle (pivoting on the toes) that puts the shoulders at height z."""
+    low, high = radians(-5), radians(45)
+    for _ in range(40):
+        mid = (low+high)/2
+        q = Pose('_', 0)
+        plank_body(q, mid, toe_x=toe_x)
+        low, high = (mid, high) if q.j['shoulder_l'][2] < z else (low, mid)
+    return (low+high)/2
+
+
 def tricep_extensions(name, phase):
-    """S51: from a forearm plank, press up to a straight-arm plank and lower back to the forearms."""
+    """S51: from a forearm plank, press up to a straight-arm plank and lower back to the forearms.
+
+    The hands stay planted where the forearms lay flat: elbows on the floor under
+    the shoulders at the bottom, arms straight (~160 deg) at the top.
+    """
     t = pulse(phase)
+    elbow_z = .045
+    bottom = plank_shoulder_z(elbow_z+UPPER_ARM)
+    q = Pose(name, 0)
+    plank_body(q, bottom, toe_x=-1.02)
+    hand_x = q.j['shoulder_l'][0]+FOREARM
+    wrist_l = (hand_x, SHOULDER_HALF, elbow_z)
+    # Top: the highest shoulders that keep the arm at 0.55 m (elbow ~160 deg).
+    low, high = elbow_z+UPPER_ARM, .65
+    for _ in range(40):
+        mid = (low+high)/2
+        q = Pose(name, 0)
+        plank_body(q, plank_shoulder_z(mid), toe_x=-1.02)
+        low, high = (mid, high) if norm(sub(q.j['shoulder_l'], wrist_l)) < .55 else (low, mid)
+    shoulder_z = elbow_z+UPPER_ARM+(low-elbow_z-UPPER_ARM)*t
     p = Pose(name, phase)
-    reach = THIGH+SHIN+TORSO
-    shoulder_z = .31+(.52-.31)*t
-    ankle_z = ANKLE_HEIGHT+.02
-    angle = asin_clamped((shoulder_z-ankle_z)/reach)
-    plank_body(p, angle, toe_x=-1.02)
+    plank_body(p, plank_shoulder_z(shoulder_z), toe_x=-1.02)
     for s in SIDES:
         sg = side_sign(s)
-        wrist = (.30, sg*.20, .05)
-        # Pole below and behind: the elbows fold down onto the floor at the bottom.
-        p.arm(s, wrist, pole=add(p.j['shoulder_'+s], (-.3, sg*.05, -.6)), palm=(.35, sg*.20, .014), contact=True)
-        if t < .15:
+        wrist = (hand_x, sg*SHOULDER_HALF, elbow_z)
+        # Pole behind: the elbow folds back toward the feet and settles onto the floor.
+        p.arm(s, wrist, pole=add(p.j['shoulder_'+s], (-.6, 0, -.25)), palm=(hand_x+.06, sg*SHOULDER_HALF, .014), contact=True)
+        if t < 1e-9:
             p.contacts['elbow_'+s] = p.j['elbow_'+s]
     p.view = dict(PLANK_VIEW)
     return p
 
+ARM_REACH = .55  # shoulder to wrist with the elbow at about 160 degrees
+
+
+def straight_arm_shoulder(hands_x, lean):
+    """Shoulder (x, z) `lean` ahead of hands on the floor, arm at ARM_REACH."""
+    return hands_x+lean, .05+sqrt(ARM_REACH**2-lean**2-.05**2)
+
+
+def ankle_on_toe(toe, pitch):
+    q = Pose('_', 0)
+    return q.foot('l', toe=toe, pitch=pitch)
+
+
+def planche_body(p, toe_x, shoulder):
+    """Toes fixed; solve the ankle pitch so a straight body reaches `shoulder` (x, z)."""
+    reach = THIGH+SHIN+TORSO
+    low, high = radians(20), radians(120)
+    for _ in range(40):
+        mid = (low+high)/2
+        a = ankle_on_toe((toe_x, 0, 0), mid)
+        dist = sqrt((shoulder[0]-a[0])**2+(shoulder[1]-a[2])**2)
+        # A larger pitch rolls the ankle forward over the toes, toward the shoulders.
+        low, high = (mid, high) if dist > reach else (low, mid)
+    pitch = (low+high)/2
+    ankles = {s: p.foot(s, toe=(toe_x, side_sign(s)*HIP_HALF, 0.), pitch=pitch) for s in SIDES}
+    a = ankles['l']
+    u = unit((shoulder[0]-a[0], 0, shoulder[1]-a[2]))
+    center = mul(add(ankles['l'], ankles['r']), .5)
+    p.torso(add(center, mul(u, THIGH+SHIN)), up=u)
+    for s in SIDES:
+        p.straight_leg(s, ankles[s], u)
+    return p
+
+
 def pseudo_planche(name, phase):
-    """Chart-defined: high plank with hands turned out beside the waist; lean the shoulders forward past the hands."""
+    """Chart-defined: high plank with hands turned out beside the waist; lean the shoulders forward past the hands.
+
+    Arms stay straight; the toes stay planted and the ankles roll forward over
+    them as the shoulders travel past the hands.
+    """
     t = hold_cycle(phase, into=.35, hold=.30)
     p = Pose(name, phase)
-    plank_body(p, TOP-radians(7), toe_x=-1.+.14*t)
+    hands_x = .06
+    shoulder = straight_arm_shoulder(hands_x, .03+.16*t)
+    planche_body(p, -1.04, shoulder)
     for s in SIDES:
         sg = side_sign(s)
-        wrist = (.06, sg*.24, .05)
-        p.arm(s, wrist, pole=add(p.j['shoulder_'+s], (-.4, sg*.3, -.1)), palm=(.06, sg*.29, .014), contact=True)
+        wrist = (hands_x, sg*(SHOULDER_HALF+.05), .05)
+        p.arm(s, wrist, pole=add(p.j['shoulder_'+s], (-.4, sg*.3, -.1)), palm=(hands_x, sg*(SHOULDER_HALF+.10), .014), contact=True)
     p.view = dict(PLANK_VIEW)
     return p
 

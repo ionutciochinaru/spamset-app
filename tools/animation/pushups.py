@@ -56,7 +56,7 @@ def pushup_variant(name, phase, hands, elbows='out', reverse=False, view=SIDE_VI
 
 def wide_pushup(name, phase):
     """S30: hands farther apart than the shoulders."""
-    return pushup_variant(name, phase, {s: (.18, side_sign(s)*.37) for s in SIDES}, view=HANDS_VIEW, top=radians(15.5))
+    return pushup_variant(name, phase, {s: (.18, side_sign(s)*.37) for s in SIDES}, view=HANDS_VIEW, top=radians(17.3))
 
 
 def close_pushup(name, phase):
@@ -66,7 +66,7 @@ def close_pushup(name, phase):
 
 def staggered_pushup(name, phase):
     """S34: one hand a little forward, the other a little wider."""
-    return pushup_variant(name, phase, {'l': (.30, .24), 'r': (.17, -.31)}, top=radians(18), view=HANDS_VIEW)
+    return pushup_variant(name, phase, {'l': (.30, .24), 'r': (.17, -.31)}, top=radians(18.5), view=HANDS_VIEW)
 
 
 def stacked_feet_pushup(name, phase):
@@ -74,7 +74,8 @@ def stacked_feet_pushup(name, phase):
     t = pulse(phase)
     p = Pose(name, phase)
     feet = {'l': (-1., 0., 0.), 'r': (-1.02, 0., .10)}
-    angle = press_angle(t)-radians(4)
+    # Arms straight at the top (~160 deg, as the standard push-up); same bottom.
+    angle = TOP-radians(2.3)+(BOTTOM-radians(4)-(TOP-radians(2.3)))*t
     u = (cos(angle), 0, sin(angle))
     ankles = {'l': p.foot('l', toe=feet['l'], pitch=radians(60))}
     # The top foot rests squarely on the lower one, toes off the floor.
@@ -202,7 +203,7 @@ def pike_pushup(name, phase):
     top = atan2(hip_z-.03, front)
     # The trunk keeps its angle; hips and head lower together toward the hands.
     u = unit((cos(top), 0, -sin(top)))
-    p = Pose(name, phase).torso((.08*t, 0, hip_z-.15*t), up=u)
+    p = Pose(name, phase).torso((.08*t, 0, hip_z-.11*t), up=u)
     for s in SIDES:
         ankle = p.foot(s, ankle=(-back, side_sign(s)*HIP_HALF, ANKLE_HEIGHT+.036), pitch=radians(14))
         p.leg(s, ankle, pole=add(p.j['hip_'+s], (1, 0, 0)))
@@ -210,8 +211,9 @@ def pike_pushup(name, phase):
     for s in SIDES:
         sg = side_sign(s)
         shoulder_top = add(add((0, 0, hip_z), mul(top_u, TORSO)), (0, sg*SHOULDER_HALF, 0))
-        wrist = add(shoulder_top, mul(top_u, UPPER_ARM+FOREARM-.12))
-        wrist = (wrist[0], wrist[1]+sg*.05, .03)
+        # Hands an arm's length ahead of the top shoulders: straight arms in the inverted V.
+        rise = shoulder_top[2]-.03
+        wrist = (shoulder_top[0]+sqrt(.55**2-rise**2-.05**2), shoulder_top[1]+sg*.05, .03)
         p.arm(s, wrist, pole=add(p.j['shoulder_'+s], (-.2, sg*.6, .4)), palm=add(wrist, (.065, 0, -.016)), contact=True)
     set_head(p, pitch=radians(15))
     p.view = {'azimuth': 66, 'elevation': 22}
