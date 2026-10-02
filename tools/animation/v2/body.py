@@ -44,25 +44,37 @@ def centre_of_mass(pose):
     return tuple(v / total for v in acc), total
 
 
-def support_points(pose, floor=.03):
-    """Ground-plane support points: sole outlines of planted feet plus floor contacts."""
+def support_points(pose, floor=.03, resting=.035):
+    """Ground-plane support points (the support polygon is their convex hull).
+
+    - A flat planted foot contributes its sole outline.
+    - A foot on its ball (calf raise, plank, feet on a chair) contributes the ball of
+      the foot: a short strip across the toes, not a single point.
+    - Every declared contact counts at any height (hands on a wall, toes on a chair
+      seat, a seat under the hips), projected onto the ground plane. This is the
+      standard static approximation for multi-contact support.
+    - Any drawn body part resting on the floor supports (lying, rolling, sitting):
+      each capsule is sampled and points within `resting` of the floor are kept.
+    """
     j = pose['joints']
+    contacts = pose.get('contacts', {})
     points = []
     for s in 'lr':
         heel, toe = j[f'heel_{s}'], j[f'toe_{s}']
+        dx, dy = toe[0] - heel[0], toe[1] - heel[1]
+        n = sqrt(dx * dx + dy * dy) or 1.
+        ux, uy = dx / n, dy / n
+        ox, oy = -uy * .045, ux * .045
         if heel[2] < floor and toe[2] < floor:
-            dx, dy = toe[0] - heel[0], toe[1] - heel[1]
-            n = sqrt(dx * dx + dy * dy) or 1.
-            ox, oy = -dy / n * .045, dx / n * .045
             points += [(heel[0] + ox, heel[1] + oy), (heel[0] - ox, heel[1] - oy),
                        (toe[0] + ox * 1.2, toe[1] + oy * 1.2), (toe[0] - ox * 1.2, toe[1] - oy * 1.2)]
-        elif toe[2] < floor:
-            points.append((toe[0], toe[1]))
-    for name, p in pose.get('contacts', {}).items():
-        if p[2] < floor and not name.startswith(('heel_', 'toe_')):
+        elif toe[2] < floor or f'toe_{s}' in contacts or f'heel_{s}' in contacts:
+            ball = (toe[0] - ux * .05, toe[1] - uy * .05)
+            points += [(toe[0] + ox * 1.2, toe[1] + oy * 1.2), (toe[0] - ox * 1.2, toe[1] - oy * 1.2),
+                       (ball[0] + ox, ball[1] + oy), (ball[0] - ox, ball[1] - oy)]
+    for name, p in contacts.items():
+        if not name.startswith(('heel_', 'toe_')):
             points.append((p[0], p[1]))
-    # Any drawn body part resting on the floor also supports (lying, rolling, sitting):
-    # sample each capsule and keep points whose surface is within 2 cm of the floor.
     try:
         from .collide import PARTS
     except ImportError:
@@ -73,7 +85,7 @@ def support_points(pose, floor=.03):
         pa, pb = j[a], j[b]
         for k in range(6):
             q = [x + (y - x) * k / 5 for x, y in zip(pa, pb)]
-            if q[2] - radius < .02:
+            if q[2] - radius < resting:
                 points.append((q[0], q[1]))
     return points
 
@@ -116,7 +128,7 @@ def margin(point, hull):
 
 
 def balance_report(poses, duration):
-    """Per-sample static COM margin and dynamic ZMP margin over a looping clip."""
+    """Per-sample static COM margin, dynamic ZMP margin, COM acceleration and support size."""
     n = len(poses)
     dt = duration / n
     coms = [centre_of_mass(p)[0] for p in poses]
@@ -127,5 +139,6 @@ def balance_report(poses, duration):
         acc = [(c2[k] - 2 * c1[k] + c0[k]) / (dt * dt) for k in range(3)]
         scale = c1[2] / max(1e-6, G + acc[2])
         zmp = (c1[0] - scale * acc[0], c1[1] - scale * acc[1])
-        rows.append({'com_margin': margin((c1[0], c1[1]), hull), 'zmp_margin': margin(zmp, hull)})
+        rows.append({'com_margin': margin((c1[0], c1[1]), hull), 'zmp_margin': margin(zmp, hull),
+                     'com': c1, 'acc': acc, 'supports': len(hull)})
     return rows

@@ -158,6 +158,10 @@ class Lift:
         w = minjerk((phase - t0) / (t1 - t0))
         return {p: _lerp(a[p], b[p], w) for p in a}
 
+    def balance_target(self, phase, pose, com):
+        """Ground point the balance solver drives the ZMP to (override for gait-like moves)."""
+        return _safe_target(pose, com)
+
     def authored(self, phase, dx=0., dy=0.):
         pose = self.build(self.name, phase, self.state(phase), dx, dy)
         if self.look:
@@ -196,30 +200,40 @@ class Lift:
         n += n % 2
         dt = self.duration / n
         result = [[0., 0.] for _ in range(n)]
-        for axis_index, axis in enumerate('xy'):
-            if axis not in self.balance:
-                continue
-            base, zs, gains, targets = [], [], [], []
-            for i in range(n):
-                phase = i / n
-                shift = [0., 0.]
-                pose0 = self.raw(phase).result()
-                c0 = centre_of_mass(pose0)[0]
-                shift[axis_index] = .01
-                c1 = centre_of_mass(self.raw(phase, *shift).result())[0]
-                base.append(c0[axis_index])
-                zs.append(c0[2])
-                gains.append((c1[axis_index] - c0[axis_index]) / .01)
-                targets.append(_safe_target(pose0, c0)[axis_index])
-            zdd = [(zs[(i + 1) % n] - 2 * zs[i] + zs[i - 1]) / dt ** 2 for i in range(n)]
-            scale = [zs[i] / max(2., G + zdd[i]) for i in range(n)]
-            bdd = [(base[(i + 1) % n] - 2 * base[i] + base[i - 1]) / dt ** 2 for i in range(n)]
-            rhs = [targets[i] - base[i] + scale[i] * bdd[i] for i in range(n)]
-            off = [-scale[i] * gains[i] / dt ** 2 for i in range(n)]
-            diag = [gains[i] - 2 * off[i] for i in range(n)]
-            solved = solve_cyclic(off, diag, off, rhs)
-            for i in range(n):
-                result[i][axis_index] = max(-.2, min(.2, solved[i]))
+        # Iteration 1 linearises the body's response around zero shift (exact for a rigid
+        # shift). Later iterations re-linearise around the current solution (Newton), for
+        # moves whose response to a shift is not linear (hip drop, arm clearance).
+        for iteration in range(getattr(self, 'iterations', 1)):
+            for axis_index, axis in enumerate('xy'):
+                if axis not in self.balance:
+                    continue
+                base, zs, gains, targets = [], [], [], []
+                for i in range(n):
+                    phase = i / n
+                    shift = list(result[i])
+                    pose0 = self.raw(phase, *shift).result()
+                    c0 = centre_of_mass(pose0)[0]
+                    shift[axis_index] += .01
+                    c1 = centre_of_mass(self.raw(phase, *shift).result())[0]
+                    gain = (c1[axis_index] - c0[axis_index]) / .01
+                    # Linear model around the current shift: com = base + gain * shift.
+                    base.append(c0[axis_index] - gain * result[i][axis_index])
+                    zs.append(c0[2])
+                    gains.append(gain)
+                    reference = self.raw(phase).result() if iteration else pose0
+                    targets.append(self.balance_target(phase, reference, c0 if not iteration else centre_of_mass(reference)[0])[axis_index])
+                zdd = [(zs[(i + 1) % n] - 2 * zs[i] + zs[i - 1]) / dt ** 2 for i in range(n)]
+                scale = [zs[i] / max(2., G + zdd[i]) for i in range(n)]
+                bdd = [(base[(i + 1) % n] - 2 * base[i] + base[i - 1]) / dt ** 2 for i in range(n)]
+                rhs = [targets[i] - base[i] + scale[i] * bdd[i] for i in range(n)]
+                # COM_j = base_j + gain_j * shift_j, so each neighbour enters with its own gain
+                # (identical to a shared gain when the gain is constant, as in the bell lifts).
+                lower = [-scale[i] * gains[i - 1] / dt ** 2 for i in range(n)]
+                upper = [-scale[i] * gains[(i + 1) % n] / dt ** 2 for i in range(n)]
+                diag = [gains[i] + 2 * scale[i] * gains[i] / dt ** 2 for i in range(n)]
+                solved = solve_cyclic(lower, diag, upper, rhs)
+                for i in range(n):
+                    result[i][axis_index] = max(-.2, min(.2, solved[i]))
         if self.mirror:
             # Alternating lifts: the second half is the first half mirrored left-right.
             half = n // 2

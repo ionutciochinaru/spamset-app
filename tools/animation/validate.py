@@ -50,13 +50,24 @@ try:
 except ImportError:
     from v2.getup import MOMENTUM_WINDOWS as _GETUP_WINDOWS
 MOMENTUM_WINDOWS={'kb-getup':_GETUP_WINDOWS}
+# Suspended from a bar: no floor support, so instead of the ZMP the centre of mass must
+# hang under the hands (a pendulum), within HANG_SWAY.
+HANGING={'chin-ups','pull-ups'}
+HANG_SWAY=.12
+# With no support at all the body is in flight (clapping push-up, jump): it is accepted
+# only if it is ballistic, i.e. the centre of mass falls at g within FLIGHT_TOLERANCE.
+FLIGHT_TOLERANCE=2.5
+STATIC_HOLD_SECONDS=2.
 
 
 def check_v2(name,samples=240):
     """Validator v2: whole-body collisions (drawn radii) and dynamic balance (ZMP).
 
-    Sampled at least 30 times per second of motion, so long loops cannot hide a pass-through."""
-    duration=DURATIONS[name]() if name in DURATIONS else PROFILES[name]['frames']/PROFILES[name]['fps']
+    Sampled at least 30 times per second of motion, so long loops cannot hide a pass-through.
+    Hanging moves check the centre of mass against the grip instead of the floor; frames
+    with no support at all must be ballistic flight."""
+    profile=PROFILES.get(name,{})
+    duration=DURATIONS[name]() if name in DURATIONS else (profile['frames']/profile['fps'] if profile.get('fps') else STATIC_HOLD_SECONDS)
     samples=max(samples,int(duration*30))
     poses=[pose_for(name,i/samples) for i in range(samples)]
     worst=v2collide.worst(poses,ALLOWED_CONTACT.get(name))
@@ -65,13 +76,29 @@ def check_v2(name,samples=240):
     # Momentum phases (e.g. the get-up's roll onto the elbow) rely on rotational momentum
     # that the point-mass ZMP model does not capture; they are excluded and reported.
     windows=MOMENTUM_WINDOWS.get(name,[])
-    checked=[r for i,r in enumerate(balance) if not any(a<=i/samples<b for a,b in windows)]
-    zmp=min(r['zmp_margin'] for r in checked);com=min(r['com_margin'] for r in checked)
+    checked=[(i,r) for i,r in enumerate(balance) if not any(a<=i/samples<b for a,b in windows)]
     failures=[]
     if clearance < -PENETRATION_TOLERANCE:failures.append(f'interpenetration {pair} {raw:.3f} m at {phase:.3f}')
-    if zmp < 0:failures.append(f'dynamic balance: ZMP {-zmp:.3f} m outside support')
+    zmp=com=None;flight=0;hang_sway=None
+    if name in HANGING:
+        for i,r in checked:
+            j=poses[i]['joints'];grip=[(j['palm_l'][k]+j['palm_r'][k])/2 for k in range(2)]
+            sway=sqrt((r['com'][0]-grip[0])**2+(r['com'][1]-grip[1])**2)
+            hang_sway=sway if hang_sway is None else max(hang_sway,sway)
+        if hang_sway>HANG_SWAY:failures.append(f'hanging: centre of mass {hang_sway:.3f} m from under the grip')
+    else:
+        supported=[]
+        for i,r in checked:
+            if r['supports']>=3:supported.append(r);continue
+            flight+=1
+            if abs(r['acc'][2]+v2body.G)>FLIGHT_TOLERANCE:
+                failures.append(f'unsupported and not ballistic at {i/samples:.3f} (vertical acceleration {r["acc"][2]:.1f} m/s2)');break
+        if supported:
+            zmp=min(r['zmp_margin'] for r in supported);com=min(r['com_margin'] for r in supported)
+            if zmp < 0:failures.append(f'dynamic balance: ZMP {-zmp:.3f} m outside support')
     return {'worst_clearance_pair':pair,'worst_clearance_m':raw,'worst_clearance_phase':phase,
-            'min_com_margin_m':com,'min_zmp_margin_m':zmp,'balance_not_checked':windows},failures
+            'min_com_margin_m':com,'min_zmp_margin_m':zmp,'balance_not_checked':windows,
+            'flight_samples':flight,'max_hang_sway_m':hang_sway},failures
 
 
 def validate(samples=360):
