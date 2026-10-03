@@ -71,11 +71,13 @@ def fly_steps(name, phase):
     p = Pose(name, phase).torso((-.10*t, -side_sign(side)*.05*t, .945-.02*t), lean=radians(55)*t)
     planted(p, stand, x=0., y=side_sign(stand)*.08)
     hip = p.j['hip_'+side]
-    back = rotate((0, 0, -1), (0, 1, 0), radians(55)*t)
-    p.j['knee_'+side] = add(hip, mul(back, THIGH))
-    ankle = add(hip, mul(back, THIGH+SHIN))
-    p.j['ankle_'+side] = ankle
-    p.foot(side, ankle=ankle, pitch=radians(50)*t, contact=t < 1e-6)
+    # The lifting leg starts exactly where the standing leg stands (same spot, same IK) and
+    # swings back about the hip, so the feet and knees match when the sides switch.
+    start = (0., side_sign(side)*.08, ANKLE_HEIGHT)
+    ankle = add(hip, rotate(sub(start, hip), (0, 1, 0), radians(55)*t))
+    # The foot only points once it has left the floor (pitching it low drove the toe in).
+    p.foot(side, ankle=ankle, pitch=radians(50)*stage(t, .2, 1.), contact=t < 1e-6)
+    p.leg(side, ankle)
     for s in SIDES:
         p.arm(s, abducted(p, s, radians(80)), pole=add(p.j['shoulder_'+s], (0, 0, 1)))
     p.view = dict(STAND_VIEW, azimuth=62)
@@ -91,11 +93,13 @@ def side_leg_raises(name, phase):
     p = Pose(name, phase).torso((0, -sg*.04*t, .945))
     planted(p, stand)
     hip = p.j['hip_'+side]
+    # The raised leg is built like the standing one (same IK, same rest length), so at rest it
+    # matches it exactly: a straight free leg 1 cm into the floor popped the knees at the switch.
+    rest = hip[2]-ANKLE_HEIGHT
     d = (0, sg*sin(radians(40)*t), -cos(radians(40)*t))
-    p.j['knee_'+side] = add(hip, mul(d, THIGH))
-    ankle = add(hip, mul(d, THIGH+SHIN))
-    p.j['ankle_'+side] = ankle
+    ankle = add(hip, mul(d, rest))
     p.foot(side, ankle=ankle, contact=t < 1e-6)
+    p.leg(side, ankle)
     for s in SIDES:
         p.arm(s, abducted(p, s, radians(25)), pole=add(p.j['shoulder_'+s], (-.3, 0, 0)))
     p.view = dict(FRONT_VIEW, azimuth=6)

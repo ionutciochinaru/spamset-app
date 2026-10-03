@@ -44,7 +44,8 @@ def pushup(name,phase):
     return p
 
 def calf_raise(name,phase):
-    t=held_pulse(phase,high_hold=.12);pitch=radians(26)*t
+    # A clear heel rise (26 deg read as standing still at phone size).
+    t=held_pulse(phase,high_hold=.12);pitch=radians(36)*t
     p=Pose(name,phase)
     ankles={s:p.foot(s,toe=(.16,side_sign(s)*.15,0),pitch=pitch) for s in SIDES}
     center=mul(add(ankles['l'],ankles['r']),.5)
@@ -118,7 +119,8 @@ def shoulder_circle(name,phase):
     p=standing(name,phase)
     # A modest ellipse stays readable at 280x156 without turning the relaxed
     # shoulder roll into an arm circle. The clavicle radius remains fixed.
-    theta=phase*2*pi;x=.055*cos(theta);z=.065*sin(theta)
+    # Exaggerated (5-6 cm could not be read at phone size); the arms ride with the shoulders.
+    theta=phase*2*pi;x=.075*cos(theta);z=.09*sin(theta)
     side=sqrt(SHOULDER_HALF**2-x*x-z*z)
     for s in SIDES:
         p.j['shoulder_'+s]=add(p.j['chest'],(x,side_sign(s)*side,z))
@@ -229,7 +231,8 @@ def sit_stand(name,phase):
 
 def seated_knee(name,phase):
     active='l' if phase<.5 else 'r';t=pulse((phase*2)%1.)
-    p=Pose(name,phase).torso((-.27,0,.55));p.props.append(chair_prop());p.contacts['seat']=(-.27,0,.515)
+    # Hips on the seat (radius above it), not 3 cm into it.
+    p=Pose(name,phase).torso((-.27,0,.585));p.props.append(chair_prop());p.contacts['seat']=(-.27,0,.515)
     for s in SIDES:
         ankle=(.14,side_sign(s)*.15,ANKLE_HEIGHT)
         p.leg(s,ankle);hip=p.j['hip_'+s];knee=p.j['knee_'+s]
@@ -275,7 +278,8 @@ def kb_deadlift(name,phase):
     return p
 
 def band_pull(name,phase):
-    p=standing(name,phase);angle=radians(78)*pulse(phase)
+    # Stops ~10 deg short of the arm line: the band stays in front of the chest, not through the arms.
+    p=standing(name,phase);angle=radians(68)*pulse(phase)
     for s in SIDES:
         sg=side_sign(s);upper=(cos(angle),sg*sin(angle),0);fore=(cos(angle+.10),sg*sin(angle+.10),0)
         elbow=add(p.j['shoulder_'+s],mul(upper,UPPER_ARM));wrist=add(elbow,mul(fore,FOREARM))
@@ -407,6 +411,10 @@ ALLOWED_CONTACT = {
     # The helping hand holds the raised elbow; the raised arm lies beside the head.
     'triceps-stretch': {'hand_r|upper_arm_l': .03, 'forearm_r|upper_arm_l': .02, 'upper_arm_l|head': .03,
                         'forearm_l|head': .03, 'hand_l|head': .03, 'forearm_r|head': .03},
+    # Hands meet above the head, fingers interlaced.
+    'overhead-reach': {'hand_l|hand_r': .04, 'forearm_l|forearm_r': .035, 'hand_l|forearm_r': .02, 'hand_r|forearm_l': .02,
+                       # ... with the upper arms beside the ears.
+                       'upper_arm_l|head': .055, 'upper_arm_r|head': .055},
     # The free hand presses the straight arm across the chest.
     'cross-body-shoulder': {'forearm_l|forearm_r': .03, 'hand_l|forearm_r': .02, 'hand_r|forearm_l': .02},
     'kb-deadlift': {'forearm_l|thigh_l': .02, 'forearm_r|thigh_r': .02, 'hand_l|thigh_l': .02, 'hand_r|thigh_r': .02,

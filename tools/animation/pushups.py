@@ -66,7 +66,8 @@ def close_pushup(name, phase):
 
 def staggered_pushup(name, phase):
     """S34: one hand a little forward, the other a little wider."""
-    return pushup_variant(name, phase, {'l': (.30, .24), 'r': (.17, -.31)}, top=radians(18.5), view=HANDS_VIEW)
+    # ~28 cm stagger (one hand by the forehead line, one by the ribs): 13 cm read as a plain push-up.
+    return pushup_variant(name, phase, {'l': (.38, .24), 'r': (.10, -.28)}, top=radians(17.8), view=HANDS_VIEW)
 
 
 def stacked_feet_pushup(name, phase):
@@ -119,7 +120,9 @@ def knee_drive(p, side, amount, target, pole):
     """Bring one foot off the floor toward `target` (relative to its hip)."""
     hip = p.j['hip_'+side]
     planted = p.j['ankle_'+side]
-    ankle = mix_point(planted, add(hip, target), amount)
+    # Eased: near full extension a millimetre of leg shortening moves the knee centimetres, so
+    # a linear start made the knee pop out in one frame.
+    ankle = mix_point(planted, add(hip, target), smooth(amount))
     p.leg(side, ankle, pole=add(hip, pole))
     p.foot(side, ankle=p.j['ankle_'+side], pitch=radians(60+40*amount), contact=amount < 1e-6)
 
@@ -155,12 +158,14 @@ def explosive(name, phase, clap):
     if air < 1e-6:
         plant_hands(p, hands)
     else:
-        gap = .03 if clap else .22
-        clap_in = sin(pi*stage(phase, .48, .72)) if clap else 0.
+        # Clap: palms stop where they meet and stay together a moment (they crossed through
+        # each other for two frames). Power: the hands lift higher and stay wide.
+        gap = .045 if clap else .22
+        clap_in = min(1., 1.6*sin(pi*stage(phase, .46, .74))) if clap else 0.
         for s in SIDES:
             sg = side_sign(s)
             floor = (hands[s][0], hands[s][1], .05)
-            below = add(p.j['shoulder_'+s], (.10, -sg*(SHOULDER_HALF-gap)*clap_in, -.40))
+            below = add(p.j['shoulder_'+s], (.10, -sg*(SHOULDER_HALF-gap)*clap_in, -.40 if clap else -.30))
             wrist = mix_point(floor, below, air)
             p.arm(s, wrist, pole=add(p.j['shoulder_'+s], (-.4, sg*.3, -.15)))
     p.view = dict(SIDE_VIEW, azimuth=60, elevation=16)

@@ -13,8 +13,8 @@ export type ClipShape =
 /** A hand holding a bar, dumbbell or band: point, bar direction, palm facing on a hanging bar (1 over, -1 under). */
 export type ClipGrip = { p: number[]; a: number[]; w?: 1 | -1 };
 
-/** Hand state per side: 0 free, 1 gripping a bell or bar, 2 flat on the floor. */
-export type HandState = 0 | 1 | 2;
+/** Hand state per side: 0 free, 1 gripping a bell or bar, 2 flat on a surface, 3 a fist. */
+export type HandState = 0 | 1 | 2 | 3;
 
 export type Clip = {
   id: string;

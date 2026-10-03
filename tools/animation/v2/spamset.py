@@ -62,15 +62,17 @@ def sit_stand(name, phase):
     t = clamp((pulse(phase) - .06) / .94)
     rise = smooth((t - .30) / .70)
     forward = smooth(t / .30) * (1 - rise)
-    p = Pose(name, phase).torso((-.27 + .41 * rise, 0, .55 + .395 * rise), lean=radians(38) * forward)
+    # Seated near the front edge (NHS) with the hips on the seat, not 3 cm into it.
+    # A deeper lean brings the weight over the feet before the hips leave the seat.
+    p = Pose(name, phase).torso((-.17 + .29 * rise, 0, .585 + .36 * rise), lean=radians(55) * forward)
     reach = radians(60 + 30 * forward) * (1 - rise) + radians(5) * rise
     for s in SIDES:
-        ankle = p.foot(s, ankle=(.14, side_sign(s) * .15, ANKLE_HEIGHT))
+        ankle = p.foot(s, ankle=(.12, side_sign(s) * .15, ANKLE_HEIGHT))
         p.leg(s, ankle)
         p.arm_fk(s, reach, elbow_flex=radians(12))
     p.props.append(chair_prop())
     if rise < 1e-8:
-        p.contacts['seat'] = (-.27, 0, .515)
+        p.contacts['seat'] = (-.17, 0, .515)
     p.view = {'azimuth': 67, 'elevation': 10}
     return p
 
@@ -81,7 +83,7 @@ def sit_stand(name, phase):
 LEAN = set()
 # Body parts the hands rest on by design (pushed onto the surface, not cleared away).
 # Hands placed against the head or the other arm by design: no automatic arm clearance.
-NO_CLEAR = {'triceps-stretch'}
+NO_CLEAR = {'triceps-stretch', 'overhead-reach'}
 REST = {'hamstring-stretch': ('thigh_l', 'thigh_r'), 'quad-stretch': ('thigh_l', 'thigh_r')}
 # v2 replacements for legacy motions with a defect of their own.
 REPLACEMENTS = {'punches': punches, 'sit-stand': sit_stand}
@@ -89,7 +91,11 @@ REPLACEMENTS = {'punches': punches, 'sit-stand': sit_stand}
 # body (climbers: each foot strike decelerated the body faster than gravity).
 TEMPO = {'climbers': 1.6, 'reverse-lunge': 1.4,
          # Raise, fold, hold and release both arms: 4 s rushed the arm arcs past 5 m/s.
-         'triceps-stretch': 2.}
+         'triceps-stretch': 2.,
+         # The reaching arm swept 165 deg in under half a second (6 m/s).
+         'side-bend': 1.6,
+         # Standing up in 1.5 s needed more horizontal push than the feet can give.
+         'sit-stand': 1.5}
 
 CATALOG = json.loads((Path(__file__).resolve().parents[1] / 'spamset-catalog.json').read_text())
 PROFILES = json.loads((Path(__file__).resolve().parents[1] / 'profiles.json').read_text())

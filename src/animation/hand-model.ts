@@ -92,13 +92,15 @@ export class HandModel {
     else this.open(input);
   }
 
-  /** Free or flat hand. */
+  /** Free, flat or fisted hand. */
   private open({ elbow, wrist, palm, lateral, anterior, state, surface }: HandInput) {
     const floor = state === 2;
+    const fist = state === 3;
     // Flat hands press into their surface: the floor, or a wall (wall push-up).
     const into = surface ? surface.clone().negate() : DOWN.clone();
     const forearm = wrist.clone().sub(elbow).normalize();
-    let y = palm.clone().sub(wrist);
+    // A fist keeps the wrist straight: the knuckles continue the forearm.
+    let y = fist ? forearm.clone() : palm.clone().sub(wrist);
     if (y.lengthSq() < 1e-4) y = forearm.clone();
     if (floor) y = flatten(y, into);
     if (floor && y.lengthSq() < 1e-6) y = flatten(forearm, into);
@@ -106,7 +108,11 @@ export class HandModel {
 
     // Palm normal: into the surface, otherwise toward the midline (a relaxed, neutral hand),
     // nudged backward so it stays defined when the hand points sideways.
-    const want = floor ? into : lateral.clone().negate().addScaledVector(anterior, -0.25);
+    // A fist turns palm-down as the arm extends into a punch (palms in at the guard).
+    const reach = fist ? THREE.MathUtils.clamp(forearm.dot(anterior), 0, 1) : 0;
+    const want = floor
+      ? into
+      : lateral.clone().negate().addScaledVector(anterior, -0.25).multiplyScalar(1 - reach).addScaledVector(DOWN, reach);
     let z = flatten(want, y);
     if (z.lengthSq() < 1e-6) z = flatten(anterior.clone().negate(), y);
     z.normalize();
@@ -114,12 +120,30 @@ export class HandModel {
     // Thumb on the forward side of the hand (radial side of a neutral forearm).
     const s = x.dot(anterior) >= 0 ? 1 : -1;
 
+    if (fist) {
+      // One compact rounded block (palm with the fingers rolled into it), thumb tucked flat
+      // across the front of the fingers. Separate folded fingers read as an open hand.
+      const block = { length: PALM.length * 0.92, thick: PALM.thick * 1.9 };
+      const center = wrist.clone().addScaledVector(y, block.length / 2 + 0.006).addScaledVector(z, PALM.thick * 0.35);
+      this.palm.place(center, x, y, z, [PALM.width, block.length, block.thick]);
+      this.mitten.visible = false;
+      this.wrap.visible = false;
+      const s = x.dot(anterior) >= 0 ? 1 : -1;
+      const front = center.clone().addScaledVector(z, block.thick / 2 + THUMB.radius * 0.3).addScaledVector(y, block.length * 0.12);
+      this.placeThumb(front.clone().addScaledVector(x, s * PALM.width * 0.4), x.clone().multiplyScalar(-s), PALM.width * 0.55);
+      return;
+    }
     const palmCenter = wrist.clone().addScaledVector(y, PALM.length / 2 + 0.006);
+    // A hand flat on the floor rests on it: the exported wrist sits ~5 cm up, which left the
+    // palm hovering. Drop palm, fingers and thumb together onto the floor plane.
+    const drop = new THREE.Vector3();
+    if (floor && !surface) drop.y = Math.min(0, PALM.thick / 2 + 0.002 - palmCenter.y);
+    palmCenter.add(drop);
     this.palm.place(palmCenter, x, y, z, [PALM.width, PALM.length, PALM.thick]);
 
     // Mitten hinged at the knuckles, curled toward the palm (relaxed) or flat (on the floor).
     const curl = floor ? 0.05 : 0.55;
-    const knuckles = wrist.clone().addScaledVector(y, PALM.length + 0.004);
+    const knuckles = wrist.clone().addScaledVector(y, PALM.length + 0.004).add(drop);
     const my = y.clone().multiplyScalar(Math.cos(curl)).addScaledVector(z, Math.sin(curl));
     const mz = z.clone().multiplyScalar(Math.cos(curl)).addScaledVector(y, -Math.sin(curl));
     this.mitten.place(knuckles.clone().addScaledVector(my, MITTEN.length / 2 - 0.006), x, my, mz,
@@ -128,7 +152,7 @@ export class HandModel {
     this.wrap.visible = false;
 
     // Thumb from the base of the palm, forward and a little across the palm.
-    const base = wrist.clone().addScaledVector(y, 0.022).addScaledVector(x, s * PALM.width * 0.42).addScaledVector(z, 0.004);
+    const base = wrist.clone().addScaledVector(y, 0.022).addScaledVector(x, s * PALM.width * 0.42).addScaledVector(z, 0.004).add(drop);
     const dir = y.clone().multiplyScalar(floor ? 0.55 : 0.75).addScaledVector(x, s * (floor ? 0.8 : 0.35))
       .addScaledVector(z, floor ? 0 : 0.45).normalize();
     this.placeThumb(base, dir);

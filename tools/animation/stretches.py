@@ -234,16 +234,21 @@ def side_neck(name, phase):
 
 def overhead_reach(name, phase):
     """S27/S28: arms rise out to the sides and overhead, fingers interlace; hold; lower."""
-    t = ease_hold(phase)
+    # Slower release than ease_hold (the arms came down at ~6 m/s).
+    t = hold_cycle(phase, into=.30, hold=.30)
     p = standing(name, phase)
-    top = add(p.j['chest'], (.02, 0, .535))
+    # Hands meet just within reach of straight arms (the midline is farther from each shoulder).
+    top = add(p.j['chest'], (.04, 0, .495))
     rise, join = stage(t, 0, .80), stage(t, .80, 1.)
     for s in SIDES:
         sg = side_sign(s)
-        arc = abducted(p, s, radians(168)*rise)
-        wrist = mix_point(arc, add(top, (0, sg*.035, 0)), join)
+        # At rest the arms hang slightly out from the sides, clear of the thighs.
+        arc = abducted(p, s, radians(8+160*rise))
+        # The hands meet (fingers interlaced) instead of stopping 7 cm apart.
+        wrist = mix_point(arc, add(top, (0, sg*.012, 0)), join)
         p.arm(s, wrist, pole=add(p.j['shoulder_'+s], (-.3, sg*.4, 0)))
-    p.view = {'azimuth': 30, 'elevation': 6, 'crop_below': .45}
+    # Whole body: the crop at the shins cut the shoes off.
+    p.view = {'azimuth': 30, 'elevation': 6}
     return p
 
 def triceps_stretch(name, phase):
@@ -277,16 +282,19 @@ def triceps_stretch(name, phase):
 
 def cross_body_shoulder(name, phase):
     """S18/S19: lift one arm forward, draw it across the chest; the other hand presses just above its elbow."""
-    t = ease_hold(phase)
+    # Slower release than ease_hold (the elbow jumped 11-19 cm in one sample).
+    t = hold_cycle(phase, into=.30, hold=.30)
     p = relaxed_arms(standing(name, phase))
     shoulder = p.j['shoulder_l']
     lift, sweep, press = stage(t, 0, .40), stage(t, .40, .80), stage(t, .60, 1.)
     front = add(shoulder, (.545, 0, 0))
-    across = add(p.j['chest'], (.26, -.30, -.02))
+    # Held a little in front of the chest (it sank 2 cm into it).
+    across = add(p.j['chest'], (.29, -.28, -.02))
     wrist = mix_point(mix_point(rest_wrist(p, 'l'), front, lift), across, sweep)
     p.arm('l', wrist, pole=add(shoulder, (-.2, .3, -.4)) if not sweep else add(shoulder, (.4, 0, -.2)))
     elbow = p.j['elbow_l']
-    grip = add(mix_point(elbow, shoulder, .22), (.05, -.01, .01))
+    # The helping hand presses the outside of the upper arm, not into it.
+    grip = add(mix_point(elbow, shoulder, .22), (.08, -.01, .02))
     p.arm('r', mix_point(rest_wrist(p, 'r'), grip, press), pole=add(p.j['shoulder_r'], (-.1, -.5, -.35)))
     p.view = dict(UPPER_VIEW, azimuth=25)
     return p
@@ -347,9 +355,11 @@ def side_bend(name, phase):
             direction = rotate(direction, (1, 0, 0), -sg*radians(48)*t)
             p.arm(s, add(shoulder, mul(direction, .545)), pole=add(shoulder, (-.3, ss*.3, 0)))
         else:
+            # From the same hanging rest as the reaching arm (they swap roles at the switch).
             thigh = mix_point(p.j['hip_'+s], p.j['knee_'+s], .25+.25*t)
-            wrist = add(thigh, (.02, ss*.10, 0))
-            p.arm(s, wrist, pole=add(shoulder, (-.2, ss*.5, 0)))
+            wrist = mix_point(add(shoulder, (0, 0, -.545)), add(thigh, (.02, ss*.10, 0)), smooth(t))
+            pole = mix_point(add(shoulder, (-.3, ss*.3, 0)), add(shoulder, (-.2, ss*.5, 0)), smooth(t))
+            p.arm(s, wrist, pole=pole)
     set_head_rev3(p, roll=sg*radians(10)*t)
     p.view = {'azimuth': 10, 'elevation': 8}
     return p
@@ -359,7 +369,7 @@ def oblique_twist(name, phase):
     """S21 #1 (standing): hands clasped at chest height, elbows out; rotate, hips square."""
     side, t = alternating(phase, into=.3, hold=.25)
     p = standing(name, phase)
-    twist(p, side_sign(side)*radians(45)*t)
+    twist(p, side_sign(side)*radians(60)*t)
     up, forward, _ = body_axes(p)
     across = unit(cross(up, forward))
     # Hands at chest height stay clear of the head from the viewing angle.
@@ -368,7 +378,7 @@ def oblique_twist(name, phase):
         sg = side_sign(s)
         wrist = add(hands, mul(across, sg*.03))
         p.arm(s, wrist, pole=add(p.j['shoulder_'+s], add(mul(across, sg*.5), (0, 0, -.1))))
-    set_head(p, yaw=side_sign(side)*radians(20)*t)
+    set_head(p, yaw=side_sign(side)*radians(35)*t)
     p.view = {'azimuth': 0, 'elevation': 44}
     return p
 
@@ -437,24 +447,32 @@ def quad_stretch(name, phase):
     p.view = {'azimuth': 72, 'elevation': 8}
     return p
 
+HAMSTRING_HEEL = (.4023, .2, 0.)
+
+
 def hamstring_stretch(name, phase):
     """S18 #11: front heel down, toes up, knee straight; bend the back knee and lean forward."""
     t = ease_hold(phase)
     lean = radians(38)*t
-    p = Pose(name, phase).torso((-.10*t, 0, .90-.085*t), lean=lean)
+    # Soft knees at the start (pelvis 2 cm lower), the same hinged pose at the end.
+    p = Pose(name, phase).torso((-.10*t, 0, .88-.065*t), lean=lean)
     back = p.foot('r', ankle=(-.18, -.20, ANKLE_HEIGHT))
     p.leg('r', back, pole=add(p.j['hip_r'], (1, -.3, 0)))
+    # The front heel stays planted where the stretch ends (it slid 20 cm forward); the foot
+    # pivots on it, toes up, and the leg straightens as the hips hinge back.
     pitch = -radians(42)*t
-    heel_offset = rotate_y((-.075, 0, -ANKLE_HEIGHT), pitch)
-    ankle_z = -heel_offset[2]
+    ankle = sub(HAMSTRING_HEEL, rotate_y((-.075, 0, -ANKLE_HEIGHT), pitch))
+    # Sink the hips just enough that the planted heel stays within a straight leg's reach.
     hip = p.j['hip_l']
-    dy = .20-HIP_HALF
-    dz = ankle_z-hip[2]
-    dx = sqrt(max(0., (THIGH+SHIN-.002)**2-dy*dy-dz*dz))
-    ankle = add(hip, (dx, dy, dz))
-    p.j['knee_l'] = mix_point(hip, ankle, THIGH/(THIGH+SHIN))
-    p.j['ankle_l'] = ankle
+    reach = THIGH+SHIN-.004
+    flat = (ankle[0]-hip[0])**2+(ankle[1]-hip[1])**2
+    highest = ankle[2]+sqrt(max(0., reach*reach-flat))
+    if hip[2] > highest:
+        pelvis = add(p.j['pelvis'], (0, 0, highest-hip[2]))
+        p.torso(pelvis, lean=lean)
+        p.leg('r', back, pole=add(p.j['hip_r'], (1, -.3, 0)))
     p.foot('l', ankle=ankle, pitch=pitch, contact=False)
+    p.leg('l', ankle, pole=add(p.j['hip_l'], (1, 0, .3)))
     p.contacts['heel_l'] = p.j['heel_l']
     for s in SIDES:
         rest = add(mix_point(p.j['hip_l'], p.j['knee_l'], .6), (0, side_sign(s)*.07-.02, .07))

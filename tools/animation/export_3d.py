@@ -47,11 +47,14 @@ def to_three(point):
 
 # Equipment colours follow render.py: wall, chair seat/legs, bar default, band and dumbbell plates.
 # Dumbbell plates in light iron: orange plates merged with the orange shirt.
-WALL, CHAIR_SEAT, CHAIR_FRAME, BAR, BAND, PLATE = '#6b6a62', '#aaa99f', '#838279', '#aaa99f', '#ff6b2b', '#b4b1a6'
+# The band is lime (watch design tokens): orange vanished against the shirt.
+WALL, CHAIR_SEAT, CHAIR_FRAME, BAR, BAND, PLATE = '#6b6a62', '#aaa99f', '#838279', '#aaa99f', '#d0fc79', '#b4b1a6'
 # A hand this close (m) to a bar, dumbbell handle or band end holds it.
 GRIP_REACH = .06
 # Underhand (supinated) bar grips; every other bar grip is overhand.
 UNDERHAND = {'chin-ups'}
+# Free hands closed into fists (hand state 3).
+FISTS = {'punches'}
 
 
 def tube(points, width, color):
@@ -72,7 +75,7 @@ def equipment(pose):
         elif kind == 'lines':
             shapes += [tube(segment, prop.get('width', .03), prop.get('color', BAR)) for segment in prop['segments']]
         elif kind == 'band':
-            shapes.append(tube(prop['points'], .025, BAND))
+            shapes.append(tube(prop['points'], .035, BAND))
         elif kind == 'dumbbell':
             shapes.append({'k': 'db', 'h': [to_three(p) for p in prop['handle']], 'c': PLATE})
     return shapes
@@ -162,10 +165,12 @@ def export(exercise, review=False):
                           # Where each gripping hand holds this bell (the renderer wraps it there).
                           **({'g': {s: to_three(g) for s, g in prop['grips'].items()}}
                              if prop.get('grips') else {})})
-        # Hand state per side, left then right: 0 free, 1 gripping a bell or bar, 2 flat on the floor.
+        # Hand state per side, left then right: 0 free, 1 gripping a bell or bar, 2 flat on a
+        # surface, 3 a fist.
         held = equipment_grips(exercise, pose)
         gripping = {s for prop in pose['props'] for s in prop.get('grips', {})} | set(held)
-        hands = [1 if s in gripping else 2 if 'palm_' + s in pose['contacts'] else 0 for s in ('l', 'r')]
+        free = 3 if exercise in FISTS else 0
+        hands = [1 if s in gripping else 2 if 'palm_' + s in pose['contacts'] else free for s in ('l', 'r')]
         frame = {'j': [coord for name in JOINTS for coord in to_three(joints[name])], 'b': bells, 'hs': hands}
         shapes = equipment(pose)
         if shapes:

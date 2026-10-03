@@ -481,7 +481,7 @@ def pseudo_planche(name, phase):
     t = hold_cycle(phase, into=.35, hold=.30)
     p = Pose(name, phase)
     hands_x = .06
-    shoulder = straight_arm_shoulder(hands_x, .03+.16*t)
+    shoulder = straight_arm_shoulder(hands_x, .03+.22*t)  # a deeper, readable lean
     planche_body(p, -1.04, shoulder)
     for s in SIDES:
         sg = side_sign(s)
