@@ -1,0 +1,1429 @@
+{
+ "role": "visuals",
+ "revision": "715283f4ef6b",
+ "reviewedAt": "2026-10-03T07:59:19+00:00",
+ "method": "Read figure.ts, hand-model.ts, equipment-model.ts, figure-viewer.tsx framing code, design/visual-tokens.json and src/constants/theme.ts. Viewed all 77 contact sheets (front/threequarter/left/right x 8 phases; 16 for kb-getup) and opened native 480x480 frames where detail mattered (hands, grips, overlaps, framing, clipping). Read geometry.json (validator v2, limb/bell clearances) and computed from assets/animations/*.json the loop seam, per-frame max joint step (pops/snaps), still fraction and pairwise clip differences (e.g. clapping vs power push-up). Real-time playback was NOT observed: pacing and loop seams are judged from duration and per-frame joint data only, so timing/smoothness review is partial. Captures use fixed orbit views, not each clip's default camera; I scored the worst readable cost across orbit angles but weighted the app default view (clip `view`) as the primary teaching view. PSX mode not inspected.",
+ "exercises": {
+  "alt-arm-leg-plank": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Side and three-quarter views show the opposite arm and leg reach from a high plank. Transitions look tangled: the reaching arm folds across the support arm, and the head-on view gives no read. Validator v2 flags ZMP 0.144 m outside support.",
+   "defects": [
+    {
+     "phase": "0.375",
+     "view": "threequarter",
+     "issue": "While the arm returns, the forearm folds horizontally across the support arm under the face; the two arms form a cross and it is unclear which hand is on the floor.",
+     "fix": "Route the returning hand outside the support arm (path 8-10 cm lateral) and keep the elbow down while it lowers."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Head-on view: the extended arm points at the camera and the lifted leg hides behind the torso; nothing reads.",
+     "fix": "Geometry only; keep the default az 66."
+    },
+    {
+     "phase": "0.125-0.25",
+     "view": "left",
+     "issue": "Balance validator failure means the body visibly lacks a weight shift onto the support side.",
+     "fix": "Shift the pelvis and chest 5-8 cm toward the support hand/foot diagonal before lifting."
+    }
+   ]
+  },
+  "back-lifts": {
+   "score": 5,
+   "confidence": "medium",
+   "summary": "A prone chest lift with hands at temples. The lift is small in a figure that is a thin horizontal strip at phone size, and the front view (from the feet) is unreadable: legs appear end-on as two blocks with elbows as wings.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "left/right",
+     "issue": "Chest lift of roughly 10 cm on a figure ~25 px tall in the sheet; at native size the action is a slight bump.",
+     "fix": "Frame floor-lying clips tighter (they use full-length bounds): reduce distance or crop the empty space above; a 10-15 deg higher default elevation also helps."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Viewed from the feet the legs are end-on blobs and the head hides behind the shoulders.",
+     "fix": "Geometry only, but consider a minimum elevation of ~20 deg for prone clips so the back line shows from any azimuth."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Hands at temples are mitten clumps that merge with the head.",
+     "fix": "Spread elbows slightly wider and keep fingertips (mitten tips) just behind the ears so the head silhouette stays clear."
+    }
+   ]
+  },
+  "band-pull": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "The lime band and pull-apart at chest height read very clearly from the front; three-quarter is good. The band is a straight tube that lies along the arms in the three-quarter view.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "threequarter",
+     "issue": "At full pull-apart the band runs along/through the near arm and chest line, merging with the arms.",
+     "fix": "Offset the band 3-4 cm forward of the hands (ends in the palms, middle in front of the sternum) so it stays separate from the arms."
+    },
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "Band is end-on and the arms overlap; expected.",
+     "fix": "None."
+    }
+   ]
+  },
+  "behind-back-clasp": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Side and three-quarter views show straight arms lifting behind the back; front view shows almost nothing because the hands are behind the body. Clasped hands are two free mittens touching, not a recognizable clasp.",
+   "defects": [
+    {
+     "phase": "0.250-0.625",
+     "view": "front",
+     "issue": "Arms and hands are entirely hidden behind the torso; the stretch is invisible from the front.",
+     "fix": "Geometry only; keep default az 52."
+    },
+    {
+     "phase": "0.500",
+     "view": "threequarter",
+     "issue": "The clasp reads as a small blob at the far side of the hips.",
+     "fix": "Add a clasp hand state (interlocked mittens facing each other) or use the grip state around a virtual bar between the palms."
+    },
+    {
+     "phase": "0.125/0.800",
+     "view": "all",
+     "issue": "Palm moves 67-80 mm in a single frame when the hands meet/release, a visible pop.",
+     "fix": "Ease the clasp/release over 3-4 frames."
+    }
+   ]
+  },
+  "bicycle-crunches": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Side and three-quarter views show opposite elbow to knee with alternating legs; readable. Front view (from the feet) is a stack of legs. ZMP validator failure.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "front",
+     "issue": "From the feet the lifted thighs hide the torso; only knees and one elbow show.",
+     "fix": "Geometry only."
+    },
+    {
+     "phase": "0.250",
+     "view": "threequarter",
+     "issue": "Twisting elbow and bent knee cross in one tangle near the chest; which elbow meets which knee is hard to tell at phone size.",
+     "fix": "Hold the rotation peak 2-3 frames longer and keep the opposite (straight) leg 5 cm lower so the contrast of bent vs extended leg is stronger."
+    },
+    {
+     "phase": "all",
+     "view": "left",
+     "issue": "Floor disc is wider than the frame and is cut at the side.",
+     "fix": "Clamp floor disc radius to the framed width or frame with the disc included."
+    }
+   ]
+  },
+  "bird-dog": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Quadruped with alternating contralateral reach is clear in three-quarter and side views; flat hands and knees on the floor read. Front view is the usual head-on stack.",
+   "defects": [
+    {
+     "phase": "0.125/0.625",
+     "view": "threequarter",
+     "issue": "During the reach the far arm (grey) against the floor disc is low contrast.",
+     "fix": "Slightly lighten far-limb grey or darken the floor disc to separate grey limbs from the disc."
+    }
+   ]
+  },
+  "calf-raise": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Heel raise is visible in side views at native size; front and three-quarter show only a slight body rise. In profile the near arm covers the whole torso, leaving the figure a thin column.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "front/threequarter",
+     "issue": "Heel lift reads only as a small vertical bob.",
+     "fix": "Keep side as default; consider increasing the default elevation to 10-12 deg so the shoe tilt shows in 3/4."
+    },
+    {
+     "phase": "0.500",
+     "view": "left",
+     "issue": "Near arm hangs over the torso so the shirt is just an orange edge; silhouette is a stick.",
+     "fix": "Hang the arms 2-3 cm forward of the trunk midline or slightly abducted so the torso shape shows."
+    }
+   ]
+  },
+  "cat-cow": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "The round (cat) and arch (cow) are clear in side views thanks to the split shirt hull; head drops and lifts with the spine. Front view is a head-on stack.",
+   "defects": [
+    {
+     "phase": "0.250",
+     "view": "threequarter",
+     "issue": "At full cat the head drops behind the near arm and the face disappears.",
+     "fix": "Limit head flexion so the crown stays just below shoulder level instead of tucked behind the arm."
+    }
+   ]
+  },
+  "chest-expansions": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Arms open wide and cross in front of the chest, alternating which arm is on top; front and three-quarter are clear. Quick pacing (3 s) fits the move.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "front",
+     "issue": "Crossed forearms at the chest form a small knot; which arm is on top is hard to read.",
+     "fix": "Cross slightly lower (sternum, not collarbone) and a few cm further forward so the near arm separates from the chest."
+    }
+   ]
+  },
+  "chin-ups": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Hang to chin-over-bar on a pull-up frame reads well from the front. In side views the near frame post slices through the figure and hides the hands. Almost indistinguishable from pull-ups at phone size.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "The vertical post is drawn through the middle of the body, and the bar is end-on, so the grip and pull are hidden behind a line.",
+     "fix": "Place the posts at least 10 cm behind the hanging plane (z offset) or make the frame posts thinner/darker than the figure outline."
+    },
+    {
+     "phase": "0.375-0.500",
+     "view": "front",
+     "issue": "The underhand grip is not readable; only grip width differs from pull-ups.",
+     "fix": "Turn the palms visibly toward the face (show the thumb on the outside) and keep a clearly narrower grip (shoulder width vs 1.5x for pull-ups)."
+    },
+    {
+     "phase": "0.500",
+     "view": "front/threequarter",
+     "issue": "Head at the top is ~30 px from the frame edge and partly behind the bar.",
+     "fix": "Add 5% top margin for hanging clips."
+    }
+   ]
+  },
+  "clapping-pushup": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Push-up mechanics are clear in side views, but the clap is visible in only one captured phase and the clip is identical to power-pushup except for about 25 of 90 frames (0.8 s); at phone size the two are hard to tell apart.",
+   "defects": [
+    {
+     "phase": "0.625",
+     "view": "threequarter",
+     "issue": "The clap is brief and occurs under the chest where the hands are partly hidden by the torso.",
+     "fix": "Lengthen the airborne phase by 4-6 frames and bring the clap forward to under the face, palms meeting vertically so the touch is visible from the side."
+    },
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Except during flight the clip matches power-pushup frame for frame.",
+     "fix": "Give the clapping variant a visibly higher hand lift and a held clap; differentiate the descents only if form allows."
+    }
+   ]
+  },
+  "climbers": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Mountain-climber knee drives read from three-quarter and side views; plank support stays planted. Knees nearly touch the upper arms and the head-on view is a tangle.",
+   "defects": [
+    {
+     "phase": "0.000/0.375",
+     "view": "threequarter",
+     "issue": "Driving knee comes within 6.5 mm of the upper arm and overlaps the support arm, hiding the knee position.",
+     "fix": "Drive the knee toward the chest midline (5 cm medial) rather than toward the elbow."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Head-on view shows arms and knees as one block.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "close-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Close-grip push-up with elbows tucked reads clearly in side and three-quarter views; the narrow hand position shows in front view. Distinct from wide and standard push-ups at the bottom.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "front",
+     "issue": "Head-on bottom position shows only shoulders and hands; elbows behind the body are hidden.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "cross-body-shoulder": {
+   "score": 5,
+   "confidence": "medium",
+   "summary": "The arm-across-chest stretch is clear in the front and three-quarter views. The close crop (cropBelow 0.98) puts the body at the frame edge in side views, cutting it off, and the stretching elbow pops at the start and end of the hold.",
+   "defects": [
+    {
+     "phase": "0.000/0.875",
+     "view": "left/right",
+     "issue": "The torso is pushed to the right (left view) or left (right view) frame edge and cut by the frame; legs cut at the thighs.",
+     "fix": "Center the crop target on the chest instead of the bounds centre that includes the extended arm, or loosen the crop by ~20%."
+    },
+    {
+     "phase": "0.250 / ~0.65",
+     "view": "all",
+     "issue": "elbow_r jumps 152 mm in one frame (frames 30-31 and the mirror at ~77-78) after a 40-60 mm/frame ramp; a visible snap when the helper hand engages.",
+     "fix": "Resample the arm path through the grab so per-frame displacement stays under ~60 mm, easing in over 4-5 frames."
+    },
+    {
+     "phase": "0.375-0.625",
+     "view": "threequarter",
+     "issue": "Helper hand presses the forearm but is a grey mitten partly hidden behind the stretched arm.",
+     "fix": "Place the helper hand above the elbow on the near side of the stretched arm."
+    }
+   ]
+  },
+  "db-curl": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Bilateral dumbbell curl with orange-plated dumbbells reads well in front and three-quarter; elbows stay at the sides. Dumbbells are small but distinct.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "front",
+     "issue": "At the top the dumbbells sit in front of the shoulders and the plates overlap the shirt edges.",
+     "fix": "Stop the curl ~3 cm lower or keep the forearms slightly forward so the dumbbells sit in front of the chest outline."
+    }
+   ]
+  },
+  "decline-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Feet on the chair seat and the decline push-up read clearly in three-quarter and side views; chair is well proportioned and outlined. Front view shows the chair behind the shoulders.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "front",
+     "issue": "Chair frame and legs overlap the shoulders head-on, cluttering the bottom position.",
+     "fix": "Geometry only."
+    },
+    {
+     "phase": "all",
+     "view": "left",
+     "issue": "Chair back and seat are drawn as thin rails similar to the figure's outline, making the seat contact small at native size.",
+     "fix": "Thicken the seat slab edge a little or lighten the seat top so the foot contact shows."
+    }
+   ]
+  },
+  "doorframe-rows": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Leaning back from the door jambs and rowing in is clear in side views; grips on the jambs read. In the three-quarter view the near jamb runs straight through the torso, and the front view shows little depth change.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Near jamb is drawn over the torso and legs, splitting the figure in two and hiding the near hand's grip.",
+     "fix": "Move the jambs a few cm wider than the hands' grip points or make the near jamb partly transparent/thinner (like the see-through wall)."
+    },
+    {
+     "phase": "0.000-0.500",
+     "view": "front",
+     "issue": "Lean-back and pull are along the camera axis; only small elbow flare changes.",
+     "fix": "Geometry only; keep default az 60."
+    }
+   ]
+  },
+  "flutter-kicks": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Small alternating leg kicks while supine read in side and three-quarter views, but the figure is a thin horizontal strip and the kick amplitude (~15-20 cm) is small at phone size; the front view is unreadable.",
+   "defects": [
+    {
+     "phase": "0.125-0.875",
+     "view": "left/right",
+     "issue": "Legs separate only slightly; with near/far shading similar the two legs merge into one wedge.",
+     "fix": "Increase separation to ~25 cm at the feet and keep near/far shading contrast strong (near leg ivory pants, far darker)."
+    },
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Lying figure fills about 20% of the frame height; lots of empty space above.",
+     "fix": "Frame lying clips by their actual height (lower target and smaller distance) rather than the standing-height heuristic."
+    },
+    {
+     "phase": "loop seam",
+     "view": "all",
+     "issue": "Seam step 28.9 mm equals the max per-frame step: continuous, but there is no ease at the loop point.",
+     "fix": "None required; verify in playback."
+    }
+   ]
+  },
+  "fly-steps": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Hinge with rear-leg lift and arms out alternates clearly; three-quarter and side views show a strong T-shaped silhouette. Front view also reads due to the wide arms.",
+   "defects": [
+    {
+     "phase": "0.125/0.625",
+     "view": "front",
+     "issue": "The rear leg goes behind the standing leg and is hidden.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "glute-bridge": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Supine bridge with feet planted and arms flat reads cleanly in side and three-quarter views; hip lift is clear. Front view is from the feet and unreadable.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Shins and knees block everything.",
+     "fix": "Geometry only."
+    },
+    {
+     "phase": "0.500",
+     "view": "left",
+     "issue": "Figure is small for a floor move; flat hands are tiny stubs.",
+     "fix": "Tighter framing for floor clips (see cross-cutting)."
+    }
+   ]
+  },
+  "goblet-squat": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Horns grip at the chest and the descent read well from front, three-quarter and sides; elbows stay inside the knees. Minor upper-arm/thigh touch at the bottom.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "threequarter",
+     "issue": "Upper arms brush the thighs (-1 mm) and the far hand/horn grip is hidden behind the bell; hands read as grey stubs on the bell.",
+     "fix": "Lift the elbows 1-2 cm at the bottom and rotate the bell slightly so both mittens wrap visibly on the horns from the default view."
+    }
+   ]
+  },
+  "hamstring-stretch": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Heel-down, toes-up front foot and the hip hinge with hands on the thigh read in side views. In front view the hinge is a slight lean and the lifted toes are invisible.",
+   "defects": [
+    {
+     "phase": "0.250-0.750",
+     "view": "front",
+     "issue": "Hinge points at the camera so it reads as a slight slouch.",
+     "fix": "Geometry only; default az 48 is reasonable."
+    },
+    {
+     "phase": "0.375-0.625",
+     "view": "threequarter",
+     "issue": "Hands on the thigh are free-state mittens that look like they float above the leg.",
+     "fix": "Use flat hand state with the thigh surface normal so palms press on the thigh."
+    }
+   ]
+  },
+  "hip-flexor-lunge": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Half-kneeling stance is clean and well grounded in all views except front. The stretch is a slow ~12 cm forward pelvic shift with no torso change and half the frames held still, so at phone size it reads largely as a static pose.",
+   "defects": [
+    {
+     "phase": "0.250-0.750",
+     "view": "left/right",
+     "issue": "The forward hip drive (~12 cm, pelvis only; chest and head move <3 cm vertically) is slow and uniform; the rear-hip opening that defines the stretch is not emphasised.",
+     "fix": "Add a slight posterior pelvic tilt and torso lift (3-5 cm) at the end of the shift, and lighten the rear thigh so the hip angle stands out."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Rear leg is hidden behind the front knee; reads as standing on one leg.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "kb-bent-row": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Staggered hinge with the left arm rowing reads in the three-quarter and left views; the supporting hand on the thigh is visible. From the right view the working arm is behind the torso, and the far-grey arm against the grey bell is low contrast.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "right",
+     "issue": "The rowing arm and bell are fully occluded by the torso; only a grey edge shows, so the action disappears when orbited to that side.",
+     "fix": "Accept as geometry but keep the default azimuth on the working side; consider lightening the far-arm colour slightly (e.g. #9a9d92) so it separates from the bell (#b4b1a6 under shade)."
+    },
+    {
+     "phase": "0.000",
+     "view": "threequarter",
+     "issue": "Support forearm touches the thigh (-3.8 mm); the flat hand on the thigh is a free-state mitten that hovers rather than presses.",
+     "fix": "Use hand state 2 (flat) with a thigh surface normal for the support hand and move it 1 cm off the thigh surface."
+    }
+   ]
+  },
+  "kb-clean": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Single-arm clean from hinge to rack reads well in three-quarter and left views; the rack position is distinct. Free arm is visible. Minor forearm/thigh contact during the backswing.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "threequarter",
+     "issue": "In the backswing the working forearm cuts into the thigh (-13.7 mm) and the bell hides behind the near leg.",
+     "fix": "Move the hike path 2 cm medially/back so the forearm clears the thigh."
+    },
+    {
+     "phase": "0.000",
+     "view": "front",
+     "issue": "Rack: bell covers the hand and forearm, rack reads as a blob at the chest.",
+     "fix": "Rotate the bell to sit on the outer forearm (bell centre ~4 cm lateral) so the hand shows."
+    }
+   ]
+  },
+  "kb-curl": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Horns-grip curl reads well from the three-quarter and side views; elbows stay by the ribs, distinguishing it from the upright row. Bell slightly sinks into thighs at the bottom.",
+   "defects": [
+    {
+     "phase": "0.000",
+     "view": "front",
+     "issue": "At the bottom the bell body penetrates the thighs (-8.7 mm), visible as the bell flattening against the legs.",
+     "fix": "Start the curl with the bell 1-2 cm further forward or slightly higher."
+    }
+   ]
+  },
+  "kb-deadlift": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Clear hip hinge with bell between the feet, good in side views; grips small but present. The bottom position has the upper arms sinking into the thighs and the 3/4 view packs knees, arms and bell into one cluster.",
+   "defects": [
+    {
+     "phase": "0.000",
+     "view": "threequarter",
+     "issue": "At the bottom both upper arms intersect the thighs (geometry -16.5 mm) and the near arm, knee and bell merge into one light blob; the hand-to-handle contact is hard to see.",
+     "fix": "Narrow the hand width on the handle less and push the knees slightly out (or the shoulders slightly forward over the bell) so arms hang inside the knees with >= 1 cm clearance."
+    },
+    {
+     "phase": "0.000-0.125",
+     "view": "front",
+     "issue": "Front view shows the bell on the floor hidden by hands and knees; reads as a squat.",
+     "fix": "No model change needed; keep default camera at az 30 and avoid front as a preset."
+    }
+   ]
+  },
+  "kb-getup": {
+   "score": 6,
+   "confidence": "low",
+   "summary": "A long, well-sequenced get-up whose standing and kneeling phases read clearly in the three-quarter and left views. The figure is small because the framing covers the whole 2 m floor path, and the floor phases are hard to parse from front and right views: the bell, vertical arm and bent knee merge.",
+   "defects": [
+    {
+     "phase": "0.000",
+     "view": "front",
+     "issue": "Lying start seen from the feet: the bent knee and the vertical bell arm form one grey column, the head is hidden and the bell (grey) merges with the far grey arm.",
+     "fix": "Lighten the bell slightly or give it a darker outline-free silhouette against far-grey limbs; keep default camera from above-side (el 24) and avoid front."
+    },
+    {
+     "phase": "0.1875-0.25",
+     "view": "threequarter",
+     "issue": "Support hand on the floor and the posted elbow are hidden behind the torso; the floor contact that defines the step is not visible.",
+     "fix": "Move the default azimuth to show the support side (around -60) or raise elevation to ~30 deg in floor phases."
+    },
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Figure occupies about 40-50% of the frame height when standing due to large bounds; small at phone size.",
+     "fix": "Frame from the per-phase footprint rather than the full-loop bounds, or reduce the distance multiplier for this clip."
+    }
+   ]
+  },
+  "kb-halo": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "The circling of the bell around the head is recognisable, but the close upper-body crop makes the figure cramped: forearms pass across the face, the bell disappears behind the head for a quarter of the loop, and the hands on the horns are rarely legible.",
+   "defects": [
+    {
+     "phase": "0.125/0.625",
+     "view": "front",
+     "issue": "The near forearm crosses in front of the face/chin and the bell sits beside the ear; head, arm and bell merge into one shape.",
+     "fix": "Widen the halo path 3-5 cm outward and raise it so the forearms pass at forehead height rather than across the face."
+    },
+    {
+     "phase": "0.250/0.750",
+     "view": "threequarter",
+     "issue": "The bell is almost fully hidden behind the head at the back position; only the handle edge and hands show.",
+     "fix": "Raise the bell 4-6 cm behind the head or use a slightly higher default elevation (18-20 deg) so it stays visible over the crown."
+    },
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "cropBelow 0.96 crops at mid-thigh and the shirt fills a third of the frame, so the action (hands and bell) is small relative to the torso and close to the top edge.",
+     "fix": "Reduce crop zoom by ~15% or shift the framing target up so head and bell sit in the middle third."
+    }
+   ]
+  },
+  "kb-press": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Strict single-arm press from rack to lockout is clear from front and three-quarter; the free arm stays down. Overhead bell gets close to the top edge.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "front/threequarter",
+     "issue": "At lockout the bell sits ~25-30 px from the top of the 480 frame; slightly cramped.",
+     "fix": "Lower the framing target by ~4% of bounds height or increase distance multiplier from 1.3 to 1.35 for overhead clips."
+    },
+    {
+     "phase": "0.500",
+     "view": "right",
+     "issue": "Working arm is the far side; the overhead arm hides behind the head.",
+     "fix": "Geometry only; no change."
+    }
+   ]
+  },
+  "kb-pullover": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Standing pullover with horns grip from chest to behind the head reads in the three-quarter and side views. At the overhead/behind position the bell disappears behind the head in front view and the arms frame the head tightly.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "front",
+     "issue": "Bell behind the head is hidden; arms around the head look like a hands-on-head pose.",
+     "fix": "Lower the bell less far behind the head (stop ~5 cm higher) so it stays visible above the crown."
+    },
+    {
+     "phase": "0.375",
+     "view": "right",
+     "issue": "Bell and hands are on the far side of the head; profile action is partly occluded.",
+     "fix": "Geometry only; default az 55 is fine."
+    }
+   ]
+  },
+  "kb-reverse-lunge": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Alternating step back to a kneeling lunge with the goblet bell reads well in three-quarter and side views; foot plant and knee drop are clear. Front view hides the rear leg.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "front",
+     "issue": "The rear knee and shin are hidden behind the front leg; the pose reads as a shallow squat on one leg.",
+     "fix": "Keep front out of presets; consider a small default elevation (12-15 deg) so the rear shin shows behind the front foot."
+    },
+    {
+     "phase": "loop",
+     "view": "all",
+     "issue": "7.4 s for two reps is slow but acceptable; loop seam 8 mm is fine.",
+     "fix": "None required."
+    }
+   ]
+  },
+  "kb-side-bend": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Front and three-quarter show a clear lateral bend with the bell in the left hand and the other hand on the hip. Side views are almost static slivers (expected for a frontal-plane move). Bend amplitude is modest at phone size.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "left/right",
+     "issue": "In profile the movement is nearly invisible; the bell just bobs a few centimetres.",
+     "fix": "No change to motion; consider front as default (current az 12 is fine)."
+    },
+    {
+     "phase": "0.500",
+     "view": "front",
+     "issue": "Head tilts strongly with the trunk, which makes the bend read partly as a neck tilt.",
+     "fix": "Keep the head aligned with the thoracic spine (reduce extra neck side-flexion by ~half)."
+    }
+   ]
+  },
+  "kb-side-lunge": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Wide-stance lateral shift is very clear in front and three-quarter; bell at chest stays readable. Side views collapse into a squat silhouette, as expected for a frontal-plane move.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "left/right",
+     "issue": "In profile the straight leg is hidden behind the bent leg, so the lunge looks like a squat.",
+     "fix": "Default camera (az 20) is correct; no model change."
+    }
+   ]
+  },
+  "kb-snatch": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Hike, high pull and punch-through to lockout read clearly; the fast phases are appropriately quick (2.8 s). Head is hidden behind the arm in profile at lockout.",
+   "defects": [
+    {
+     "phase": "0.000/0.875",
+     "view": "left",
+     "issue": "In profile the locked-out arm passes in front of the face, hiding the head; lockout bell 30 px from the top edge.",
+     "fix": "Angle the lockout 3-5 deg behind the ear (arm slightly back) and add a little top margin for overhead clips."
+    },
+    {
+     "phase": "0.125-0.250",
+     "view": "all",
+     "issue": "Wrist moves up to 139 mm per frame during the drop; at 30 fps this may strobe but is plausible for a snatch.",
+     "fix": "Confirm in real playback; if strobing, add two in-between frames to the drop arc."
+    }
+   ]
+  },
+  "kb-swing": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Hinge, hike and float to chest height read clearly in the side and three-quarter views; the bell and two-hand grip are legible at float. The hike phase is the weak point: forearms sink into the thighs and the bell disappears behind the near thigh, and the front view gives no sense of depth.",
+   "defects": [
+    {
+     "phase": "0.000",
+     "view": "threequarter",
+     "issue": "At the hike the bell is fully hidden behind the near thigh and both forearms cut into the thighs (geometry -16 mm), so the key backswing position shows hands vanishing between the legs with no bell.",
+     "fix": "Carry the hike path 3-4 cm lower/further back and widen the hand path so forearms clear the inner thighs (target clearance >= 0); keep the bell's centre below the knee line so it shows between the legs."
+    },
+    {
+     "phase": "0.375-0.625",
+     "view": "front",
+     "issue": "The bell at float sits directly in front of the chest and covers the hands and shirt; with no depth cue the float reads like an upright row.",
+     "fix": "Accept front as a secondary view but make sure the default camera (az 62) stays the app default; optionally add a 5-8 deg elevation to the default so the arm angle shows."
+    }
+   ]
+  },
+  "kb-upright-row": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Elbows flare high with the bell at the lower chest; front and three-quarter read clearly and differ from the curl because elbows lead. Side views are acceptable.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "front",
+     "issue": "The bell at the chest covers both hands so the shared-handle grip is invisible at the top.",
+     "fix": "Lower the top position 2-3 cm or tilt the bell forward so the handle and both mittens stay above the bell body."
+    }
+   ]
+  },
+  "leg-raises": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Straight-leg raise to ~45 deg reads very clearly in side and three-quarter views with flat hands on the floor. Front view is the usual from-the-feet stack.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "front",
+     "issue": "Raised legs hide the torso head-on.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "neck-extension": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Look-up extension is visible in side and three-quarter views. In the tight upper-body crop the thin neck rod under the large faceted head makes the head look like it hinges on a pin, and in profile the near arm covers the torso entirely.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "left/right",
+     "issue": "Head pivots at the top of a thin cylinder; the bend looks like a lollipop tipping, not a neck extending.",
+     "fix": "Thicken the neck (radius ~0.06) and blend it into the shirt collar, or rotate the head about a pivot at C7 so the neck curve shows."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Extension is along the camera axis: the head just appears shorter.",
+     "fix": "Geometry only."
+    },
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "Near arm hides the shirt; figure is a white column.",
+     "fix": "Hang the arms slightly forward or abducted in upper-body clips."
+    }
+   ]
+  },
+  "neck-flexion": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Chin-to-chest flexion reads in side views; same thin-neck lollipop pivot as neck-extension, and the head touches the top edge of the side views at the start.",
+   "defects": [
+    {
+     "phase": "0.000/0.875",
+     "view": "left/right",
+     "issue": "Upright head is clipped by or touching the top edge of the frame.",
+     "fix": "Lower the crop target or add 6-8% top margin in upper-body framing."
+    },
+    {
+     "phase": "0.375-0.625",
+     "view": "left/right",
+     "issue": "Head rotates on a thin neck stick; flexion looks mechanical.",
+     "fix": "Thicker neck blending into the collar; pivot lower."
+    }
+   ]
+  },
+  "oblique-twist": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Trunk rotation with hands clasped at chest reads from the high default camera (el 44) and in side views; in front view the rotation reads mostly as arms swinging side to side.",
+   "defects": [
+    {
+     "phase": "0.125-0.375",
+     "view": "front",
+     "issue": "Shoulder rotation shows only as forearms sliding sideways; hips appear static, so the twist is ambiguous.",
+     "fix": "Show more shoulder-line change (rotate chest 5-10 deg further) and keep the clasped hands slightly further forward so the arm triangle rotates visibly."
+    },
+    {
+     "phase": "all",
+     "view": "threequarter",
+     "issue": "Clasped hands are two mittens touching, merging with the chest.",
+     "fix": "Hold the clasp 8-10 cm in front of the sternum."
+    }
+   ]
+  },
+  "overhead-reach": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Arms sweep out and up to an interlaced overhead reach; the front and three-quarter views read well with a strong silhouette. The sweeps are fast (palm up to 134 mm/frame) between long holds, and the interlaced hands read as an X of crossed forearms rather than clasped fingers.",
+   "defects": [
+    {
+     "phase": "0.250-0.625",
+     "view": "front",
+     "issue": "At the top the forearms cross into an X and the hands are two small mittens; interlaced fingers are not legible.",
+     "fix": "Bring the palms together without crossing the wrists (wrists 6-8 cm apart, palms pressed) or add a clasp hand state."
+    },
+    {
+     "phase": "0.125 / 0.750",
+     "view": "all",
+     "issue": "The arm sweep happens in roughly 0.3 s while 43% of frames are held; the motion feels like a jump between poses.",
+     "fix": "Lengthen the sweep to ~0.8 s each way and shorten the holds."
+    },
+    {
+     "phase": "0.375-0.625",
+     "view": "left/right",
+     "issue": "Raised hands come within ~15 px of the top edge.",
+     "fix": "Add top margin for overhead clips."
+    }
+   ]
+  },
+  "pike-pushup": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "The inverted V is a strong side silhouette, but the press itself is small: the whole trunk (pelvis, chest and head together) sinks only ~11 cm, so the head-toward-floor action that defines the pike push-up barely shows. Front view is a tangle of arms and shirt.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "left/right",
+     "issue": "Head and hips drop by the same 110 mm; the V just sinks rather than the head travelling toward the hands while the hips stay high.",
+     "fix": "Keep the pelvis height nearly fixed and bend the elbows so the head drops 20-25 cm, moving slightly forward of the hands."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Head-on, the shirt hides the head and arms form a frame; unreadable.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "plank": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Forearm plank from the toes is well drawn and reads in three-quarter and side views. The clip is 100% motionless for its 2 s loop, so in the app it looks like a frozen frame; there is no cue that this is a hold.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Zero joint movement in every frame; with a live renderer this can be mistaken for a stalled player.",
+     "fix": "Add a subtle breathing cycle (chest 3-5 mm, 4 s) or a timer UI cue; keep the body line fixed."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Head-on view shows only shoulders and forearms.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "plank-jump-ins": {
+   "score": 5,
+   "confidence": "medium",
+   "summary": "Plank to crouch and back is recognisable in side views, but at the crouch the thighs pass through the upper arms (-47 mm) and legs and arms merge into one tangled block in the three-quarter view.",
+   "defects": [
+    {
+     "phase": "0.250-0.500",
+     "view": "threequarter",
+     "issue": "Knees and shins overlap and penetrate the arms; the landing feet sit between the hands so it is unclear which limbs support the body.",
+     "fix": "Land the feet outside the hands (stance ~10 cm wider than hand width) or slightly behind them, and lift the hips so the thighs clear the upper arms."
+    },
+    {
+     "phase": "0.125-0.200",
+     "view": "all",
+     "issue": "Knee travels up to 84 mm per frame with no visible airborne moment; the jump reads as a slide.",
+     "fix": "Lift both feet 4-6 cm during the jump for 3-4 frames."
+    }
+   ]
+  },
+  "power-pushup": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Explosive push-up with hands leaving the floor; clear in side views. Hands-off moment is short and the clip is a near duplicate of clapping-pushup.",
+   "defects": [
+    {
+     "phase": "0.625",
+     "view": "left/right",
+     "issue": "Hands leave the floor briefly; at native size the gap under the hands is a few pixels.",
+     "fix": "Raise the flight peak 3-5 cm and hold it for 2-3 more frames so the air gap reads."
+    },
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Identical to clapping-pushup outside the flight phase.",
+     "fix": "Differentiate the flight pose (hands open, wide) from the clap pose."
+    }
+   ]
+  },
+  "pseudo-planche": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Forward lean from a high plank reads in side views as shoulders travelling past the hands; heels lift. The lean (~21 cm) is visible but the start pose looks like a regular push-up plank, so differentiation depends on noticing the shoulder shift.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "left/right",
+     "issue": "Hands stay under the shoulders' start point; at phone size the lean reads only as the body sliding forward.",
+     "fix": "Turn the hands slightly outward/backward (fingers toward feet) and keep the hands visibly behind the shoulders at the lean peak."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Head-on stack.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "pull-ups": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Wide overhand pull-up reads from front and three-quarter, with a clearly wider grip than chin-ups. Side views suffer the same post-through-body problem; the overhand vs underhand difference is subtle.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "Frame post cuts through the figure in profile.",
+     "fix": "Offset posts behind the body plane or draw them thinner."
+    },
+    {
+     "phase": "0.375-0.500",
+     "view": "front",
+     "issue": "Head at top close to frame edge and overlapped by the bar.",
+     "fix": "Add top margin; let the chin clear the bar by 3-4 cm."
+    }
+   ]
+  },
+  "punches": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Fighting stance with jab and cross reads in side and three-quarter views; the 2 s loop gives brisk punches. Fists are tiny stubs barely wider than the forearm, and the front view points the punches at the camera.",
+   "defects": [
+    {
+     "phase": "0.250/0.625",
+     "view": "right",
+     "issue": "The punching fist is a small cap at the end of the forearm; the guard hand is a thin grey rod by the face.",
+     "fix": "Scale the fist state ~1.3x (wider knuckle block) so it reads as a fist at phone size."
+    },
+    {
+     "phase": "0.250/0.625",
+     "view": "front",
+     "issue": "Punches extend toward the camera and disappear into foreshortening.",
+     "fix": "Geometry only; keep default az 75."
+    }
+   ]
+  },
+  "pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Standard push-up from the toes with flat hands reads cleanly in side and three-quarter views with good depth (~24 cm chest travel).",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "front",
+     "issue": "Bottom position head-on shows only shoulders and elbows.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "quad-stretch": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Standing quad stretch with the free arm out for balance reads in side and three-quarter views. The foot is whipped up in about 0.5 s (toe up to 222 mm/frame, kicking out behind first), and the hand-on-foot grip is a blob where the hand sinks into the shin (-21 mm).",
+   "defects": [
+    {
+     "phase": "0.125",
+     "view": "left",
+     "issue": "The foot swings out behind and up like a kick before reaching the hand.",
+     "fix": "Raise the heel along a tight arc close to the thigh over ~1 s, hand meeting the ankle on the way up."
+    },
+    {
+     "phase": "0.250-0.625",
+     "view": "threequarter",
+     "issue": "Grasping hand, ankle and shoe merge into one blob and the hand penetrates the shin.",
+     "fix": "Use the grip state around the ankle (bar axis along the shin) and offset the hand 2 cm to the lateral side."
+    }
+   ]
+  },
+  "raised-leg-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Push-up with an alternating raised leg reads clearly in side and three-quarter views; the lifted leg is well separated from the support leg by near/far shading.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "front",
+     "issue": "Head-on the raised leg pokes up above the head and the push-up depth is invisible.",
+     "fix": "Geometry only."
+    },
+    {
+     "phase": "loop seam",
+     "view": "all",
+     "issue": "Seam step 8.5 mm vs median 22.6 mm; fine.",
+     "fix": "None."
+    }
+   ]
+  },
+  "reclined-twist": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Supine knee rolls with arms in a T. From the default feet-end camera the knees tipping side to side are visible, but the roll is modest and in side views the motion is just a slight knee lean. The large floor disc is clipped by the frame edges.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "left/right",
+     "issue": "Knee drop reads as a small lean of the bent legs; the spinal twist is not visible.",
+     "fix": "Increase the roll so the knees travel to ~45 deg off vertical and let the far shoulder stay pinned (arm flat) to show the twist."
+    },
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Floor disc (sized to the T-arms footprint) runs off both sides of every frame.",
+     "fix": "Clamp the floor disc to the framed width or include it in the framing bounds."
+    }
+   ]
+  },
+  "reverse-crunches": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Knees pulled toward the chest with the pelvis curling up reads well in side and three-quarter views; flat hands on the floor are visible.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "threequarter",
+     "issue": "Thighs cover the torso at the top; the pelvic curl is hidden.",
+     "fix": "Optional: raise default elevation 4-6 deg."
+    }
+   ]
+  },
+  "reverse-lunge": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Alternating bodyweight reverse lunge with arms forward reads clearly in three-quarter and side views; foot plant and rear-knee drop are obvious. Long 9.5 s loop with pauses; front view hides the rear leg.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "front",
+     "issue": "Rear leg hidden behind the front leg.",
+     "fix": "Geometry only."
+    },
+    {
+     "phase": "loop",
+     "view": "all",
+     "issue": "9.5 s for two reps with 12% held frames may feel sluggish in playback (seam 9 mm, smooth).",
+     "fix": "Consider ~7 s total; verify in playback."
+    }
+   ]
+  },
+  "seated-knee": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Alternating seated knee lift on a chair reads well in three-quarter and side views; the chair is clean and the hands rest on the thighs.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "right",
+     "issue": "Chair back and legs overlap the figure's far leg, slightly cluttering the profile.",
+     "fix": "Geometry only; default az 44 is good."
+    }
+   ]
+  },
+  "shoulder-circle": {
+   "score": 5,
+   "confidence": "medium",
+   "summary": "Backward shoulder rolls in a tight upper-body crop. The motion is carried almost entirely by the convex shirt hull changing shape (it tilts into a lozenge at 0.625-0.875), so it reads as the shirt flickering rather than shoulders circling; arms barely change.",
+   "defects": [
+    {
+     "phase": "0.625-0.875",
+     "view": "front/threequarter",
+     "issue": "Shirt hull deforms asymmetrically and its facets jump, which looks like a rendering glitch.",
+     "fix": "Anchor the shirt's shoulder points to a smoothed shoulder position or add shoulder caps (spheres at the shoulder joint) so the roll is shown by the arm root moving, not by the hull reshaping."
+    },
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "The near arm covers the torso; the circular path of the shoulder is not visible.",
+     "fix": "Show a small elbow bend/arm swing following the shoulder, or slightly abduct the arms so the shoulder joint is exposed."
+    }
+   ]
+  },
+  "shoulder-taps": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "High plank with alternating hand-to-opposite-shoulder taps reads in side and three-quarter views. The tapping hand merges with the head and shoulder, and the body does not visibly shift weight (validator ZMP failure).",
+   "defects": [
+    {
+     "phase": "0.125-0.250",
+     "view": "threequarter",
+     "issue": "Tapping hand and forearm overlap the face and shoulder; the tap contact is a blob.",
+     "fix": "Tap slightly lower on the shoulder front, keep the elbow lower, and drop the head slightly so the hand stays visible."
+    },
+    {
+     "phase": "0.125/0.625",
+     "view": "left/right",
+     "issue": "No lateral weight shift toward the support hand.",
+     "fix": "Shift the pelvis/chest 4-6 cm toward the support side during each tap."
+    }
+   ]
+  },
+  "side-bend": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Alternating side bend with overhead reach reads clearly from the front with a strong arc. Arm transitions are fast (palm up to 124 mm/frame) and the reaching hand comes close to the top edge.",
+   "defects": [
+    {
+     "phase": "0.125/0.625",
+     "view": "front",
+     "issue": "Overhead hand within ~15 px of the top edge.",
+     "fix": "Add top margin for overhead clips."
+    },
+    {
+     "phase": "0.375/0.875",
+     "view": "all",
+     "issue": "The arm drops through the T position quickly between bends, making the sweep feel abrupt.",
+     "fix": "Ease the arm descent over ~0.6 s."
+    },
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "Frontal-plane bend is invisible in profile.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "side-leg-raises": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Standing lateral leg raise alternating sides reads clearly in front and three-quarter views; arms slightly out for balance give a good silhouette.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "left/right",
+     "issue": "In profile the raised leg is hidden behind the standing leg.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "side-neck": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Ear-to-shoulder side flexion reads from the front and three-quarter views. Same thin-neck pivot issue as other neck clips, and the head touches the top of the frame in side views.",
+   "defects": [
+    {
+     "phase": "0.000/0.500",
+     "view": "left/right",
+     "issue": "Head crown touches the top frame edge.",
+     "fix": "Add top margin in upper-body crops."
+    },
+    {
+     "phase": "0.125-0.375",
+     "view": "front",
+     "issue": "Head tilts on a thin rod; the neck has no visible side curve.",
+     "fix": "Thicker neck blended into the collar; pivot lower."
+    }
+   ]
+  },
+  "side-step": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Sideways step-together and return reads well from the front and three-quarter views with clear foot lift and plant; profile views hide the lateral travel, as expected.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "left/right",
+     "issue": "Lateral travel is along the camera axis; only a slight knee bend shows.",
+     "fix": "Geometry only; default az 18 is right."
+    }
+   ]
+  },
+  "side-to-side-chops": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Clasped-hands chops from side to side. At normal elevations the hands only slide horizontally at chest height, so there is no visible high-to-low chopping diagonal; the clip relies on the steep default camera (el 58) to read as rotation. Hands are a small clasped knot.",
+   "defects": [
+    {
+     "phase": "0.125-0.375 / 0.625-0.875",
+     "view": "front/threequarter",
+     "issue": "Hands stay at chest height and move sideways; reads like a gentle arm sway rather than a chop.",
+     "fix": "Give the hands a diagonal path (shoulder height on one side to hip height on the other) with trunk rotation, or reduce the default elevation once the path has vertical travel."
+    },
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "Profile shows arms extended forward with little change.",
+     "fix": "Geometry only."
+    },
+    {
+     "phase": "loop seam",
+     "view": "all",
+     "issue": "Seam step 27 mm equals the largest per-frame step; continuous but no ease at the turn.",
+     "fix": "Verify in playback; add ease-in/out at the direction reversals."
+    }
+   ]
+  },
+  "sit-stand": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Chair sit-to-stand with arms reaching forward reads very well in three-quarter and side views; the chair is clean and the seat contact is clear. Head flicks forward quickly (face up to 66 mm/frame) at lift-off and landing.",
+   "defects": [
+    {
+     "phase": "~0.15 / ~0.85",
+     "view": "left/right",
+     "issue": "Head nods forward abruptly at lift-off and landing.",
+     "fix": "Keep the head aligned with the trunk and spread the nod over 8-10 frames."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Chair back sits behind the figure and frames it; fine, but the seat contact is hidden.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "sit-ups": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Bent-knee sit-up with hands behind the head reads clearly in side and three-quarter views; the torso rise is large. Elbows and hands form a clump around the head at the top.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "left/right",
+     "issue": "Hands behind the head and elbows merge with the head into one blob.",
+     "fix": "Point the elbows wider (out to the sides) so the head silhouette stays separate."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "From the feet the knees hide the torso at the bottom.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "spiderman-pushup": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Push-up with alternating knee to elbow reads from the high default camera and side views. At the bottom the driving thigh passes into the upper arm (-18.6 mm) and the knee and elbow merge in the three-quarter view.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "threequarter",
+     "issue": "Knee overlaps and penetrates the upper arm; which knee is driving is hard to tell.",
+     "fix": "Bring the knee to just outside the elbow (2-3 cm lateral clearance) and keep the foot off the floor so the swing reads."
+    },
+    {
+     "phase": "0.125-0.150",
+     "view": "all",
+     "issue": "Knee travels up to 89 mm per frame.",
+     "fix": "Slow the knee swing slightly or check in playback."
+    }
+   ]
+  },
+  "squat": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Bodyweight squat with arms rising forward for balance reads cleanly from three-quarter and side views; feet stay planted. Front view shows depth only as shrinking height.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "front",
+     "issue": "Arms point at the camera and the hip hinge is invisible head-on.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "stacked-pushup": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Push-up with one foot stacked on the other. The push-up is clear, but the stacked feet are only visible as the two legs merging into one in side views; at phone size this looks like a standard push-up.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "Stacked legs overlap exactly in profile; the top foot resting on the bottom heel is not legible.",
+     "fix": "Offset the top foot slightly back and up (5 cm) so its shoe sits visibly on the lower heel, and keep the near/far shading difference strong."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Only one foot shows head-on; can read as a one-leg push-up.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "staggered-pushup": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Push-up with one hand forward and one back. Push-up depth reads well; the stagger is visible in the front and three-quarter views but subtle in profile.",
+   "defects": [
+    {
+     "phase": "all",
+     "view": "left/right",
+     "issue": "In profile the far hand is hidden, so the stagger is not visible.",
+     "fix": "Increase the stagger to ~25 cm between hands or use the three-quarter default (present az 38 is fine)."
+    }
+   ]
+  },
+  "standing-knee": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Alternating standing bent-knee lift to hip height reads clearly in three-quarter and side views with a planted standing foot.",
+   "defects": [
+    {
+     "phase": "0.250/0.750",
+     "view": "front",
+     "issue": "Knee lift points at the camera; reads only as a shorter leg.",
+     "fix": "Geometry only; default az 65 is correct."
+    },
+    {
+     "phase": "loop seam",
+     "view": "all",
+     "issue": "Seam step 8 mm, smooth.",
+     "fix": "None."
+    }
+   ]
+  },
+  "superman": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Prone lift of arms, chest and legs, then hold. Side views show the shallow banana shape, but the figure is a thin strip, the lift is small (chest ~6 cm, feet ~18 cm), half the frames are held, and the floor disc runs off the frame. Front view (from the feet) is unreadable.",
+   "defects": [
+    {
+     "phase": "0.250-0.750",
+     "view": "left/right",
+     "issue": "Lift amplitude is a few pixels at phone size; the hold looks static.",
+     "fix": "Frame floor-lying clips tighter and raise the default elevation to ~20 deg; increase chest lift to ~10 cm if form allows."
+    },
+    {
+     "phase": "all",
+     "view": "all",
+     "issue": "Floor disc wider than the frame, cut at both sides.",
+     "fix": "Clamp disc radius to the framed area."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Viewed from the feet: legs end-on, head hidden.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "torso-extension": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Standing lumbar extension with hands on hips. The trunk barely extends (chest moves ~3 cm) while the head tips back ~7 cm, so the clip reads as looking up rather than a back bend; front view shows almost nothing.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "left/right",
+     "issue": "Most of the visible change is head tilt; the lumbar arch is minimal.",
+     "fix": "Increase thoracolumbar extension (chest travels back 8-10 cm with hips pushed slightly forward) and keep the head in line with the trunk."
+    },
+    {
+     "phase": "all",
+     "view": "front",
+     "issue": "Extension along the camera axis; invisible head-on.",
+     "fix": "Geometry only."
+    }
+   ]
+  },
+  "tricep-dips": {
+   "score": 7,
+   "confidence": "medium",
+   "summary": "Floor tricep dips (hands behind, feet forward) read in side and three-quarter views; elbow bend is visible. The body moves only ~10 cm and the head tips back in the right view, which looks like a neck stretch.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "right",
+     "issue": "Head tilts back at the bottom and the face points up.",
+     "fix": "Keep the head neutral (chin level) through the dip."
+    },
+    {
+     "phase": "0.500",
+     "view": "threequarter",
+     "issue": "Hands behind the hips are partly hidden by the torso; flat-hand contact not visible.",
+     "fix": "Turn hands slightly outward and place them 3-4 cm wider."
+    }
+   ]
+  },
+  "tricep-extensions": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Forearm plank pressing up to a high plank and back reads clearly in side and three-quarter views; flat hands and forearm contact are legible.",
+   "defects": [
+    {
+     "phase": "0.250-0.375",
+     "view": "threequarter",
+     "issue": "During the transition the near forearm overlaps the far one and the hand placement briefly reads ambiguous.",
+     "fix": "Separate the hands a bit wider (5 cm) during the press."
+    }
+   ]
+  },
+  "triceps-stretch": {
+   "score": 6,
+   "confidence": "medium",
+   "summary": "Overhead triceps stretch with the helper hand on the elbow. The hold reads from the front, but in three-quarter and side views both arms tangle behind the head, hiding the face; entry and exit are abrupt (palm up to 121 mm/frame) and the arm reaches the top edge at 0.75.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "threequarter/left",
+     "issue": "The bent arm and the helper arm cover the head; the stretch reads as hands on the head.",
+     "fix": "Keep the stretched elbow pointing straight up beside the head (not over it) and the helper hand on top of the elbow on the near side."
+    },
+    {
+     "phase": "0.750",
+     "view": "left/right",
+     "issue": "The stretched arm shoots straight overhead and touches/clips the top edge; the helper arm drops at the same time.",
+     "fix": "Lower the arm along a smooth path without the straight-overhead overshoot; add top margin."
+    }
+   ]
+  },
+  "wall-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Standing wall press-up with flat hands on the translucent wall reads well from three-quarter and side views; the see-through wall keeps the figure visible from behind.",
+   "defects": [
+    {
+     "phase": "0.375-0.625",
+     "view": "left",
+     "issue": "Wall is a dark slab with no outline; it is nearly the same tone as the floor disc so the hand contact plane is faint.",
+     "fix": "Lighten the wall slightly or draw a thin edge line on its outline."
+    }
+   ]
+  },
+  "wide-pushup": {
+   "score": 8,
+   "confidence": "medium",
+   "summary": "Wide-hand push-up reads clearly; the wide hand placement is obvious from the front and three-quarter views, distinguishing it from the standard and close variants.",
+   "defects": [
+    {
+     "phase": "0.500",
+     "view": "left/right",
+     "issue": "In profile it is identical to the standard push-up.",
+     "fix": "Geometry only."
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,3026 @@
+{
+ "kb-swing": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 3.3306690738754696e-16,
+  "max_grip_error_m": 1.249000902703301e-16,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 2.926185547978014e-06,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": -0.016,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": -0.016,
+    "phase": 0.0
+   },
+   {
+    "pair": "bell vs thigh_l",
+    "min_clearance_m": 0.0049,
+    "phase": 0.833
+   },
+   {
+    "pair": "bell vs thigh_r",
+    "min_clearance_m": 0.0049,
+    "phase": 0.833
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0093,
+    "phase": 0.8
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0093,
+    "phase": 0.8
+   }
+  ]
+ },
+ "kb-deadlift": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 2.220446049250313e-16,
+  "max_grip_error_m": 1.3877787807814457e-17,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 1.1947032087538665e-06,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": -0.0165,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": -0.0165,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0165,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0165,
+    "phase": 0.0
+   },
+   {
+    "pair": "bell vs thigh_l",
+    "min_clearance_m": 0.0706,
+    "phase": 0.567
+   },
+   {
+    "pair": "bell vs thigh_r",
+    "min_clearance_m": 0.0706,
+    "phase": 0.567
+   }
+  ]
+ },
+ "goblet-squat": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 3.885780586188048e-16,
+  "max_grip_error_m": 3.1031676915590914e-17,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 2.3527077836314342e-08,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": -0.001,
+    "phase": 0.517
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": -0.001,
+    "phase": 0.517
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.032,
+    "phase": 0.517
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.032,
+    "phase": 0.517
+   },
+   {
+    "pair": "upper_arm_l vs shin_l",
+    "min_clearance_m": 0.1173,
+    "phase": 0.517
+   },
+   {
+    "pair": "upper_arm_r vs shin_r",
+    "min_clearance_m": 0.1173,
+    "phase": 0.517
+   }
+  ]
+ },
+ "kb-reverse-lunge": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 2.7755575615628914e-16,
+  "max_grip_error_m": 6.206335383118183e-17,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 3.2616680924697555e-05,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0423,
+    "phase": 0.792
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0423,
+    "phase": 0.292
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0753,
+    "phase": 0.792
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0753,
+    "phase": 0.292
+   },
+   {
+    "pair": "bell vs thigh_r",
+    "min_clearance_m": 0.1147,
+    "phase": 0.242
+   },
+   {
+    "pair": "bell vs thigh_l",
+    "min_clearance_m": 0.1147,
+    "phase": 0.742
+   }
+  ]
+ },
+ "kb-side-lunge": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 2.7755575615628914e-16,
+  "max_grip_error_m": 5.551115123125783e-17,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 3.0896331460029905e-05,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0303,
+    "phase": 0.267
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0303,
+    "phase": 0.767
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0633,
+    "phase": 0.267
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0633,
+    "phase": 0.767
+   },
+   {
+    "pair": "bell vs thigh_l",
+    "min_clearance_m": 0.1141,
+    "phase": 0.267
+   },
+   {
+    "pair": "bell vs thigh_r",
+    "min_clearance_m": 0.1141,
+    "phase": 0.767
+   }
+  ]
+ },
+ "kb-upright-row": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 3.3306690738754696e-16,
+  "max_grip_error_m": 0.0,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 6.427507429108531e-08,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "bell vs thigh_l",
+    "min_clearance_m": 0.031,
+    "phase": 0.717
+   },
+   {
+    "pair": "bell vs thigh_r",
+    "min_clearance_m": 0.031,
+    "phase": 0.717
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0389,
+    "phase": 0.95
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0389,
+    "phase": 0.95
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0467,
+    "phase": 0.933
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0467,
+    "phase": 0.933
+   }
+  ]
+ },
+ "kb-bent-row": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 1.6653345369377348e-16,
+  "max_grip_error_m": 3.925231146709438e-17,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 1.0745102492237123e-13,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": -0.0038,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.0002,
+    "phase": 0.0
+   },
+   {
+    "pair": "bell vs thigh_l",
+    "min_clearance_m": 0.0138,
+    "phase": 0.392
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0488,
+    "phase": 0.775
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0818,
+    "phase": 0.775
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.0933,
+    "phase": 0.425
+   }
+  ]
+ },
+ "kb-side-bend": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 2.7755575615628914e-16,
+  "max_grip_error_m": 0.0,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 2.76201720357913e-07,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "bell vs thigh_l",
+    "min_clearance_m": 0.0133,
+    "phase": 0.3
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.0158,
+    "phase": 0.0
+   },
+   {
+    "pair": "bell vs shin_l",
+    "min_clearance_m": 0.0318,
+    "phase": 0.408
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0559,
+    "phase": 0.125
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0674,
+    "phase": 0.117
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0867,
+    "phase": 0.0
+   }
+  ]
+ },
+ "kb-curl": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 3.3306690738754696e-16,
+  "max_grip_error_m": 1.249000902703301e-16,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 7.255776876546929e-08,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "bell vs thigh_l",
+    "min_clearance_m": -0.0087,
+    "phase": 0.008
+   },
+   {
+    "pair": "bell vs thigh_r",
+    "min_clearance_m": -0.0087,
+    "phase": 0.008
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": -0.0081,
+    "phase": 0.4
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": -0.0081,
+    "phase": 0.4
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": -0.0068,
+    "phase": 0.117
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": -0.0068,
+    "phase": 0.117
+   }
+  ]
+ },
+ "kb-halo": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 2.7755575615628914e-16,
+  "max_grip_error_m": 8.777083671441753e-17,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 3.1031676915590914e-16,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.1547,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.1547,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.1877,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.1877,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.298,
+    "phase": 0.033
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.298,
+    "phase": 0.467
+   }
+  ]
+ },
+ "kb-clean": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 2.7755575615628914e-16,
+  "max_grip_error_m": 2.7755575615628914e-17,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 6.965424853432846e-08,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": -0.0137,
+    "phase": 0.633
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": -0.0047,
+    "phase": 0.617
+   },
+   {
+    "pair": "bell vs thigh_l",
+    "min_clearance_m": 0.0297,
+    "phase": 0.517
+   },
+   {
+    "pair": "bell vs thigh_r",
+    "min_clearance_m": 0.0671,
+    "phase": 0.533
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0699,
+    "phase": 0.008
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.0708,
+    "phase": 0.642
+   }
+  ]
+ },
+ "kb-press": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 2.7755575615628914e-16,
+  "max_grip_error_m": 2.8609792490763984e-17,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 5.587901661888137e-07,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0238,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0568,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0699,
+    "phase": 0.017
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0832,
+    "phase": 0.158
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.0882,
+    "phase": 0.275
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.1341,
+    "phase": 0.0
+   }
+  ]
+ },
+ "kb-snatch": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 2.7755575615628914e-16,
+  "max_grip_error_m": 5.594315114139762e-17,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 1.4248108307567386e-06,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0069,
+    "phase": 0.442
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0082,
+    "phase": 0.442
+   },
+   {
+    "pair": "bell vs thigh_l",
+    "min_clearance_m": 0.029,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0699,
+    "phase": 0.0
+   },
+   {
+    "pair": "bell vs thigh_r",
+    "min_clearance_m": 0.0703,
+    "phase": 0.517
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0826,
+    "phase": 0.708
+   }
+  ]
+ },
+ "kb-getup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 3.885780586188048e-16,
+  "max_grip_error_m": 5.551115123125783e-17,
+  "max_support_drift_m_per_sample": 3.4219371797089426e-16,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 0.0,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.1335,
+    "phase": 0.492
+   },
+   {
+    "pair": "forearm_r vs shin_r",
+    "min_clearance_m": 0.1348,
+    "phase": 0.725
+   },
+   {
+    "pair": "hand_r vs shin_r",
+    "min_clearance_m": 0.151,
+    "phase": 0.717
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.1533,
+    "phase": 0.55
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.1597,
+    "phase": 0.55
+   },
+   {
+    "pair": "upper_arm_r vs shin_r",
+    "min_clearance_m": 0.1626,
+    "phase": 0.267
+   }
+  ]
+ },
+ "kb-pullover": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "validator_failures": [],
+  "max_bone_length_error_m": 2.220446049250313e-16,
+  "max_grip_error_m": 1.1102230246251565e-16,
+  "max_support_drift_m_per_sample": 0.0,
+  "min_joint_height_m": 0.0,
+  "loop_seam_m": 2.7996270310706728e-09,
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0925,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0925,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.1255,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.1255,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.2385,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.2385,
+    "phase": 0.0
+   }
+  ]
+ },
+ "alt-arm-leg-plank": {
+  "validator_v2": {
+   "passed": false,
+   "failures": [
+    "dynamic balance: ZMP 0.144 m outside support"
+   ]
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2742,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2742,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.3273,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.3273,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3684,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3684,
+    "phase": 0.0
+   }
+  ]
+ },
+ "back-lifts": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2971,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2971,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3779,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3779,
+    "phase": 0.5
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.5134,
+    "phase": 0.5
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.5134,
+    "phase": 0.5
+   }
+  ]
+ },
+ "band-pull": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.3063,
+    "phase": 0.025
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.3063,
+    "phase": 0.025
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3857,
+    "phase": 0.025
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3857,
+    "phase": 0.025
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.4292,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.4292,
+    "phase": 0.0
+   }
+  ]
+ },
+ "behind-back-clasp": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.01,
+    "phase": 0.125
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.01,
+    "phase": 0.125
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.875
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.875
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0295,
+    "phase": 0.8
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0295,
+    "phase": 0.8
+   }
+  ]
+ },
+ "bicycle-crunches": {
+  "validator_v2": {
+   "passed": false,
+   "failures": [
+    "dynamic balance: ZMP 0.107 m outside support"
+   ]
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.1144,
+    "phase": 0.75
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.1144,
+    "phase": 0.25
+   },
+   {
+    "pair": "upper_arm_l vs shin_r",
+    "min_clearance_m": 0.1404,
+    "phase": 0.75
+   },
+   {
+    "pair": "upper_arm_r vs shin_l",
+    "min_clearance_m": 0.1404,
+    "phase": 0.25
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.167,
+    "phase": 0.25
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.167,
+    "phase": 0.75
+   }
+  ]
+ },
+ "bird-dog": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2956,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2956,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.3286,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.3286,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3791,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3791,
+    "phase": 0.0
+   }
+  ]
+ },
+ "calf-raise": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0211,
+    "phase": 0.175
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0211,
+    "phase": 0.825
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.792
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.792
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0425,
+    "phase": 0.175
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0425,
+    "phase": 0.175
+   }
+  ]
+ },
+ "cat-cow": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2394,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2394,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.2724,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.2724,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.3344,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.3344,
+    "phase": 0.0
+   }
+  ]
+ },
+ "chest-expansions": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2752,
+    "phase": 0.75
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2856,
+    "phase": 0.208
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3244,
+    "phase": 0.75
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.329,
+    "phase": 0.75
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.3484,
+    "phase": 0.208
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3491,
+    "phase": 0.208
+   }
+  ]
+ },
+ "chin-ups": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2746,
+    "phase": 0.4
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2746,
+    "phase": 0.4
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.328,
+    "phase": 0.4
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.328,
+    "phase": 0.4
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3739,
+    "phase": 0.4
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3739,
+    "phase": 0.4
+   }
+  ]
+ },
+ "clapping-pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2039,
+    "phase": 0.6
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2039,
+    "phase": 0.6
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.237,
+    "phase": 0.6
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.237,
+    "phase": 0.6
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.309,
+    "phase": 0.6
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.309,
+    "phase": 0.6
+   }
+  ]
+ },
+ "climbers": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0065,
+    "phase": 0.35
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0065,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.034,
+    "phase": 0.317
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.034,
+    "phase": 0.033
+   },
+   {
+    "pair": "upper_arm_l vs shin_l",
+    "min_clearance_m": 0.0365,
+    "phase": 0.35
+   },
+   {
+    "pair": "upper_arm_r vs shin_r",
+    "min_clearance_m": 0.0365,
+    "phase": 0.0
+   }
+  ]
+ },
+ "close-pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0548,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0548,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0878,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0878,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.1749,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.1749,
+    "phase": 0.5
+   }
+  ]
+ },
+ "cross-body-shoulder": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.942
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.15
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0321,
+    "phase": 0.85
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0374,
+    "phase": 0.117
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0984,
+    "phase": 0.95
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.1087,
+    "phase": 0.108
+   }
+  ]
+ },
+ "db-curl": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0104,
+    "phase": 0.892
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0104,
+    "phase": 0.892
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.025
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.025
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0295,
+    "phase": 0.133
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0295,
+    "phase": 0.133
+   }
+  ]
+ },
+ "decline-pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.26,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.26,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.3051,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.3051,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3784,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3784,
+    "phase": 0.5
+   }
+  ]
+ },
+ "doorframe-rows": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.2176,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.2176,
+    "phase": 0.5
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.2228,
+    "phase": 0.5
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.2228,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2268,
+    "phase": 0.142
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2268,
+    "phase": 0.142
+   }
+  ]
+ },
+ "flutter-kicks": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.1253,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.1253,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.1496,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.1496,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.2113,
+    "phase": 0.375
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.2113,
+    "phase": 0.125
+   }
+  ]
+ },
+ "fly-steps": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.3063,
+    "phase": 0.317
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.3063,
+    "phase": 0.558
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3857,
+    "phase": 0.558
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3857,
+    "phase": 0.008
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.4866,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.4866,
+    "phase": 0.0
+   }
+  ]
+ },
+ "glute-bridge": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0276,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0276,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.0614,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.0614,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0718,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0718,
+    "phase": 0.0
+   }
+  ]
+ },
+ "hamstring-stretch": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0134,
+    "phase": 0.15
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0134,
+    "phase": 0.858
+   },
+   {
+    "pair": "hand_r vs thigh_l",
+    "min_clearance_m": 0.017,
+    "phase": 0.683
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.017,
+    "phase": 0.792
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.017,
+    "phase": 0.95
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0263,
+    "phase": 0.267
+   }
+  ]
+ },
+ "hip-flexor-lunge": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "hand_l vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.033
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.775
+   },
+   {
+    "pair": "forearm_l vs thigh_r",
+    "min_clearance_m": 0.0606,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0616,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0676,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.088,
+    "phase": 0.0
+   }
+  ]
+ },
+ "leg-raises": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.1253,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.1253,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.1496,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.1496,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.2115,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.2115,
+    "phase": 0.0
+   }
+  ]
+ },
+ "neck-extension": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0215,
+    "phase": 0.017
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0215,
+    "phase": 0.017
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.008
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.008
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0427,
+    "phase": 0.008
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0427,
+    "phase": 0.008
+   }
+  ]
+ },
+ "neck-flexion": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0215,
+    "phase": 0.225
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0215,
+    "phase": 0.225
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.225
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.225
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0427,
+    "phase": 0.225
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0427,
+    "phase": 0.225
+   }
+  ]
+ },
+ "oblique-twist": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2961,
+    "phase": 0.067
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2961,
+    "phase": 0.567
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.335,
+    "phase": 0.15
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.335,
+    "phase": 0.65
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.3496,
+    "phase": 0.15
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.3496,
+    "phase": 0.65
+   }
+  ]
+ },
+ "overhead-reach": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.0559,
+    "phase": 0.95
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.0559,
+    "phase": 0.95
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0592,
+    "phase": 0.95
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0592,
+    "phase": 0.95
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.1041,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.1041,
+    "phase": 0.933
+   }
+  ]
+ },
+ "pike-pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2605,
+    "phase": 0.217
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2605,
+    "phase": 0.217
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3475,
+    "phase": 0.217
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3475,
+    "phase": 0.217
+   },
+   {
+    "pair": "upper_arm_l vs shin_l",
+    "min_clearance_m": 0.3564,
+    "phase": 0.217
+   },
+   {
+    "pair": "upper_arm_r vs shin_r",
+    "min_clearance_m": 0.3564,
+    "phase": 0.217
+   }
+  ]
+ },
+ "plank": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.3035,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.3035,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3833,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3833,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.401,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.401,
+    "phase": 0.0
+   }
+  ]
+ },
+ "plank-jump-ins": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": -0.0471,
+    "phase": 0.3
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": -0.0471,
+    "phase": 0.3
+   },
+   {
+    "pair": "upper_arm_l vs shin_l",
+    "min_clearance_m": -0.0194,
+    "phase": 0.3
+   },
+   {
+    "pair": "upper_arm_r vs shin_r",
+    "min_clearance_m": -0.0194,
+    "phase": 0.3
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.085,
+    "phase": 0.208
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.085,
+    "phase": 0.208
+   }
+  ]
+ },
+ "power-pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2074,
+    "phase": 0.35
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2074,
+    "phase": 0.35
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.2408,
+    "phase": 0.35
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.2408,
+    "phase": 0.35
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.353,
+    "phase": 0.6
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.353,
+    "phase": 0.6
+   }
+  ]
+ },
+ "pseudo-planche": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.173,
+    "phase": 0.35
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.173,
+    "phase": 0.35
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.206,
+    "phase": 0.35
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.206,
+    "phase": 0.35
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3071,
+    "phase": 0.35
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3071,
+    "phase": 0.35
+   }
+  ]
+ },
+ "pull-ups": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.3063,
+    "phase": 0.142
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.3063,
+    "phase": 0.142
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3857,
+    "phase": 0.142
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3857,
+    "phase": 0.142
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.4398,
+    "phase": 0.4
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.4398,
+    "phase": 0.4
+   }
+  ]
+ },
+ "punches": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2883,
+    "phase": 0.142
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2924,
+    "phase": 0.558
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.3545,
+    "phase": 0.3
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.3623,
+    "phase": 0.742
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3754,
+    "phase": 0.158
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3781,
+    "phase": 0.567
+   }
+  ]
+ },
+ "pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2066,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2066,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.2399,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.2399,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3557,
+    "phase": 0.4
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3557,
+    "phase": 0.4
+   }
+  ]
+ },
+ "quad-stretch": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "hand_l vs shin_l",
+    "min_clearance_m": -0.0206,
+    "phase": 0.175
+   },
+   {
+    "pair": "forearm_l vs shin_l",
+    "min_clearance_m": -0.0075,
+    "phase": 0.275
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.017,
+    "phase": 0.083
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0201,
+    "phase": 0.667
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0249,
+    "phase": 0.925
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.0393,
+    "phase": 0.9
+   }
+  ]
+ },
+ "raised-leg-pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2066,
+    "phase": 0.25
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2066,
+    "phase": 0.25
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.2399,
+    "phase": 0.25
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.2399,
+    "phase": 0.25
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3557,
+    "phase": 0.225
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3557,
+    "phase": 0.225
+   }
+  ]
+ },
+ "reclined-twist": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.3063,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.3063,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3699,
+    "phase": 0.175
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3699,
+    "phase": 0.675
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.4928,
+    "phase": 0.058
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.4928,
+    "phase": 0.558
+   }
+  ]
+ },
+ "reverse-crunches": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.12,
+    "phase": 0.25
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.12,
+    "phase": 0.25
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.1481,
+    "phase": 0.242
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.1481,
+    "phase": 0.242
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.2228,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.2228,
+    "phase": 0.0
+   }
+  ]
+ },
+ "reverse-lunge": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0348,
+    "phase": 0.475
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0348,
+    "phase": 0.017
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0651,
+    "phase": 0.517
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0651,
+    "phase": 0.017
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.0653,
+    "phase": 0.742
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.0653,
+    "phase": 0.242
+   }
+  ]
+ },
+ "seated-knee": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.367
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.633
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0275,
+    "phase": 0.25
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0275,
+    "phase": 0.75
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.029,
+    "phase": 0.117
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.029,
+    "phase": 0.617
+   }
+  ]
+ },
+ "shoulder-circle": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.005,
+    "phase": 0.75
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.005,
+    "phase": 0.75
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0124,
+    "phase": 0.592
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0124,
+    "phase": 0.592
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.092
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.092
+   }
+  ]
+ },
+ "shoulder-taps": {
+  "validator_v2": {
+   "passed": false,
+   "failures": [
+    "dynamic balance: ZMP 0.136 m outside support"
+   ]
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2611,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2611,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.312,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.312,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3498,
+    "phase": 0.175
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3498,
+    "phase": 0.675
+   }
+  ]
+ },
+ "side-bend": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.417
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.917
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0319,
+    "phase": 0.933
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0319,
+    "phase": 0.433
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0891,
+    "phase": 0.508
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0891,
+    "phase": 0.008
+   }
+  ]
+ },
+ "side-leg-raises": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.093,
+    "phase": 0.3
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.093,
+    "phase": 0.8
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.1059,
+    "phase": 0.3
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.1059,
+    "phase": 0.8
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.143,
+    "phase": 0.108
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.143,
+    "phase": 0.042
+   }
+  ]
+ },
+ "side-neck": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0214,
+    "phase": 0.617
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0214,
+    "phase": 0.117
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.992
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.492
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0426,
+    "phase": 0.617
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0426,
+    "phase": 0.117
+   }
+  ]
+ },
+ "side-step": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.014,
+    "phase": 0.442
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.014,
+    "phase": 0.942
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.242
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.742
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0388,
+    "phase": 0.442
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0388,
+    "phase": 0.942
+   }
+  ]
+ },
+ "side-to-side-chops": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2373,
+    "phase": 0.25
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2518,
+    "phase": 0.75
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.2723,
+    "phase": 0.25
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.2798,
+    "phase": 0.75
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.2897,
+    "phase": 0.75
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.2952,
+    "phase": 0.25
+   }
+  ]
+ },
+ "sit-stand": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0145,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0145,
+    "phase": 0.5
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.492
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.492
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0337,
+    "phase": 0.442
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0337,
+    "phase": 0.442
+   }
+  ]
+ },
+ "sit-ups": {
+  "validator_v2": {
+   "passed": false,
+   "failures": [
+    "dynamic balance: ZMP 0.066 m outside support"
+   ]
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.222,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.222,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_l vs shin_l",
+    "min_clearance_m": 0.2997,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs shin_r",
+    "min_clearance_m": 0.2997,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3165,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3165,
+    "phase": 0.5
+   }
+  ]
+ },
+ "spiderman-pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": -0.0186,
+    "phase": 0.192
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": -0.0186,
+    "phase": 0.692
+   },
+   {
+    "pair": "upper_arm_l vs shin_l",
+    "min_clearance_m": 0.0055,
+    "phase": 0.25
+   },
+   {
+    "pair": "upper_arm_r vs shin_r",
+    "min_clearance_m": 0.0055,
+    "phase": 0.75
+   },
+   {
+    "pair": "forearm_l vs shin_l",
+    "min_clearance_m": 0.0385,
+    "phase": 0.25
+   },
+   {
+    "pair": "forearm_r vs shin_r",
+    "min_clearance_m": 0.0385,
+    "phase": 0.75
+   }
+  ]
+ },
+ "squat": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0215,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0215,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.05
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.05
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0416,
+    "phase": 0.042
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0416,
+    "phase": 0.042
+   }
+  ]
+ },
+ "stacked-pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.204,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.204,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.2371,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.2371,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3561,
+    "phase": 0.308
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3561,
+    "phase": 0.308
+   }
+  ]
+ },
+ "staggered-pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.1915,
+    "phase": 0.308
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.2245,
+    "phase": 0.308
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2687,
+    "phase": 0.5
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.2989,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.3184,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3452,
+    "phase": 0.175
+   }
+  ]
+ },
+ "standing-knee": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.01,
+    "phase": 0.225
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.01,
+    "phase": 0.725
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.442
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.942
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0294,
+    "phase": 0.958
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.0294,
+    "phase": 0.458
+   }
+  ]
+ },
+ "superman": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.3022,
+    "phase": 0.3
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.3022,
+    "phase": 0.3
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3822,
+    "phase": 0.3
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3822,
+    "phase": 0.3
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.6134,
+    "phase": 0.3
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.6134,
+    "phase": 0.3
+   }
+  ]
+ },
+ "torso-extension": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.027,
+    "phase": 0.258
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.027,
+    "phase": 0.258
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0609,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0609,
+    "phase": 0.5
+   },
+   {
+    "pair": "hand_l vs thigh_r",
+    "min_clearance_m": 0.1914,
+    "phase": 0.0
+   },
+   {
+    "pair": "hand_r vs thigh_l",
+    "min_clearance_m": 0.1914,
+    "phase": 0.0
+   }
+  ]
+ },
+ "tricep-dips": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.2013,
+    "phase": 0.5
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.2013,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2261,
+    "phase": 0.0
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2261,
+    "phase": 0.0
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.2288,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.2288,
+    "phase": 0.5
+   }
+  ]
+ },
+ "tricep-extensions": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.303,
+    "phase": 0.117
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.303,
+    "phase": 0.117
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3828,
+    "phase": 0.117
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3828,
+    "phase": 0.117
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.398,
+    "phase": 0.117
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.398,
+    "phase": 0.117
+   }
+  ]
+ },
+ "triceps-stretch": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.0203,
+    "phase": 0.958
+   },
+   {
+    "pair": "hand_l vs thigh_l",
+    "min_clearance_m": 0.0255,
+    "phase": 0.958
+   },
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.0421,
+    "phase": 0.983
+   },
+   {
+    "pair": "hand_r vs thigh_r",
+    "min_clearance_m": 0.0555,
+    "phase": 0.767
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.0701,
+    "phase": 0.142
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.1066,
+    "phase": 0.017
+   }
+  ]
+ },
+ "wall-pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.2431,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.2431,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.2822,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.2822,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3693,
+    "phase": 0.375
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3693,
+    "phase": 0.375
+   }
+  ]
+ },
+ "wide-pushup": {
+  "validator_v2": {
+   "passed": true,
+   "failures": []
+  },
+  "worst_limb_and_bell_clearance": [
+   {
+    "pair": "upper_arm_l vs thigh_l",
+    "min_clearance_m": 0.1934,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_r",
+    "min_clearance_m": 0.1934,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_l vs thigh_l",
+    "min_clearance_m": 0.2264,
+    "phase": 0.5
+   },
+   {
+    "pair": "forearm_r vs thigh_r",
+    "min_clearance_m": 0.2264,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_l vs thigh_r",
+    "min_clearance_m": 0.3536,
+    "phase": 0.5
+   },
+   {
+    "pair": "upper_arm_r vs thigh_l",
+    "min_clearance_m": 0.3536,
+    "phase": 0.5
+   }
+  ]
+ }
+}

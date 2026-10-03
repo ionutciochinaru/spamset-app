@@ -12,6 +12,10 @@ import { Palette, Radius } from '@/constants/theme';
 
 type Orbit = { azimuth: number; elevation: number };
 
+/** Clips lower than this (m) are floor work; their default camera starts higher (degrees). */
+const FLOOR_CLIP_HEIGHT = 0.9;
+const FLOOR_ELEVATION = 26;
+
 const FOV = 30;
 const MIN_ELEVATION = -0.05;
 const MAX_ELEVATION = 1.25;
@@ -131,7 +135,10 @@ export function FigureViewer({
   const clip = clips[clipId];
   // Start from the watch camera, so the side it draws near (and single-arm work) faces you.
   const azimuth = view?.azimuth ?? clip.view.azimuth;
-  const elevation = view?.elevation ?? clip.view.elevation;
+  // Floor work (lying, planks) seen from near floor level is a thin strip: start it from
+  // at least 26 degrees up so the body reads as a shape. Standing clips keep their camera.
+  const low = useMemo(() => clipBounds(clip).height < FLOOR_CLIP_HEIGHT, [clip]);
+  const elevation = view?.elevation ?? (low ? Math.max(clip.view.elevation, FLOOR_ELEVATION) : clip.view.elevation);
   const home = useMemo<Orbit>(
     () => ({ azimuth: THREE.MathUtils.degToRad(azimuth), elevation: THREE.MathUtils.degToRad(elevation) }),
     [azimuth, elevation],

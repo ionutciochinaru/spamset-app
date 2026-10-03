@@ -1,0 +1,1069 @@
+{
+  "role": "anatomy",
+  "revision": "715283f4ef6b",
+  "reviewedAt": "2026-10-03T08:00:17+00:00",
+  "method": "Read-only anatomy review of revision 715283f4ef6b. Measured every clip's frames[].j with a numpy script: per-bone length range (incl. left/right asymmetry), knee hinge direction vs pelvis lateral axis, foot alignment to the knee hinge plane, ankle shin-to-foot angle, hip flexion/extension/abduction in a pelvis frame, elbow and wrist angles, spine segment bend, trunk axial twist, neck/head angles, floor penetration using figure.ts drawn radii (hip 70, knee 54, shoulder 49, elbow 34 mm; head ~0.1 m skull from head-model.ts), planted-foot and flat-palm drift per frame, per-frame step and acceleration spikes, loop seam. Cross-checked prop contacts against scene geometry (seat, wall, bar, doorframe) and used geometry.json/clip validator for limb clearance and ZMP. Viewed all 77 contact sheets (4 views x 8/16 phases) and opened native 480px frames where judgment depended on detail (kb-halo, kb-getup, superman, sit-ups). Not done: real-time playback was not available, so timing/smoothness is judged from duration and per-frame displacement only; hand finger geometry and grip orientation were judged from stills at contact-sheet size.",
+  "exercises": {
+    "alt-arm-leg-plank": {
+      "score": 5,
+      "confidence": "medium",
+      "summary": "Opposite arm/leg lifts from a plank are correctly paired, but the body has no weight shift when a hand and foot leave the floor (validator: ZMP 0.144 m outside support) and the hand pops at every lift-off.",
+      "defects": [
+        {
+          "phase": "0.06 / 0.38 / 0.56 / 0.88 (hand lift and replant)",
+          "view": "all",
+          "issue": "Hand lift-off/touch-down pops: the free-hand palm joint sits ~14 mm below the floor and ~40-45 mm behind the flat-hand palm point, so the palm jumps 40-45 mm in one frame when hs switches 0<->2 and the free mitten pokes through the floor (palm_l/palm_r 82 mm step, -20 mm below floor at 0.008/0.508).",
+          "fix": "Export the free-hand palm at the same contact point as the flat palm for the touch-down/lift-off frames (or blend the palm target over 3-4 frames) and clamp palm/finger height >= 0 while hs==0 near the floor"
+        },
+        {
+          "phase": "0.125-0.375 / 0.625-0.875 (lifted)",
+          "view": "front / threequarter",
+          "issue": "Dynamic balance fails: pelvis and chest stay centred over a diagonal two-point base, so the centre of pressure is 14 cm outside support.",
+          "fix": "Shift pelvis and chest 3-5 cm toward the supporting hand/foot diagonal before lifting and keep them there through the hold."
+        }
+      ]
+    },
+    "back-lifts": {
+      "score": 6,
+      "confidence": "high",
+      "summary": "Prone back extension with 24 deg segmental spine bend and fixed legs is anatomically fine, but the face is buried in the floor at rest.",
+      "defects": [
+        {
+          "phase": "0.000 (rest)",
+          "view": "left / right",
+          "issue": "Head centre 80 mm above the floor with the face down puts the nose ~42 mm below the floor plane; the face disappears into the ground.",
+          "fix": "Rest on the forehead/chin: raise the head joint to ~115 mm or tilt the face 20-30 deg toward the floor-forward direction so nose and chin stay above y=0."
+        }
+      ]
+    },
+    "band-pull": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Straight-arm band pull-apart: elbows 5-6 deg, horizontal abduction at shoulder height, hands stay on the band, feet planted, no collisions. Wrists held at 90 deg to grip the band, which matches the grip model.",
+      "defects": []
+    },
+    "behind-back-clasp": {
+      "score": 5,
+      "confidence": "high",
+      "summary": "Shoulder-extension stretch with hands clasped behind the back. Arm ranges are realistic, but the clasp has no grip state and releases with a single-frame pop.",
+      "defects": [
+        {
+          "phase": "0.80 (release)",
+          "view": "front / threequarter",
+          "issue": "Both palms jump 77-80 mm sideways in one frame (8 mm previous step), so the clasped hands snap apart.",
+          "fix": "Ease the release over 6-10 frames (separate palms gradually from x=+-12 mm)."
+        },
+        {
+          "phase": "0.14 (clasp)",
+          "view": "threequarter",
+          "issue": "Second jump of 67 mm as the hands meet.",
+          "fix": "Ease the approach; slow the final 10 cm of travel."
+        },
+        {
+          "phase": "0.2-0.8 (hold)",
+          "view": "left / right",
+          "issue": "Both hands are hs=0 (free mittens) with palm points 16 mm apart, so the two mittens interpenetrate instead of interlacing.",
+          "fix": "Add a clasp hand state, or offset the palms to stack one hand over the other (about 30-40 mm apart) with the fingers wrapped."
+        }
+      ]
+    },
+    "bicycle-crunches": {
+      "score": 5,
+      "confidence": "medium",
+      "summary": "Alternating elbow-to-knee with 39 deg trunk rotation and 10-105 deg knee bend is readable, but the supine base is unbalanced and the hips/skull sink into the floor.",
+      "defects": [
+        {
+          "phase": "0.25 / 0.75 (twist)",
+          "view": "left / right",
+          "issue": "Validator: ZMP 0.107 m outside support; the shoulders and both legs are lifted around a pelvis-only base with no counter-lean.",
+          "fix": "Keep the extended leg lower (10-20 deg) and lower the shoulder blades so pelvis and lower back carry the support; or extend the declared support to the sacrum/lower back."
+        },
+        {
+          "phase": "0.25 / 0.75",
+          "view": "left / right",
+          "issue": "Hip flexion 142 deg on the tucked leg with a rigid lumbar spine.",
+          "fix": "Limit hip flexion to ~120 deg and add posterior pelvic tilt via spine_mid if more knee-to-chest is wanted."
+        },
+        {
+          "phase": "0.000",
+          "view": "left",
+          "issue": "Hip balls 18 mm below the floor (pelvis joint at 52 mm vs 70 mm drawn hip radius).",
+          "fix": "Raise pelvis/hips to >= 70 mm when lying."
+        }
+      ]
+    },
+    "bird-dog": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Contralateral reach and hip extension from all fours are anatomically right (knee 90 deg on the support, hip 0-78 deg, shoulders over hands), but the support knee drags and knee joints sit in the floor.",
+      "defects": [
+        {
+          "phase": "0.07 / 0.57",
+          "view": "left / right",
+          "issue": "Support/returning knee slides up to 18 mm per frame while on the floor.",
+          "fix": "Pin the support knee contact point; move only the swing knee."
+        },
+        {
+          "phase": "0.000",
+          "view": "all",
+          "issue": "Knee joints at 45 mm vs 54 mm drawn knee radius: knees sink 9 mm into the floor.",
+          "fix": "Raise the kneeling knee joints to 54-56 mm."
+        }
+      ]
+    },
+    "calf-raise": {
+      "score": 9,
+      "confidence": "high",
+      "summary": "Clean bilateral calf raise: ankles 77-114 deg, knees and hips still, toes stay fixed while heels rise, no drift, seam 1 mm.",
+      "defects": []
+    },
+    "cat-cow": {
+      "score": 6,
+      "confidence": "high",
+      "summary": "All-fours spinal flexion/extension with fixed hands and knees and a following neck. The spinal curve is readable, but the trunk lengthens and knees sink.",
+      "defects": [
+        {
+          "phase": "0.175 vs 0.43-0.51",
+          "view": "left / right",
+          "issue": "pelvis-spine_mid and spine_mid-chest segments each stretch from 215 to 232 mm (17 mm, ~8%) between cat and cow; the spine visibly grows ~34 mm.",
+          "fix": "Keep both spinal segment lengths at 215 mm; produce the arch by rotating spine_mid about the pelvis and chest rather than translating it."
+        },
+        {
+          "phase": "all",
+          "view": "left",
+          "issue": "Knee joints at 45 mm vs 54 mm drawn radius (9 mm in the floor).",
+          "fix": "Raise the knees to 54-56 mm."
+        }
+      ]
+    },
+    "chest-expansions": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Arm open/close with fixed trunk and feet is anatomically plausible; arms cross in front at 0.25/0.75 without shoulder impingement, but the swing is fast and close to 84 mm/frame.",
+      "defects": [
+        {
+          "phase": "0.12 / 0.37 / 0.62 / 0.87",
+          "view": "all",
+          "issue": "Palms travel 84 mm per frame (~2.5 m/s) through mid-swing, fast for a mobility drill and likely to strobe.",
+          "fix": "Lengthen the clip or slow the mid-swing so peak hand speed is ~1.2-1.5 m/s."
+        },
+        {
+          "phase": "loop seam",
+          "view": "front",
+          "issue": "Seam step 5 mm.",
+          "fix": "Close the loop exactly."
+        }
+      ]
+    },
+    "chin-ups": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Supinated hang to chin-over-bar with elbows 23-132 deg, hands fixed on the bar, centre of mass hanging under the grip (validator pendulum check passes), legs held at 65 deg knee bend.",
+      "defects": [
+        {
+          "phase": "all",
+          "view": "left / right",
+          "issue": "From the side the body overlaps the upright post line; geometry, not contact, but it reads as passing through the frame.",
+          "fix": "Move the bar uprights 10-15 cm further laterally (x=+-0.55 m) or behind (z) so they do not cross the body silhouette."
+        }
+      ]
+    },
+    "clapping-pushup": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "Push-up depth and elbow path are fine (16-110 deg), feet and flat palms are stable on the floor, but the hands punch through the floor and pop on landing.",
+      "defects": [
+        {
+          "phase": "0.756-0.789 (landing)",
+          "view": "threequarter / left",
+          "issue": "Hand lift-off/touch-down pops: the free-hand palm joint sits ~14 mm below the floor and ~40-45 mm behind the flat-hand palm point, so the palm jumps 40-45 mm in one frame when hs switches 0<->2 and the free mitten pokes through the floor (palm 14 mm below the floor at 0.778, then a 40 mm jump at 0.789).",
+          "fix": "Export the free-hand palm at the same contact point as the flat palm for the touch-down/lift-off frames (or blend the palm target over 3-4 frames) and clamp palm/finger height >= 0 while hs==0 near the floor"
+        }
+      ]
+    },
+    "climbers": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Alternating knee drives with stable hands, knees reaching 145 deg flex. Hip flexion of 135 deg with a rigid spine is at the limit, and the landing foot slides slightly.",
+      "defects": [
+        {
+          "phase": "0.0 / 0.35",
+          "view": "left / right",
+          "issue": "Hip flexion 135 deg with no lumbar/pelvic rounding.",
+          "fix": "Add 10-15 deg pelvic posterior tilt via spine_mid at full knee drive, or cap hip flexion near 120 deg."
+        },
+        {
+          "phase": "0.01 / 0.51",
+          "view": "right",
+          "issue": "Landing toe slides 7-12 mm per frame on touchdown.",
+          "fix": "Zero horizontal toe velocity before contact."
+        }
+      ]
+    },
+    "close-pushup": {
+      "score": 9,
+      "confidence": "high",
+      "summary": "Narrow push-up with elbows 25-104 deg tracking back along the ribs, rigid plank, palms fixed at y=14 mm, toes fixed, seam ~1 mm. No collisions.",
+      "defects": []
+    },
+    "cross-body-shoulder": {
+      "score": 4,
+      "confidence": "high",
+      "summary": "Cross-body shoulder stretch reaches a credible hold, but the entry/exit has a single-frame elbow teleport that is clearly visible.",
+      "defects": [
+        {
+          "phase": "0.25 and 0.642",
+          "view": "front / threequarter",
+          "issue": "Right elbow jumps 125-152 mm upward in one frame (previous step 10-44 mm); the arm snaps into the stretch.",
+          "fix": "Re-time the transition so the elbow interpolates over 8-12 frames; check the keyframe at 0.25/0.64 for a missing intermediate pose."
+        },
+        {
+          "phase": "0.20 / 0.69",
+          "view": "front",
+          "issue": "Palm moves ~139 mm per frame immediately before/after the hold.",
+          "fix": "Slow the approach to <=40 mm/frame."
+        }
+      ]
+    },
+    "db-curl": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Bilateral dumbbell curl with fixed upper arms, elbow 10-125 deg, upright trunk, planted feet and stable grip. Dumbbells clear the thighs by 10 mm.",
+      "defects": []
+    },
+    "decline-pushup": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Feet on the chair seat (toes at 454 mm on a 450 mm seat), hands fixed, elbows 27-116 deg; contact with the prop is correct. The straight-knee ankle angle relies on a rigid-foot artefact.",
+      "defects": [
+        {
+          "phase": "all",
+          "view": "left / right",
+          "issue": "Shin-to-foot angle 47-58 deg with a straight knee (~35-43 deg dorsiflexion), beyond straight-knee ankle range; the toes should bend instead.",
+          "fix": "Add a toe-break joint, or tilt the foot so the ankle stays at 75-90 deg with the toes flexed on the seat edge."
+        }
+      ]
+    },
+    "doorframe-rows": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Inverted row on the door frame: hands fixed on the posts, straight body pivoting at the heels, elbows 27-115 deg, validator lean-back feasibility passes, no slide.",
+      "defects": []
+    },
+    "flutter-kicks": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "Small alternating straight-leg kicks (hip 5-23 deg) with hands under the hips. Legs are fine, but the head and trunk sink into the floor.",
+      "defects": [
+        {
+          "phase": "all",
+          "view": "left / right",
+          "issue": "Head joint at 72 mm puts the back of the skull ~26 mm below the floor; hips 18 mm and chest 13 mm in the floor.",
+          "fix": "Lift head to ~105 mm and pelvis/chest to >=70 mm when supine."
+        }
+      ]
+    },
+    "fly-steps": {
+      "score": 6,
+      "confidence": "high",
+      "summary": "Single-leg balance hinge with the rear leg extended and arms out is plausible, but every return step lands flat and skates.",
+      "defects": [
+        {
+          "phase": "0.33-0.38 / 0.83-0.88 (foot return)",
+          "view": "left / right",
+          "issue": "Returning foot is flat (heel and toe at equal height) and slides 30-37 mm per frame for ~6 frames at <10 mm height.",
+          "fix": "Bring the foot down vertically over its final spot; set horizontal velocity to zero before y<20 mm and land toe-then-heel."
+        }
+      ]
+    },
+    "glute-bridge": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Bridge with feet and flat palms fixed, knees 93-107 deg, hips 0-56 deg; trunk rotates rigidly about the shoulders. Only defect is the resting pelvis sitting slightly into the floor.",
+      "defects": [
+        {
+          "phase": "0.000",
+          "view": "left",
+          "issue": "Hip balls 18 mm below the floor at rest.",
+          "fix": "Rest pelvis/hip joints at >=70 mm."
+        }
+      ]
+    },
+    "goblet-squat": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Deep goblet squat with knees 111 deg, hips 109 deg, mild abduction (23 deg) and knees tracking over the toes (foot-to-knee-hinge offset 5 deg). Feet planted, bell held at chest with both hands, seam ~0. Elbows touch the thighs only at -1 mm.",
+      "defects": []
+    },
+    "hamstring-stretch": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Staggered hinge over a straight front leg with toes up; back knee 62-65 deg, hands on the thigh. Rear ankle dorsiflexion is near the limit.",
+      "defects": [
+        {
+          "phase": "0.89",
+          "view": "left / right",
+          "issue": "Rear ankle angle 45 deg (~45 deg dorsiflexion) with the heel down.",
+          "fix": "Shorten the stance 5-8 cm or bend the rear knee less so ankle dorsiflexion stays <= 35 deg."
+        }
+      ]
+    },
+    "hip-flexor-lunge": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Half-kneeling hip flexor stretch: rear knee down, rear hip extended 7-23 deg, front knee over the ankle, hands on the front thigh, all contacts static. Rear knee joint at 50 mm is ~4 mm into the floor.",
+      "defects": [
+        {
+          "phase": "all",
+          "view": "left",
+          "issue": "Rear knee 4 mm below its drawn radius.",
+          "fix": "Raise the kneeling knee joint to ~55 mm."
+        }
+      ]
+    },
+    "kb-bent-row": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Staggered bent-over row with the free hand on the hip: hinge stays fixed, working elbow 28-116 deg, bell path vertical, feet planted. Free hand rests on the hip with 0.2 mm clearance; forearm grazes the front thigh (-3.8 mm).",
+      "defects": [
+        {
+          "phase": "0.000",
+          "view": "front",
+          "issue": "Working forearm touches the front thigh by ~4 mm at the hang.",
+          "fix": "Move the hang position of the bell 1-2 cm medially/forward."
+        }
+      ]
+    },
+    "kb-clean": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Hinge-and-pull path is credible (hips 102 deg, knees 49 deg, bell close to the legs), but the rack uses 154 deg elbow flexion and the bell touches the thigh on the backswing.",
+      "defects": [
+        {
+          "phase": "0.0 / 0.875 (rack)",
+          "view": "front / left",
+          "issue": "Elbow flexion reaches 154 deg in the rack, beyond typical active range (~145 deg) with a bell on the forearm.",
+          "fix": "Open the rack elbow to ~135-140 deg and drop the hand slightly below the chin."
+        },
+        {
+          "phase": "0.62-0.63 (backswing)",
+          "view": "left",
+          "issue": "Forearm and upper arm enter the thigh by up to 14 mm (geometry.json).",
+          "fix": "Widen or raise the backswing hand path by 2 cm."
+        }
+      ]
+    },
+    "kb-curl": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Two-hand bell curl with fixed upper arms, elbow 7-132 deg, upright trunk, planted feet. The bell grazes the thighs at the bottom (-8.7 mm).",
+      "defects": [
+        {
+          "phase": "0.000 (bottom)",
+          "view": "front / left",
+          "issue": "Bell body sinks ~9 mm into both thighs at full elbow extension.",
+          "fix": "Hold the bottom position 1 cm further forward of the thighs."
+        }
+      ]
+    },
+    "kb-deadlift": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Sound hip-hinge deadlift: hips flex to 131 deg with 70 deg knee bend, shins near vertical, feet static, grip error ~0, loop seam 2 mm. Spine is drawn rigid, which is acceptable for a neutral-spine cue.",
+      "defects": [
+        {
+          "phase": "0.000 (bottom)",
+          "view": "front / threequarter",
+          "issue": "Upper arms intersect the thighs by 16.5 mm at the floor position (geometry.json).",
+          "fix": "Place the hands/handle 2 cm narrower or let the knees track 2 cm wider at the bottom so arms hang inside the knees without overlap."
+        }
+      ]
+    },
+    "kb-getup": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Long 34 s sequence that keeps the bell vertical over the shoulder and segment lengths constant (<=8 mm palm offset). Transitions are mostly continuous, but the leg sweep twists the right knee beyond its hinge, the rear foot uses the rigid-foot dorsiflexion artefact and the post hand wrist hyperextends.",
+      "defects": [
+        {
+          "phase": "0.17-0.22 (leg sweep)",
+          "view": "front / threequarter",
+          "issue": "Right knee hinge axis turns >90 deg away from the pelvis lateral axis for ~50 frames while the heel slides up to 49 mm/frame; reads as a knee bending sideways.",
+          "fix": "Drive the sweep with hip internal rotation and keep the knee hinge within ~45-60 deg of the pelvis axis; lift the foot slightly rather than dragging it."
+        },
+        {
+          "phase": "0.20-0.27 (half kneel)",
+          "view": "left / right",
+          "issue": "Right ankle reaches 27 deg shin-to-foot angle (~63 deg dorsiflexion) because the toes-tucked rear foot is rigid; right knee joint sinks 13 mm into the floor.",
+          "fix": "Add a toe-break joint or keep the ankle near neutral with toes tucked; keep knee joint >= drawn knee radius (54 mm) above the floor."
+        },
+        {
+          "phase": "0.244 (post hand)",
+          "view": "right",
+          "issue": "Wrist angle reaches 118 deg between forearm and palm (about 28 deg past 90 deg extension).",
+          "fix": "Move the post hand 5-8 cm further from the hip so the forearm leans less over the hand."
+        },
+        {
+          "phase": "0.83",
+          "view": "threequarter",
+          "issue": "Right foot turned 89 deg from the knee hinge plane during the return.",
+          "fix": "Rotate the foot with the shank (tibia) so foot and knee stay aligned."
+        }
+      ]
+    },
+    "kb-halo": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Bell circles the head held by the horns; elbows 79-137 deg, trunk and feet still, head clearance kept (validator passes halo head gap). The far forearm crossing at chin level at 0.125/0.625 is anatomically normal for a halo.",
+      "defects": [
+        {
+          "phase": "0.125 / 0.625",
+          "view": "front",
+          "issue": "Forearm passes just in front of the chin/mouth; readable but close.",
+          "fix": "Raise the side-of-head bell position ~3 cm so the crossing forearm passes at forehead/eyebrow height."
+        }
+      ]
+    },
+    "kb-press": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Strict single-arm press from rack to lockout; stance and trunk are stable, grip is fixed. The rack elbow flexion of 158 deg is beyond realistic range.",
+      "defects": [
+        {
+          "phase": "0.0 / 0.875 (rack)",
+          "view": "front / threequarter",
+          "issue": "Elbow flexion 158 deg in the rack: forearm folds into the upper arm.",
+          "fix": "Rack with ~135-140 deg elbow flexion (hand at clavicle height, elbow tucked in front of ribs)."
+        }
+      ]
+    },
+    "kb-pullover": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Standing overhead bell lowering behind the head and return; shoulders carry the range, elbows 35-130 deg, trunk and feet still, constant lengths. Bell stays behind and clear of the head in the left/right views.",
+      "defects": []
+    },
+    "kb-reverse-lunge": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Lunge mechanics are right (front knee 108-111 deg, rear knee lowers to 82 mm above the floor, pelvis level), but the stepping foot lands while still sliding and the rigid foot forces an over-bent rear ankle.",
+      "defects": [
+        {
+          "phase": "0.45 / 0.95 (step back/return touchdown)",
+          "view": "left / right",
+          "issue": "Stepping foot touches the floor flat while still travelling 8-18 mm per frame for several frames (skate on touchdown).",
+          "fix": "Ease the foot's horizontal velocity to zero before heel/toe height reaches 10 mm; land on the toes first for the rear step."
+        },
+        {
+          "phase": "0.25 / 0.75 (bottom)",
+          "view": "left / right",
+          "issue": "Rear foot is a rigid heel-toe bar on its toes, so the shin-to-foot angle reaches 53 deg (~37 deg dorsiflexion) instead of bending at the toes.",
+          "fix": "Add a toe-break (MTP) joint to the shoe/foot model or rotate the rear foot so the ankle stays near 80-100 deg while the toes take the extension."
+        },
+        {
+          "phase": "loop seam",
+          "view": "all",
+          "issue": "Seam step 8 mm vs typical 3-4 mm.",
+          "fix": "Match first and last frame positions of the stepping foot exactly."
+        }
+      ]
+    },
+    "kb-side-bend": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Lateral flexion with the bell hanging at a straight arm and the other hand on the hip; feet planted, lengths constant, bell clear of the thigh (13 mm), pelvis counter-shifts correctly. The spine does not curve.",
+      "defects": [
+        {
+          "phase": "0.35-0.59 (bent)",
+          "view": "front / threequarter",
+          "issue": "Lateral flexion is a single hinge at the pelvis joint: pelvis-spine_mid and spine_mid-chest stay collinear (0 deg segment bend) while the whole trunk tilts 30-32 deg over a level hip line, so the spine reads as a stiff rod pivoting at the waist rather than a curve.",
+          "fix": "Distribute the side bend: tilt pelvis->spine_mid ~40% and spine_mid->chest ~60% of the total so the trunk curves, keeping the 30-40 mm counter-shift of the pelvis."
+        }
+      ]
+    },
+    "kb-side-lunge": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Lateral lunge reads credibly: working knee 110 deg tracking over the foot, trailing leg straight with 54 deg hip abduction, both feet planted with no slide, bell held centred. Seam 8.6 mm is slightly loose; working-ankle dorsiflexion ~35 deg is at the realistic limit.",
+      "defects": [
+        {
+          "phase": "loop seam",
+          "view": "front",
+          "issue": "Seam step 8.6 mm, roughly 3x the median frame step.",
+          "fix": "Close the loop on identical joint positions."
+        }
+      ]
+    },
+    "kb-snatch": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Hinge, high pull and punch-through to lockout are biomechanically ordered; bell speed peaks at ~139 mm/frame (4 m/s), plausible for a snatch. Feet planted, grip constant, forearm clears the thigh by 7 mm.",
+      "defects": [
+        {
+          "phase": "0.667 (pull)",
+          "view": "left / right",
+          "issue": "Peak bell/hand speed is a large single-frame step; real-time smoothness not observed.",
+          "fix": "Verify at playback; if it strobes, add one intermediate sample around the turnover."
+        }
+      ]
+    },
+    "kb-swing": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Credible hinge swing: constant segments (validator bone error ~0), knees 7-37 deg and hips 12-86 deg flex in the right directions, feet planted with zero drift, two-hand grip locked to the handle, seam 4.5 mm. Bell speeds up to ~100 mm/frame at the float are realistic for a 1.43 s swing.",
+      "defects": [
+        {
+          "phase": "0.000 (backswing)",
+          "view": "left / right",
+          "issue": "Forearms sink 16 mm into the inner thighs at the deepest backswing (geometry.json forearm vs thigh -0.016 m).",
+          "fix": "Widen the backswing hand path by ~2 cm or narrow the drawn forearm radius at the wrist end so forearms graze, not enter, the thighs."
+        }
+      ]
+    },
+    "kb-upright-row": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Elbows lead to shoulder height (elbow flex 12-138 deg), bell rises close to the body with 31 mm thigh clearance, hands stay on the handle, feet still. Wrist flexion up to 54 deg at the top is within range.",
+      "defects": []
+    },
+    "leg-raises": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "Straight-leg raise from 8 to 45 deg hip flexion with hands under the hips; legs move correctly but the plantarflexed feet and floor penetration detract.",
+      "defects": [
+        {
+          "phase": "all",
+          "view": "left / right",
+          "issue": "Back of skull ~26 mm, hips 18 mm and chest 13 mm below the floor.",
+          "fix": "Raise supine head to ~105 mm, pelvis/chest to >=70 mm."
+        },
+        {
+          "phase": "0.5",
+          "view": "left",
+          "issue": "Ankle angle reaches 165 deg (full pointe) at the top.",
+          "fix": "Cap plantarflexion near 140-145 deg."
+        }
+      ]
+    },
+    "neck-extension": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Looking up with 42 deg cervical extension at a single neck joint; trunk still, lengths constant. A single hinge at the skull base is a simplification but within range.",
+      "defects": []
+    },
+    "neck-flexion": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Chin to chest with 48 deg neck flexion, trunk still, smooth and symmetric. Chin stays clear of the chest.",
+      "defects": []
+    },
+    "oblique-twist": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "Standing trunk rotation with arms folded; legs and pelvis held square while the shoulder line turns 60 deg each way.",
+      "defects": [
+        {
+          "phase": "0.25 / 0.75 (end range)",
+          "view": "front / threequarter",
+          "issue": "Shoulder line rotates 60 deg relative to a fixed pelvis, beyond typical thoracolumbar rotation (~40-45 deg).",
+          "fix": "Limit trunk twist to ~40 deg and let the pelvis/hips contribute 10-15 deg (pivot knees/feet slightly) if a larger turn is wanted."
+        }
+      ]
+    },
+    "overhead-reach": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Arms sweep from sides to overhead with the trunk upright; shoulder ranges are realistic, hands meet overhead, but the sweep is very fast.",
+      "defects": [
+        {
+          "phase": "0.13 / 0.76",
+          "view": "all",
+          "issue": "Palms move 130-134 mm per frame (~4 m/s) through the lateral sweep.",
+          "fix": "Slow the sweep (spread over ~0.6 s) so hand speed stays <1.5 m/s."
+        },
+        {
+          "phase": "0.375-0.625",
+          "view": "front",
+          "issue": "Palm points come within 2 mm of each other overhead; mittens interpenetrate.",
+          "fix": "Keep 30-40 mm between palms or switch to a clasp state."
+        }
+      ]
+    },
+    "pike-pushup": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Pike with hips at 115 deg flexion, head descending between the hands, palms fixed; crown just touches the floor at the bottom. The ankles are over-dorsiflexed.",
+      "defects": [
+        {
+          "phase": "0.49 (bottom)",
+          "view": "left / right",
+          "issue": "Shin-to-foot angle 41 deg (~49 deg dorsiflexion) with heels only 57 mm up.",
+          "fix": "Raise the heels further (onto the balls of the feet) or walk the feet back 5-10 cm so ankle dorsiflexion stays <= 30 deg."
+        },
+        {
+          "phase": "0.49",
+          "view": "front",
+          "issue": "Crown of the head reaches ~5 mm below the floor.",
+          "fix": "Stop the descent 1 cm higher."
+        }
+      ]
+    },
+    "plank": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Static forearm plank: elbows 90 deg under the shoulders, straight body, toes and forearms fixed, no motion artefacts. Static by design.",
+      "defects": []
+    },
+    "plank-jump-ins": {
+      "score": 4,
+      "confidence": "high",
+      "summary": "Plank-to-tuck hop is recognisable, but the tuck folds the thighs into the chest past anatomical limits and the airborne ankles hyper-dorsiflex.",
+      "defects": [
+        {
+          "phase": "0.30 (tuck)",
+          "view": "left / right",
+          "issue": "Hip flexion 173 deg with a rigid spine; upper arms penetrate the thighs by 47 mm (geometry.json).",
+          "fix": "Land the feet further back (hips ~110-120 deg) and round the lumbar spine/raise the hips so thighs stay outside the arms."
+        },
+        {
+          "phase": "0.14",
+          "view": "left / right",
+          "issue": "Shin-to-foot angle 27 deg (~63 deg dorsiflexion) in flight.",
+          "fix": "Keep the feet near neutral or plantarflexed in the air."
+        },
+        {
+          "phase": "0.46",
+          "view": "left / right",
+          "issue": "Toes slide 7-15 mm per frame on landing.",
+          "fix": "Zero horizontal toe speed before contact."
+        }
+      ]
+    },
+    "power-pushup": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "Explosive push-up depth and body line are correct, flight handled as momentum, but the hands pop and pierce the floor at landing.",
+      "defects": [
+        {
+          "phase": "0.756-0.789 (landing)",
+          "view": "threequarter / left",
+          "issue": "Hand lift-off/touch-down pops: the free-hand palm joint sits ~14 mm below the floor and ~40-45 mm behind the flat-hand palm point, so the palm jumps 40-45 mm in one frame when hs switches 0<->2 and the free mitten pokes through the floor (palm 14 mm below floor at 0.778 then a 40 mm jump).",
+          "fix": "Export the free-hand palm at the same contact point as the flat palm for the touch-down/lift-off frames (or blend the palm target over 3-4 frames) and clamp palm/finger height >= 0 while hs==0 near the floor"
+        }
+      ]
+    },
+    "pseudo-planche": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Forward lean over fixed hands with straight elbows and a rigid body; wrist extension 56-59 deg is fine. The forward lean is taken by the ankles as a rigid foot.",
+      "defects": [
+        {
+          "phase": "0.000",
+          "view": "left / right",
+          "issue": "Ankle 51 deg (~39 deg dorsiflexion) with straight knees while on the toes; ankle range 51-118 deg swings a lot.",
+          "fix": "Use a toe-break so the toes, not the ankle, absorb the lean."
+        }
+      ]
+    },
+    "pull-ups": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Pronated pull-up with elbows 7-127 deg, hands fixed on the bar, centre of mass hanging under the grip (validator passes), crossed/bent legs held still. Same upright-post overlap in side views as chin-ups (geometry, not contact).",
+      "defects": [
+        {
+          "phase": "all",
+          "view": "left / right",
+          "issue": "The bar upright appears to pass through the body silhouette in side views.",
+          "fix": "Move the uprights further out laterally (x=+-0.55 m) or behind the body."
+        }
+      ]
+    },
+    "punches": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Staggered-stance alternating punches with fists (hs=3), elbows 9-130 deg, 22 deg trunk rotation into each punch and rear heel lift; feet stay planted. Fist speed ~77 mm/frame (2.3 m/s) is realistic for shadow boxing.",
+      "defects": []
+    },
+    "pushup": {
+      "score": 9,
+      "confidence": "high",
+      "summary": "Standard push-up: rigid plank, elbows 20-111 deg tracking ~45 deg from the trunk, palms fixed at y=14 mm, toes fixed, wrist extension 28-44 deg, seam 1 mm, no collisions.",
+      "defects": []
+    },
+    "quad-stretch": {
+      "score": 4,
+      "confidence": "high",
+      "summary": "Standing quad stretch hold is plausible, but the heel is whipped to and from the buttock at impossible speed, the held foot twists off the knee plane, and the stance foot skates on return.",
+      "defects": [
+        {
+          "phase": "0.12 and 0.67 (lift / release)",
+          "view": "left / right",
+          "issue": "Toe moves 210-222 mm per frame (~6.6 m/s) for several frames as the foot flies up to the hand and drops back.",
+          "fix": "Spread the lift and the release over ~0.6-0.8 s each (<=40 mm/frame)."
+        },
+        {
+          "phase": "0.05-0.12",
+          "view": "threequarter",
+          "issue": "Lifted foot rotated 74 deg away from the knee hinge plane.",
+          "fix": "Keep the foot in the shank's sagittal plane (rotate foot with the tibia)."
+        },
+        {
+          "phase": "0.70-0.76 (foot return)",
+          "view": "left / front",
+          "issue": "Returning foot lands flat while still sliding 26-42 mm per frame.",
+          "fix": "Zero horizontal velocity before contact and land on the forefoot."
+        },
+        {
+          "phase": "0.175-0.28 (grab)",
+          "view": "left",
+          "issue": "Holding hand sinks 21 mm into the shin and is drawn as a free hand (hs=0) instead of gripping the ankle.",
+          "fix": "Place the palm on the ankle surface (offset by shin radius) and use the grip state."
+        }
+      ]
+    },
+    "raised-leg-pushup": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Push-up with alternating leg raise: elbow path and plank are good, hip extension 24 deg is fine. Support foot is over-dorsiflexed and the loop seam is loose.",
+      "defects": [
+        {
+          "phase": "0.25 / 0.75 (raised)",
+          "view": "left / right",
+          "issue": "Raised leg's foot angle 44 deg to the shin with a straight knee (~46 deg dorsiflexion) - the lifted foot should relax toward neutral/plantarflexion.",
+          "fix": "Keep the lifted foot at 90-120 deg to the shin."
+        },
+        {
+          "phase": "loop seam",
+          "view": "all",
+          "issue": "Seam step 8.5 mm.",
+          "fix": "Close the loop exactly."
+        }
+      ]
+    },
+    "reclined-twist": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "Supine knees-drop rotation with arms out; 44 deg trunk/pelvis counter-rotation is fine, but the feet and pelvis pass through the floor.",
+      "defects": [
+        {
+          "phase": "0.158 (knees dropped)",
+          "view": "front / threequarter",
+          "issue": "Toes sink 21 mm into the floor as the knees drop sideways.",
+          "fix": "Lift the feet with the knees (pivot about the pelvis, keep toe y >= 0)."
+        },
+        {
+          "phase": "0.000",
+          "view": "left",
+          "issue": "Back of skull ~26 mm and hip balls 18 mm below the floor.",
+          "fix": "Lift supine head to ~105 mm and pelvis to >= 70 mm."
+        }
+      ]
+    },
+    "reverse-crunches": {
+      "score": 5,
+      "confidence": "medium",
+      "summary": "Knees-to-chest pelvic curl (hip 90-122 deg, spine bend 28 deg) is the right mechanic, but the head is buried and the feet point to 180 deg.",
+      "defects": [
+        {
+          "phase": "0.000",
+          "view": "left / right",
+          "issue": "Head centre at 52 mm puts the back of the skull ~48 mm below the floor.",
+          "fix": "Rest the head joint at ~105 mm."
+        },
+        {
+          "phase": "0.4-0.6",
+          "view": "left",
+          "issue": "Ankle angle reaches 180 deg (foot in line with the shin), beyond full plantarflexion (~145-150 deg).",
+          "fix": "Cap plantarflexion at ~140 deg."
+        }
+      ]
+    },
+    "reverse-lunge": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Bodyweight reverse lunge with front knee 103 deg and rear knee dropping close to the floor; trunk upright, feet mostly planted. Rear foot uses the rigid-foot dorsiflexion artefact and the seam is loose.",
+      "defects": [
+        {
+          "phase": "0.18 / 0.68 (bottom)",
+          "view": "left / right",
+          "issue": "Rear foot on its toes gives a 40 deg shin-to-foot angle (~50 deg dorsiflexion) because the foot has no toe joint.",
+          "fix": "Add a toe-break or keep the rear ankle near neutral with toes tucked."
+        },
+        {
+          "phase": "0.08 / 0.58",
+          "view": "left / right",
+          "issue": "Stepping toe slides 9 mm per frame on touchdown.",
+          "fix": "Zero horizontal velocity before contact."
+        },
+        {
+          "phase": "loop seam",
+          "view": "front",
+          "issue": "Seam step 9 mm.",
+          "fix": "Close the loop exactly."
+        }
+      ]
+    },
+    "seated-knee": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Seated alternating knee lift: pelvis rests exactly on the seat (hip joint 70 mm above the 515 mm seat = drawn radius), hip 80-105 deg, foot lifts and replants with only 3 mm drift, hands on thighs.",
+      "defects": []
+    },
+    "shoulder-circle": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Shoulder rolls with arms hanging; shoulders elevate/retract while the trunk is still and lengths constant. Seam 6 mm is slightly loose; the shirt hull deforms with the shoulder points as expected.",
+      "defects": [
+        {
+          "phase": "loop seam",
+          "view": "threequarter",
+          "issue": "Seam step 6 mm vs 2 mm median.",
+          "fix": "Close the loop exactly."
+        }
+      ]
+    },
+    "shoulder-taps": {
+      "score": 5,
+      "confidence": "medium",
+      "summary": "Alternating shoulder taps from a high plank: tap path is right, but there is no lateral weight shift (validator ZMP 0.136 m outside support) and the hand pops at every lift-off.",
+      "defects": [
+        {
+          "phase": "0.06 / 0.38 / 0.56 / 0.88",
+          "view": "all",
+          "issue": "Hand lift-off/touch-down pops: the free-hand palm joint sits ~14 mm below the floor and ~40-45 mm behind the flat-hand palm point, so the palm jumps 40-45 mm in one frame when hs switches 0<->2 and the free mitten pokes through the floor (palm_l/palm_r 99 mm step, 26 mm below floor at 0.008/0.508).",
+          "fix": "Export the free-hand palm at the same contact point as the flat palm for the touch-down/lift-off frames (or blend the palm target over 3-4 frames) and clamp palm/finger height >= 0 while hs==0 near the floor"
+        },
+        {
+          "phase": "0.125-0.375 / 0.625-0.875 (tap)",
+          "view": "front",
+          "issue": "Dynamic balance fails: pelvis and chest stay centred on a three-point base.",
+          "fix": "Shift pelvis/chest 3-5 cm toward the support hand and widen the feet 10 cm."
+        }
+      ]
+    },
+    "side-bend": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "Standing side bend with the opposite arm overhead; feet still and lengths constant, but the spine is a rigid rod and the arm swings very fast.",
+      "defects": [
+        {
+          "phase": "0.125-0.25 / 0.625-0.75",
+          "view": "front",
+          "issue": "Lateral flexion is a single hinge at the pelvis joint: pelvis-spine_mid and spine_mid-chest stay collinear (0 deg segment bend) while the whole trunk tilts 24-32 deg over a level hip line, so the spine reads as a stiff rod pivoting at the waist rather than a curve.",
+          "fix": "Distribute the side bend: tilt pelvis->spine_mid ~40% and spine_mid->chest ~60% of the total so the trunk curves, keeping the 30-40 mm counter-shift of the pelvis."
+        },
+        {
+          "phase": "0.07 / 0.57 (arm raise)",
+          "view": "front / threequarter",
+          "issue": "Raising palm moves ~124 mm per frame (3.7 m/s) for several frames.",
+          "fix": "Raise the arm over ~0.7 s (<=45 mm/frame)."
+        }
+      ]
+    },
+    "side-leg-raises": {
+      "score": 6,
+      "confidence": "high",
+      "summary": "Standing hip abduction to 39 deg with the trunk upright is anatomically fine, but the raised foot lands flat and skates sideways.",
+      "defects": [
+        {
+          "phase": "0.40-0.47 / 0.90-0.97 (foot return)",
+          "view": "front",
+          "issue": "Returning foot is flat and slides 20-28 mm per frame for ~6 frames at <10 mm height.",
+          "fix": "Lower the foot vertically onto its mark; zero lateral velocity before y<20 mm."
+        },
+        {
+          "phase": "loop seam",
+          "view": "front",
+          "issue": "Seam step 5 mm.",
+          "fix": "Close the loop exactly."
+        }
+      ]
+    },
+    "side-neck": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Lateral neck flexion 36 deg each way with the shoulders level and still; smooth, symmetric, seam ~0.",
+      "defects": []
+    },
+    "side-step": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Lateral shuffle in a half squat (knees 22-57 deg), feet abduct to 19 deg and replant with only 5 mm residual slide; knees track over the toes.",
+      "defects": [
+        {
+          "phase": "0.23 / 0.73 (foot plant)",
+          "view": "front",
+          "issue": "Planted foot slides 5 mm per frame on touchdown.",
+          "fix": "Zero lateral velocity one frame earlier."
+        }
+      ]
+    },
+    "side-to-side-chops": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Clasped hands (palm gap 36 mm) chopping across the body with 40 deg trunk rotation, knees soft and feet planted; arms stay level. Rotation within normal range.",
+      "defects": []
+    },
+    "sit-stand": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Chair sit-to-stand: pelvis lands on the seat (hip joint 70 mm above it), forward trunk lean of 133 deg hip flexion before rise, shins forward, feet fixed. Head moves ~66 mm/frame at lift-off, a fast but plausible rise.",
+      "defects": []
+    },
+    "sit-ups": {
+      "score": 5,
+      "confidence": "medium",
+      "summary": "Full sit-up with hands behind the head and feet planted (hip 68-113 deg). Mechanics read, but the head and hands are buried and balance fails without anchored feet.",
+      "defects": [
+        {
+          "phase": "0.000",
+          "view": "left / right",
+          "issue": "Head centre at 52 mm buries the back of the skull ~48 mm in the floor.",
+          "fix": "Rest the head joint at ~105 mm."
+        },
+        {
+          "phase": "0.04-0.10",
+          "view": "threequarter",
+          "issue": "Wrists and palms drag 10-21 mm below the floor while the arms move to the head.",
+          "fix": "Keep wrist/palm y >= drawn radius during the arm path."
+        },
+        {
+          "phase": "0.5 (top)",
+          "view": "left",
+          "issue": "Validator: ZMP 0.066 m outside support (feet unanchored).",
+          "fix": "Lean the trunk less at the top or declare an anchored-feet support/prop."
+        }
+      ]
+    },
+    "spiderman-pushup": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "Push-up with knee to elbow; push-up mechanics are right but the knee drive needs extreme hip abduction and collides with the arm.",
+      "defects": [
+        {
+          "phase": "0.13-0.19 / 0.63-0.69",
+          "view": "front / threequarter",
+          "issue": "Hip abducts to ~85 deg in flexion and the upper arm penetrates the thigh by 19 mm (geometry.json).",
+          "fix": "Bring the knee toward the elbow from below/outside with ~50-60 deg abduction and let the elbow flare 5 cm."
+        },
+        {
+          "phase": "0.43 / 0.93",
+          "view": "threequarter",
+          "issue": "Swing foot turns ~89 deg off the knee hinge plane.",
+          "fix": "Rotate the foot with the shank."
+        },
+        {
+          "phase": "0.05 / 0.55",
+          "view": "left / right",
+          "issue": "Support toe slides ~9-15 mm per frame.",
+          "fix": "Pin the support toe."
+        }
+      ]
+    },
+    "squat": {
+      "score": 9,
+      "confidence": "high",
+      "summary": "Bodyweight squat to 109 deg knee / 117 deg hip flexion with arms raised as counterbalance, knees tracking straight over planted feet, ankle dorsiflexion ~32 deg, seam 2 mm.",
+      "defects": []
+    },
+    "stacked-pushup": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Push-up with one foot stacked on the other; arm path and plank are correct, but the foot geometry deforms.",
+      "defects": [
+        {
+          "phase": "0.0-0.45",
+          "view": "left / right",
+          "issue": "ankle-heel distance changes by ~10 mm (114-126 mm) and shin by 7 mm through the rep, so the feet visibly stretch.",
+          "fix": "Keep foot bones rigid; pivot the stacked foot about the lower heel instead of moving heel points independently."
+        }
+      ]
+    },
+    "staggered-pushup": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Push-up with one hand forward: asymmetric elbows (20-108 vs 19-97 deg) and wrist extension 17-60 deg are plausible; palms and toes fixed, no collisions.",
+      "defects": []
+    },
+    "standing-knee": {
+      "score": 7,
+      "confidence": "medium",
+      "summary": "Alternating standing knee lift to ~102 deg hip/knee flexion with an upright trunk; stance leg stable. The returning foot skates and the seam is loose.",
+      "defects": [
+        {
+          "phase": "0.46 / 0.96 (foot return)",
+          "view": "left / right",
+          "issue": "Returning foot lands flat while still sliding ~12-16 mm per frame.",
+          "fix": "Zero horizontal velocity before contact; land forefoot first."
+        },
+        {
+          "phase": "loop seam",
+          "view": "front",
+          "issue": "Seam step 8 mm.",
+          "fix": "Close the loop exactly."
+        }
+      ]
+    },
+    "superman": {
+      "score": 5,
+      "confidence": "high",
+      "summary": "Prone simultaneous arm and leg lift with 16 deg spine extension; limb motion is fine, but the face is driven into the floor at rest.",
+      "defects": [
+        {
+          "phase": "0.000 (rest)",
+          "view": "left / right",
+          "issue": "Head centre at 65 mm face-down puts the nose ~51 mm and chin ~-10 mm below the floor (native left frame shows the face clipped).",
+          "fix": "Raise the resting head to ~115 mm or turn the face 30 deg forward so the forehead, not the nose, rests near the floor."
+        }
+      ]
+    },
+    "torso-extension": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Standing back extension with hands on hips: 20 deg spinal extension spread across segments, neck follows 16 deg, hips extend slightly with knees soft, feet planted.",
+      "defects": []
+    },
+    "tricep-dips": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Floor triceps dips (no prop): hands flat behind at y=14 mm, elbows 27-75 deg bending straight back, feet fixed, pelvis 140-240 mm off the floor (hip radius 70 mm clear). Shoulder extension at the bottom is moderate.",
+      "defects": []
+    },
+    "tricep-extensions": {
+      "score": 8,
+      "confidence": "medium",
+      "summary": "Forearm-plank to straight-arm press (elbows 22-90 deg) with palms fixed and the plank rigid; wrist extension up to 27 deg.",
+      "defects": []
+    },
+    "triceps-stretch": {
+      "score": 6,
+      "confidence": "medium",
+      "summary": "Overhead triceps stretch holds credibly (elbow 139 deg, assisting hand on the elbow), but the release flips the arm up and down too fast.",
+      "defects": [
+        {
+          "phase": "0.74-0.75 (release)",
+          "view": "front / left",
+          "issue": "Right elbow/palm move 110-121 mm per frame for several frames (~3.6 m/s) as the arm snaps straight overhead then down.",
+          "fix": "Lower the arm over ~0.8 s directly to the side without the overhead flick (<=40 mm/frame)."
+        },
+        {
+          "phase": "0.125 (entry)",
+          "view": "left / right",
+          "issue": "Arm reaches forward to horizontal before folding overhead; plausible but adds a fast sweep.",
+          "fix": "Raise the arm through the sagittal plane more slowly."
+        }
+      ]
+    },
+    "wall-pushup": {
+      "score": 8,
+      "confidence": "high",
+      "summary": "Wall push-up: palms fixed on the wall face (z=730 mm, hs=2 with surface normal), straight body pivoting at planted feet, elbows 15-123 deg, head clears the wall.",
+      "defects": []
+    },
+    "wide-pushup": {
+      "score": 9,
+      "confidence": "high",
+      "summary": "Wide push-up with elbows 21-96 deg flaring wide, palms fixed, rigid plank, wrist extension 26-52 deg, seam 1 mm.",
+      "defects": []
+    }
+  }
+}

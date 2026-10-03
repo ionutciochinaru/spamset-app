@@ -115,7 +115,8 @@ export class Figure {
       };
     }
     const ink = lambert(FIGURE_COLORS.ink);
-    this.neck = new Chain(this.group, [0.048, 0.048], ink, false);
+    // A real neck (it read as the head hinged on a thin pin): wider at the base, tapering up.
+    this.neck = new Chain(this.group, [0.078, 0.064], ink, false);
     this.head = new HeadModel(this.group, ink);
 
     // Two convex halves meeting at the mid-back, so the back can round (cat) or arch (cow),
