@@ -58,7 +58,12 @@ type SideParts = {
   arm: Chain;
   hand: HandModel;
   shoe: Solid;
-  materials: { limb: THREE.MeshLambertMaterial; pants: THREE.MeshLambertMaterial; cuff: THREE.MeshLambertMaterial };
+  materials: {
+    limb: THREE.MeshLambertMaterial;
+    pants: THREE.MeshLambertMaterial;
+    cuff: THREE.MeshLambertMaterial;
+    shoe: THREE.MeshLambertMaterial;
+  };
 };
 
 
@@ -68,10 +73,11 @@ export class Figure {
   private waist: Chain;
   private neck: Chain;
   private head: HeadModel;
-  private shirt: THREE.Mesh;
+  private shirt: THREE.Mesh[] = [];
   private shirtOutline: THREE.Mesh;
   private bells: KettlebellModel[] = [];
   private equipment = new EquipmentModel();
+  private ground: THREE.Mesh;
   private colors = {
     ink: new THREE.Color(FIGURE_COLORS.ink),
     far: new THREE.Color(FIGURE_COLORS.far),
@@ -82,15 +88,22 @@ export class Figure {
   };
 
   constructor() {
-    const ground = new THREE.Mesh(new THREE.CircleGeometry(0.95, 64), new THREE.MeshBasicMaterial({ color: FIGURE_COLORS.ground }));
+    const ground = new THREE.Mesh(new THREE.CircleGeometry(1, 64), new THREE.MeshBasicMaterial({ color: FIGURE_COLORS.ground }));
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -0.002;
+    ground.scale.setScalar(0.95);
+    this.ground = ground;
     this.group.add(ground);
 
     const pants = lambert(FIGURE_COLORS.pants);
     this.waist = new Chain(this.group, [0.07, 0.07], pants, false);
     for (const side of SIDES) {
-      const materials = { limb: lambert(FIGURE_COLORS.ink), pants: lambert(FIGURE_COLORS.pants), cuff: lambert(FIGURE_COLORS.cuff) };
+      const materials = {
+        limb: lambert(FIGURE_COLORS.ink),
+        pants: lambert(FIGURE_COLORS.pants),
+        cuff: lambert(FIGURE_COLORS.cuff),
+        shoe: lambert(FIGURE_COLORS.ink),
+      };
       this.sides[side] = {
         materials,
         leg: new Chain(this.group, [0.14, 0.146, 0.108, 0.079], materials.pants),
@@ -98,20 +111,32 @@ export class Figure {
         // Strong upper arms taper through the elbow into slender forearms.
         arm: new Chain(this.group, [0.098, 0.12, 0.068, 0.038], materials.limb),
         hand: new HandModel(this.group, materials.limb),
-        shoe: new Solid(this.group, shoeGeometry(0.235), materials.limb, [1.18, 1.25, 1.06]),
+        shoe: new Solid(this.group, shoeGeometry(0.235), materials.shoe, [1.18, 1.25, 1.06]),
       };
     }
     const ink = lambert(FIGURE_COLORS.ink);
     this.neck = new Chain(this.group, [0.048, 0.048], ink, false);
     this.head = new HeadModel(this.group, ink);
 
+    // Two convex halves meeting at the mid-back, so the back can round (cat) or arch (cow),
+    // inside one outline shell around the whole shirt (two shells left seams across it).
     const shirtMaterial = lambert(FIGURE_COLORS.accent);
-    this.shirt = new THREE.Mesh(new THREE.BufferGeometry(), shirtMaterial);
-    this.shirtOutline = new THREE.Mesh(this.shirt.geometry, outlineMaterial);
-    this.group.add(this.shirt, this.shirtOutline);
+    for (let i = 0; i < 2; i++) {
+      const mesh = new THREE.Mesh(new THREE.BufferGeometry(), shirtMaterial);
+      this.shirt.push(mesh);
+      this.group.add(mesh);
+    }
+    this.shirtOutline = new THREE.Mesh(new THREE.BufferGeometry(), outlineMaterial);
+    this.group.add(this.shirtOutline);
 
     for (let i = 0; i < 2; i++) this.bells.push(new KettlebellModel(this.group));
     this.group.add(this.equipment.group);
+  }
+
+  /** Centre the floor disc under what the clip touches the floor with (x, z in m) and size it to cover it. */
+  setGround(x: number, z: number, radius: number) {
+    this.ground.position.set(x, -0.002, z);
+    this.ground.scale.setScalar(Math.max(0.95, radius));
   }
 
   /** Pose the figure. `camera` is the eye position, for near/far side shading. */
@@ -123,18 +148,24 @@ export class Figure {
     const offset = (p: THREE.Vector3, side = 0, along = 0, front = 0) =>
       p.clone().addScaledVector(sideways, side).addScaledVector(trunkUp, along).addScaledVector(forward, front);
 
-    // Near side ivory, far side grey, blended over ~10 cm of depth difference.
+    // Near side ivory, far side grey, blended over ~10 cm of depth difference. Arms and legs
+    // are judged separately from their own joints, so a twisting trunk does not flip the
+    // shading of legs that stay still.
     const depth = (p: THREE.Vector3) => -p.distanceTo(camera);
-    const nearness = depth(j.shoulder_l) + depth(j.hip_l) - depth(j.shoulder_r) - depth(j.hip_r);
-    const leftNear = THREE.MathUtils.smoothstep(nearness, -0.1, 0.1);
+    const near = (parts: string[]) =>
+      THREE.MathUtils.smoothstep(parts.reduce((sum, k) => sum + depth(j[`${k}_l`]) - depth(j[`${k}_r`]), 0), -0.1, 0.1);
+    const leftArmNear = near(['shoulder', 'elbow', 'wrist']);
+    const leftLegNear = near(['hip', 'knee', 'ankle']);
 
     this.waist.update([offset(j.hip_l, 0, 0.012), offset(j.hip_r, 0, 0.012)]);
     for (const side of SIDES) {
       const parts = this.sides[side];
-      const t = side === 'l' ? leftNear : 1 - leftNear;
-      parts.materials.limb.color.lerpColors(this.colors.far, this.colors.ink, t);
-      parts.materials.pants.color.lerpColors(this.colors.pantsFar, this.colors.pants, t);
-      parts.materials.cuff.color.lerpColors(this.colors.cuffFar, this.colors.cuff, t);
+      const arm = side === 'l' ? leftArmNear : 1 - leftArmNear;
+      const leg = side === 'l' ? leftLegNear : 1 - leftLegNear;
+      parts.materials.limb.color.lerpColors(this.colors.far, this.colors.ink, arm);
+      parts.materials.shoe.color.lerpColors(this.colors.far, this.colors.ink, leg);
+      parts.materials.pants.color.lerpColors(this.colors.pantsFar, this.colors.pants, leg);
+      parts.materials.cuff.color.lerpColors(this.colors.cuffFar, this.colors.cuff, leg);
 
       const [hip, knee, ankle] = [j[`hip_${side}`], j[`knee_${side}`], j[`ankle_${side}`]];
       const cuffEnd = mix(ankle, knee, 0.11);
@@ -148,11 +179,17 @@ export class Figure {
       parts.hand.update({
         shoulder, elbow, wrist, palm, lateral, left: sideways, anterior: forward, state,
         grip: state === 1 ? this.gripFor(side, pose, forward) : undefined,
+        surface: pose.palmSurfaces?.[side] ? v(pose.palmSurfaces[side]!) : undefined,
       });
 
       const heel = j[`heel_${side}`];
       const along = j[`toe_${side}`].clone().sub(heel).normalize();
-      const normal = new THREE.Vector3().crossVectors(along, new THREE.Vector3(1, 0, 0)).normalize();
+      // The shoe rises from the sole toward the ankle, so a sole-up foot (lying face down)
+      // draws correctly too; for every upright foot this equals the old fixed-axis normal.
+      const lift = j[`ankle_${side}`].clone().sub(heel);
+      let normal = lift.addScaledVector(along, -lift.dot(along));
+      if (normal.lengthSq() < 1e-8) normal = new THREE.Vector3().crossVectors(along, new THREE.Vector3(1, 0, 0));
+      normal.normalize();
       const across = new THREE.Vector3().crossVectors(normal, along);
       parts.shoe.place(heel, across, normal, along);
     }
@@ -226,24 +263,34 @@ export class Figure {
   }
 
   private updateShirt(j: Record<string, THREE.Vector3>, offset: (p: THREE.Vector3, side?: number, along?: number, front?: number) => THREE.Vector3) {
-    // Broad orange shoulders narrowing to the waist.
-    const points: THREE.Vector3[] = [];
+    // Broad orange shoulders narrowing to the waist, as two hulls split at the mid-back. The
+    // ring there sits halfway between the waist and shoulder outlines, so a straight spine
+    // draws the same single tapered shape as before.
+    const mid = j.spine_mid ?? j.pelvis.clone().lerp(j.chest, 0.5);
+    const upper: THREE.Vector3[] = [];
+    const lower: THREE.Vector3[] = [];
     for (const front of [-1, 1]) {
-      points.push(
+      const ring = [offset(mid, 0.118, 0, 0.06 * front), offset(mid, -0.118, 0, 0.06 * front)];
+      upper.push(
         offset(j.chest, 0.05, 0.08, 0.055 * front),
         offset(j.chest, -0.05, 0.08, 0.055 * front),
         offset(j.shoulder_l, -0.018, 0.01, 0.076 * front),
         offset(j.shoulder_r, 0.018, 0.01, 0.076 * front),
-        offset(j.pelvis, 0.065, 0.02, 0.043 * front),
-        offset(j.pelvis, -0.065, 0.02, 0.043 * front),
+        ...ring,
       );
+      lower.push(offset(j.pelvis, 0.065, 0.02, 0.043 * front), offset(j.pelvis, -0.065, 0.02, 0.043 * front), ...ring);
     }
-    const old = this.shirt.geometry;
-    const geometry = new ConvexGeometry(points);
-    this.shirt.geometry = geometry;
-    this.shirtOutline.geometry = geometry;
-    old.dispose();
-    const centroid = points.reduce((sum, p) => sum.add(p), new THREE.Vector3()).divideScalar(points.length);
+    [upper, lower].forEach((points, i) => {
+      const mesh = this.shirt[i];
+      const old = mesh.geometry;
+      mesh.geometry = new ConvexGeometry(points);
+      old.dispose();
+    });
+    const all = [...upper, ...lower];
+    const oldOutline = this.shirtOutline.geometry;
+    this.shirtOutline.geometry = new ConvexGeometry(all);
+    oldOutline.dispose();
+    const centroid = all.reduce((sum, p) => sum.add(p), new THREE.Vector3()).divideScalar(all.length);
     this.shirtOutline.position.copy(centroid).multiplyScalar(1 - 1.06);
     this.shirtOutline.scale.setScalar(1.06);
   }

@@ -31,7 +31,7 @@ HAND_PALM = (-.305, -.575, .02)
 KNEE = (-.16, -.34, .048)                    # support knee after the sweep, in line behind the hand
 KNEEL_PITCH = radians(58)                    # toes tucked, heel up, foot behind the knee
 RIB_POLE = (.3, -.1, .4)                     # posted arm: elbow bends back toward the ribs, above the floor
-SWEEP_WAY = (.30, .40, .40)                   # shin direction halfway through the sweep (foot under the hips)
+SWEEP_WAY = (.30, .40, .12)                   # shin direction halfway through the sweep (low: the foot slides under the hips)
 BLADE_ROLL = .12                             # support shoulder blade rolls on the floor until this high
 STAND_R = (.40, -.17, ANKLE_HEIGHT)
 
@@ -384,12 +384,28 @@ def _support_leg(p, a, b, u, out):
         # One smooth curve (quadratic Bezier on the shin direction) through a low bent-knee
         # waypoint: the foot slides under the hips close to the floor.
         raised = unit(SWEEP_WAY)
-        shin_dir = unit(tuple((1 - t) ** 2 * a + 2 * t * (1 - t) * m + t ** 2 * b
-                              for a, m, b in zip(shin_start, raised, shin_end)))
+        # Turn the shin about the vertical through the waypoint's heading (blending the vectors
+        # directly from forward to backward passed through vertical: the shin flipped up).
+        def heading_of(d):
+            return atan2(d[1], d[0])
+        a0 = heading_of(shin_start)
+        am = a0 + ((heading_of(raised) - a0 + pi) % (2 * pi) - pi)
+        a1 = am + ((heading_of(shin_end) - am + pi) % (2 * pi) - pi)
+        ang = (1 - t) ** 2 * a0 + 2 * t * (1 - t) * am + t ** 2 * a1
+        zc = (1 - t) ** 2 * shin_start[2] + 2 * t * (1 - t) * raised[2] + t ** 2 * shin_end[2]
+        flat = sqrt(max(0., 1 - zc * zc))
+        shin_dir = (flat * cos(ang), flat * sin(ang), zc)
         ankle = add(knee, mul(shin_dir, SHIN))
         pitch = -pi / 2 + (KNEEL_PITCH + pi / 2) * t
         ankle = (ankle[0], ankle[1], max(ankle[2], _clearance(pitch)))
-        foot(p, s, ankle, 0., pitch, contact=False)
+        # The foot turns with the shin as the leg rotates under the body (a fixed heading
+        # twisted the knee ~135 deg against the foot); zero at both ends of the sweep.
+        def heading(d):
+            return atan2(d[1], d[0])
+        h0, h1, h = heading(shin_start), heading(shin_end), heading(shin_dir)
+        span = (h1 - h0 + pi) % (2 * pi) - pi
+        turn = (h - (h0 + span * t) + pi) % (2 * pi) - pi
+        foot(p, s, ankle, side_sign(s) * turn, pitch, contact=False)
         p.leg(s, ankle, pole=knee)
         if p.j['knee_' + s][2] < .06:
             # The knee lands and slides into place under the hips.

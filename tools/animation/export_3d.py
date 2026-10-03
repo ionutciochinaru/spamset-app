@@ -33,7 +33,7 @@ EXERCISES = ['kb-swing', 'kb-deadlift', 'goblet-squat', 'kb-reverse-lunge',
              'kb-side-lunge', 'kb-upright-row', 'kb-bent-row', 'kb-side-bend',
              'kb-curl', 'kb-halo', 'kb-clean', 'kb-press', 'kb-snatch', 'kb-getup',
              'kb-pullover']
-JOINTS = ['pelvis', 'chest', 'neck', 'head', 'face',
+JOINTS = ['pelvis', 'spine_mid', 'chest', 'neck', 'head', 'face',
           *[f'{name}_{side}' for side in ('l', 'r')
             for name in ('hip', 'knee', 'ankle', 'heel', 'toe',
                          'shoulder', 'elbow', 'wrist', 'palm')]]
@@ -46,7 +46,8 @@ def to_three(point):
 
 
 # Equipment colours follow render.py: wall, chair seat/legs, bar default, band and dumbbell plates.
-WALL, CHAIR_SEAT, CHAIR_FRAME, BAR, BAND, PLATE = '#6b6a62', '#aaa99f', '#838279', '#aaa99f', '#ff6b2b', '#ff6b2b'
+# Dumbbell plates in light iron: orange plates merged with the orange shirt.
+WALL, CHAIR_SEAT, CHAIR_FRAME, BAR, BAND, PLATE = '#6b6a62', '#aaa99f', '#838279', '#aaa99f', '#ff6b2b', '#b4b1a6'
 # A hand this close (m) to a bar, dumbbell handle or band end holds it.
 GRIP_REACH = .06
 # Underhand (supinated) bar grips; every other bar grip is overhand.
@@ -111,6 +112,28 @@ def equipment_grips(exercise, pose):
     return grips
 
 
+def palm_surfaces(pose):
+    """Palms planted on a wall: the wall's normal toward the body, per side (the floor is the default)."""
+    out = {}
+    for prop in pose['props']:
+        if prop['type'] != 'wall':
+            continue
+        c = prop['corners']
+        u = [b - a for a, b in zip(c[0], c[1])]
+        v = [b - a for a, b in zip(c[0], c[3])]
+        n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]]
+        size = sum(x * x for x in n) ** .5
+        n = [x / size for x in n]
+        pelvis = pose['joints']['pelvis']
+        if sum((pp - cc) * nn for pp, cc, nn in zip(pelvis, c[0], n)) < 0:
+            n = [-x for x in n]
+        for s in ('l', 'r'):
+            palm = pose['joints']['palm_' + s]
+            if 'palm_' + s in pose['contacts'] and abs(sum((pp - cc) * nn for pp, cc, nn in zip(palm, c[0], n))) < .05:
+                out[s] = [round(x * 1000) for x in to_three(n)]
+    return out
+
+
 def export(exercise, review=False):
     """One clip. review=True records IK and validator failures in the clip instead of raising."""
     profile = PROFILES[exercise]
@@ -121,7 +144,9 @@ def export(exercise, review=False):
         pose = pose_for(exercise, index / samples)
         errors += len(pose['qa']['ik_errors'])
         view = view or pose['view']
-        joints = pose['joints']
+        joints = dict(pose['joints'])
+        # Mid-back: only articulated spines (cat-cow, curls, arches) author it; elsewhere straight.
+        joints.setdefault('spine_mid', [(a + c) / 2 for a, c in zip(joints['pelvis'], joints['chest'])])
         missing = [name for name in JOINTS if name not in joints]
         if missing:
             raise ValueError(f'{exercise}: missing joints {missing}')
@@ -147,6 +172,9 @@ def export(exercise, review=False):
             frame['p'] = shapes
         if held:
             frame['g'] = held
+        walls = palm_surfaces(pose)
+        if walls:
+            frame['pn'] = walls
         frames.append(frame)
     failures = [f'{errors} IK errors'] if errors else []
     if exercise in V2_MOTIONS:

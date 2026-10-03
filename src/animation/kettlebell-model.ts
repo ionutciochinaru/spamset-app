@@ -11,7 +11,8 @@ import { outlineMaterial, Solid } from './parts';
 const HANDLE_RADIUS = 0.017;
 const HANDLE_OUTLINE = 0.004;
 
-export const BELL_COLORS = { iron: '#55534e' };
+// Lighter iron: the darker #55534e merged into the near-black background.
+export const BELL_COLORS = { iron: '#7c7a72' };
 
 /** Unit-radius body profile (x = radius, y = height), flat base at y = -0.8. */
 function bodyGeometry(): THREE.BufferGeometry {

@@ -63,14 +63,34 @@ export function samplePose(clip: Clip, seconds: number, speed = 1): Pose {
         }),
       )
     : undefined;
-  return { joints, bells, hands: hs ? { l: hs[0], r: hs[1] } : undefined, equipment, barGrips };
+  const walls = (t < 0.5 ? a : b).pn;
+  const palmSurfaces = walls
+    ? Object.fromEntries(Object.entries(walls).map(([side, n]) => [side, [n[0] / 1000, n[1] / 1000, n[2] / 1000] as Vec3]))
+    : undefined;
+  return { joints, bells, hands: hs ? { l: hs[0], r: hs[1] } : undefined, equipment, barGrips, palmSurfaces };
 }
 
 /** Bounding box over every frame, used to frame the camera once per clip. */
 /** Smallest framed size (m): a standing figure plus headroom. */
 const MIN_FRAME = 1.9;
 
-export function clipBounds(clip: Clip): { center: Vec3; size: number } {
+/** Where the clip touches the floor (x, z centre and radius, m): every joint and prop point within 15 cm of it. */
+export function clipFootprint(clip: Clip): { x: number; z: number; radius: number } {
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  const add = (p: number[]) => {
+    if (p[1] * MM > 0.15) return;
+    minX = Math.min(minX, p[0] * MM); maxX = Math.max(maxX, p[0] * MM);
+    minZ = Math.min(minZ, p[2] * MM); maxZ = Math.max(maxZ, p[2] * MM);
+  };
+  for (const frame of clip.frames) {
+    for (let k = 0; k < frame.j.length; k += 3) add(frame.j.slice(k, k + 3));
+    for (const s of [...(clip.scene ?? []), ...(frame.p ?? [])]) (s.k === 'db' ? s.h : s.pts).forEach(add);
+  }
+  if (minX === Infinity) return { x: 0, z: 0, radius: 0.95 };
+  return { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2, radius: Math.hypot(maxX - minX, maxZ - minZ) / 2 + 0.3 };
+}
+
+export function clipBounds(clip: Clip): { center: Vec3; size: number; height: number } {
   const min = [Infinity, 0, Infinity];
   const max = [-Infinity, -Infinity, -Infinity];
   for (const frame of clip.frames) {
@@ -91,5 +111,5 @@ export function clipBounds(clip: Clip): { center: Vec3; size: number } {
   // Never frame tighter than a standing adult (unless the drill is framed as upper body only),
   // so every exercise shows at a consistent scale.
   const size = Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2], crop === undefined ? MIN_FRAME : 0);
-  return { center: [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2], size };
+  return { center: [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2], size, height: max[1] - min[1] };
 }

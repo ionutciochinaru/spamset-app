@@ -247,27 +247,31 @@ def overhead_reach(name, phase):
     return p
 
 def triceps_stretch(name, phase):
-    """S19 #8: raise one arm, bend the elbow so the hand drops down the back; the other hand holds above the elbow."""
-    t = ease_hold(phase)
+    """S19 #8: raise one arm, bend the elbow so the hand drops down the back; the other hand holds above the elbow.
+
+    Both arms move on joint-angle arcs (no straight-line IK path through the shoulder, which
+    flipped the elbow), over the slower into/hold timing of a held stretch.
+    """
+    t = hold_cycle(phase, into=.36, hold=.22)
     p = relaxed_arms(standing(name, phase))
-    shoulder = p.j['shoulder_l']
-    lift, drop, hold = stage(t, 0, .45), stage(t, .45, .75), stage(t, .60, 1.)
-    raised = add(shoulder, mul(unit((.10, .06, 1)), .545))
-    behind = add(p.j['neck'], (-.13, .03, -.05))
-    wrist = mix_point(mix_point(rest_wrist(p, 'l'), raised, lift), behind, drop)
-    p.arm('l', wrist, pole=add(shoulder, (.15, .15, 1)) if drop else add(shoulder, (-.4, .2, -.2)))
+    # Raised arm: straight up beside the head, then the elbow folds so the hand drops behind it.
+    lift, fold = stage(t, 0, .55), stage(t, .40, .85)
+    p.arm_fk('l', radians(172)*lift, elbow_flex=.08+radians(138)*fold, outward=.07+.09*lift)
     elbow = p.j['elbow_l']
-    # The helping hand rises on its own side, passes over the top of the head
-    # and settles on the raised elbow from above.
+    # Helping hand: up in front, over the top of the head, then onto the raised elbow.
     shoulder_r = p.j['shoulder_r']
-    over = add(p.j['head'], (.0, -.02, .19))
-    grip = add(elbow, (.0, -.02, .06))
-    up_side = abducted(p, 'r', radians(150))
-    path = mix_point(rest_wrist(p, 'r'), up_side, stage(hold, 0, .45))
-    path = mix_point(path, over, stage(hold, .45, .75))
-    path = mix_point(path, grip, stage(hold, .75, 1.))
-    p.arm('r', path, pole=add(shoulder_r, (-.1, -.6, .3)))
-    set_head(p, pitch=radians(10)*drop)
+    front = add(shoulder_r, (.32, .06, .30))
+    over = add(p.j['head'], (-.02, .0, .20))
+    # Hold the front of the raised elbow, so the helping arm crosses in front of the face.
+    grip = add(elbow, (.09, -.04, .0))
+    # At rest the hands hang just clear of the thighs (no automatic arm clearance here).
+    rest = add(shoulder_r, (.02, -.09, -.53))
+    path = mix_point(rest, front, stage(t, .30, .60))
+    path = mix_point(path, over, stage(t, .60, .82))
+    path = mix_point(path, grip, stage(t, .82, 1.))
+    # Elbow forward and up: the upper arm passes in front of the head, not through it.
+    p.arm('r', path, pole=add(shoulder_r, (.8, -.2, .4)))
+    set_head(p, pitch=radians(10)*fold)
     p.view = dict(UPPER_VIEW, azimuth=28)
     return p
 
@@ -409,13 +413,14 @@ def cat_cow(name, phase):
 
 def quad_stretch(name, phase):
     """S18 #9: lift the heel toward the bottom, catch the ankle, knees together, hips forward."""
-    t = ease_hold(phase)
+    # Longer release than ease_hold: the leg came down at ~8 m/s.
+    t = hold_cycle(phase, into=.30, hold=.30)
     shift = stage(t, 0, .25)
     p = Pose(name, phase).torso((0, -.07*shift, .945))
     ankle_r = p.foot('r', ankle=(0, -HIP_HALF, ANKLE_HEIGHT))
     p.leg('r', ankle_r)
     hip = p.j['hip_l']
-    knee = add(hip, (-.02*t, -.03*t, -THIGH+.002))
+    knee = add(hip, (-.02*t, -.03*t, -THIGH+.012))
     bend = stage(t, .10, .70)
     down, up = (0, 0, -1), unit((-.20, 0, .38))
     angle = bend*acos_clamped(dot(down, up))
@@ -423,10 +428,12 @@ def quad_stretch(name, phase):
     ankle = add(knee, mul(shin, SHIN))
     p.j['knee_l'] = knee
     p.j['ankle_l'] = ankle
-    p.foot('l', ankle=ankle, pitch=radians(215)*bend, contact=bend < 1e-6)
+    # The foot only turns once the ankle has left the floor (pitching it low drove the toe in).
+    p.foot('l', ankle=ankle, pitch=radians(215)*stage(bend, .15, 1.), contact=bend < 1e-6)
     catch = stage(t, .45, .80)
-    p.arm('l', mix_point(rest_wrist(p, 'l'), add(ankle, (0, .04, .01)), catch), pole=add(p.j['shoulder_l'], (-.2, .4, 0)))
-    p.arm_fk('r', radians(70)*shift, elbow_flex=.1, outward=.35*shift)
+    p.arm('l', mix_point(rest_wrist(p, 'l'), add(ankle, (-.01, .065, .01)), catch), pole=add(p.j['shoulder_l'], (-.2, .4, 0)))
+    # The free arm hangs a little out from the side so the hand clears the thigh.
+    p.arm_fk('r', radians(70)*shift, elbow_flex=.1, outward=.08+.35*shift)
     p.view = {'azimuth': 72, 'elevation': 8}
     return p
 
@@ -503,7 +510,14 @@ def reclined_twist(name, phase):
     knee_up = rotate((0, 0, 1), axis, angle)
     for s in SIDES:
         p.j['hip_'+s] = add(pivot, rotate(sub(p.j['hip_'+s], pivot), axis, angle))
-    shift = side_sign(side)*.10*t
+    # Roll on the floor, not about a fixed centre: the lower hip stays at resting height (it
+    # sank 9 cm into the floor) and the pelvis rides up between the hips.
+    rise = max(0., pivot[2]-min(p.j['hip_'+s][2] for s in SIDES))
+    for s in SIDES:
+        p.j['hip_'+s] = add(p.j['hip_'+s], (0, 0, rise))
+    p.j['pelvis'] = mix_point(p.j['hip_l'], p.j['hip_r'], .5)
+    # The feet roll onto their outer edges rather than sliding across the mat.
+    shift = side_sign(side)*.04*t
     for s in SIDES:
         foot = (.34, side_sign(s)*.05+shift, ANKLE_HEIGHT)
         p.foot(s, ankle=foot, pitch=radians(8)*t)

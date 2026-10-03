@@ -18,7 +18,12 @@ FRONT_VIEW = {'azimuth': 18, 'elevation': 8}
 
 def planted(p, s, x=0., y=None, pitch=0.):
     y = side_sign(s)*HIP_HALF if y is None else y
-    ankle = p.foot(s, ankle=(x, y, ANKLE_HEIGHT), pitch=pitch)
+    if pitch:
+        # Heel raised: pivot about the ball of the foot on the floor (pitching about a fixed
+        # ankle pushed the toes into the floor).
+        ankle = p.foot(s, toe=(x+.16, y, 0.), pitch=pitch)
+    else:
+        ankle = p.foot(s, ankle=(x, y, ANKLE_HEIGHT), pitch=pitch)
     p.leg(s, ankle)
     return ankle
 
@@ -143,8 +148,9 @@ def relaxed_stand(p):
 # Gear -------------------------------------------------------------------------
 
 def bar_prop(x, z, half=.45):
+    # A bar between two uprights to the floor (from the side the bar alone reads as nothing).
     return {'type': 'lines', 'segments': [[[x, -half, z], [x, half, z]],
-                                          [[x, -half, z], [x, -half, z-.08]], [[x, half, z], [x, half, z-.08]]],
+                                          [[x, -half, z], [x, -half, 0.]], [[x, half, z], [x, half, 0.]]],
             'width': .03}
 
 

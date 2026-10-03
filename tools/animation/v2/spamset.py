@@ -17,11 +17,11 @@ from math import sin, pi, radians
 try:
     from .bodyweight import Wrapped, weight_shift_holds
     from ..rig import Pose, add, side_sign
-    from ..bodyweight_standing import stance, guard, twist, stage, mix_point, FRONT_VIEW
+    from ..bodyweight_standing import stance, guard, twist, stage, mix_point, planted, FRONT_VIEW
 except ImportError:
     from v2.bodyweight import Wrapped, weight_shift_holds
     from rig import Pose, add, side_sign
-    from bodyweight_standing import stance, guard, twist, stage, mix_point, FRONT_VIEW
+    from bodyweight_standing import stance, guard, twist, stage, mix_point, planted, FRONT_VIEW
 
 
 def punches(name, phase):
@@ -32,7 +32,11 @@ def punches(name, phase):
     jab = sin(pi * stage(phase, .05, .40))
     cross_ = sin(pi * stage(phase, .45, .85))
     p = stance(Pose(name, phase))
-    twist(p, -radians(22) * cross_ + radians(6) * jab)
+    # The punching shoulder drives forward (a positive twist brings the right shoulder forward)
+    # and the rear heel turns up on the cross.
+    rear = 'r'
+    planted(p, rear, x=-.18, y=side_sign(rear) * .14, pitch=radians(15 + 25 * cross_))
+    twist(p, radians(22) * cross_ - radians(6) * jab)
     guard(p)
     for s, amount, lead in (('l', jab, True), ('r', cross_, False)):
         sg = side_sign(s)
@@ -76,12 +80,16 @@ def sit_stand(name, phase):
 # re-authored as a v2 Lift; empty until then.
 LEAN = set()
 # Body parts the hands rest on by design (pushed onto the surface, not cleared away).
+# Hands placed against the head or the other arm by design: no automatic arm clearance.
+NO_CLEAR = {'triceps-stretch'}
 REST = {'hamstring-stretch': ('thigh_l', 'thigh_r'), 'quad-stretch': ('thigh_l', 'thigh_r')}
 # v2 replacements for legacy motions with a defect of their own.
 REPLACEMENTS = {'punches': punches, 'sit-stand': sit_stand}
 # Slower demonstration tempo where the legacy rhythm is physically too fast for a planted
 # body (climbers: each foot strike decelerated the body faster than gravity).
-TEMPO = {'climbers': 1.6, 'reverse-lunge': 1.4}
+TEMPO = {'climbers': 1.6, 'reverse-lunge': 1.4,
+         # Raise, fold, hold and release both arms: 4 s rushed the arm arcs past 5 m/s.
+         'triceps-stretch': 2.}
 
 CATALOG = json.loads((Path(__file__).resolve().parents[1] / 'spamset-catalog.json').read_text())
 PROFILES = json.loads((Path(__file__).resolve().parents[1] / 'profiles.json').read_text())
@@ -145,5 +153,6 @@ def build(motions, skip):
             hang=name in HANGING,
             grip=name in HAND_SUPPORTED,
             hips=name in PLANK_SHIFT,
+            clear=name not in NO_CLEAR,
             rest=REST.get(name, ()))
     return wrapped

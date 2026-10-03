@@ -43,6 +43,8 @@ export type HandInput = {
   anterior: THREE.Vector3;
   state: HandState;
   grip?: Grip;
+  /** For a flat hand: unit normal of the surface it presses (default: the floor, up). */
+  surface?: THREE.Vector3;
 };
 
 const PALM = { width: 0.078, length: 0.074, thick: 0.03 };
@@ -91,17 +93,20 @@ export class HandModel {
   }
 
   /** Free or flat hand. */
-  private open({ elbow, wrist, palm, lateral, anterior, state }: HandInput) {
+  private open({ elbow, wrist, palm, lateral, anterior, state, surface }: HandInput) {
     const floor = state === 2;
+    // Flat hands press into their surface: the floor, or a wall (wall push-up).
+    const into = surface ? surface.clone().negate() : DOWN.clone();
     const forearm = wrist.clone().sub(elbow).normalize();
     let y = palm.clone().sub(wrist);
     if (y.lengthSq() < 1e-4) y = forearm.clone();
-    if (floor) y = flatten(y, DOWN);
+    if (floor) y = flatten(y, into);
+    if (floor && y.lengthSq() < 1e-6) y = flatten(forearm, into);
     y.normalize();
 
-    // Palm normal: down onto the floor, otherwise toward the midline (a relaxed, neutral hand),
+    // Palm normal: into the surface, otherwise toward the midline (a relaxed, neutral hand),
     // nudged backward so it stays defined when the hand points sideways.
-    const want = floor ? DOWN.clone() : lateral.clone().negate().addScaledVector(anterior, -0.25);
+    const want = floor ? into : lateral.clone().negate().addScaledVector(anterior, -0.25);
     let z = flatten(want, y);
     if (z.lengthSq() < 1e-6) z = flatten(anterior.clone().negate(), y);
     z.normalize();

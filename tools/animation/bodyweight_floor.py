@@ -4,7 +4,7 @@ Sources S37-S60 in docs/animation-review/form-research.md; chart-defined moves
 are marked in their docstrings. Built on the fixed-length rig and the stretch /
 push-up helpers. No watch-side code.
 """
-from math import sin, cos, pi, sqrt, asin
+from math import sin, cos, pi, sqrt, asin, acos
 try:
     from .rig import *
     from .stretches import (rotate, mix_point, stage, set_head, hold_cycle, ease_hold,
@@ -45,6 +45,8 @@ def hands_behind_head(p):
     for s in SIDES:
         sg = side_sign(s)
         wrist = add(add(p.j['head'], mul(forward, -.07)), mul(side, sg*.07))
+        # Lying flat, the hands cradle the head on the mat instead of passing under the floor.
+        wrist = (wrist[0], wrist[1], max(wrist[2], .045))
         p.arm(s, wrist, pole=add(p.j['shoulder_'+s], add(mul(side, sg*.6), mul(forward, .1))))
     return p
 
@@ -181,7 +183,8 @@ def leg_raises(name, phase):
 
 def prone(p, pelvis_x=-.02, lift=0., chest_lift=0.):
     """Face down, head toward -x; the person's left side is at -y."""
-    p.torso((pelvis_x, 0, .10), up=(-1, 0, 0))
+    # Pelvis 8 cm up: the drawn thighs and shirt rest on the floor instead of floating.
+    p.torso((pelvis_x, 0, .08), up=(-1, 0, 0))
     lower = toward_head(radians(0))
     upper = toward_head(chest_lift)
     articulate(p, lower, upper)
@@ -201,9 +204,21 @@ def prone_legs(p, lift=0.):
         p.j['knee_'+s] = add(hip, mul(d, THIGH))
         ankle = add(hip, mul(d, THIGH+SHIN))
         ankle = (ankle[0], ankle[1], max(ankle[2], .04))
-        p.j['ankle_'+s] = ankle
-        p.foot(s, ankle=ankle, pitch=radians(150), contact=False)
+        prone_foot(p, s, ankle)
     return p
+
+
+def prone_foot(p, s, ankle, point=radians(45)):
+    """Face down, foot pointed: toes extend away from the head and down toward the floor, the
+    sole faces up and the top of the foot rests on the mat. (rig.foot only pitches about the
+    side axis, so a sole-up foot folded its toes back onto the shin.)"""
+    f = (cos(point), 0, -sin(point))
+    n = (-sin(point), 0, -cos(point))  # from the sole toward the ankle (down)
+    p.j['ankle_'+s] = tuple(ankle)
+    p.j['toe_'+s] = add(ankle, add(mul(f, .16), mul(n, -ANKLE_HEIGHT)))
+    p.j['heel_'+s] = add(ankle, add(mul(f, -.075), mul(n, -ANKLE_HEIGHT)))
+    p.contacts.pop('toe_'+s, None)
+    p.contacts.pop('heel_'+s, None)
 
 
 def superman(name, phase):
@@ -290,6 +305,24 @@ def shoulder_taps(name, phase):
     return p
 
 
+PIKE = .08
+
+
+def natural_foot_pitch(knee, ankle, angle=radians(110), near=radians(60)):
+    """Foot pitch (rig.foot) giving the knee-ankle-toe angle `angle` for a free foot.
+
+    Exact and continuous in the shin direction (a stepped search made the foot, and with it
+    the centre of mass, jitter between samples). Of the two solutions, the one nearer `near`."""
+    from math import atan2
+    psi = atan2(knee[2]-ankle[2], knee[0]-ankle[0])   # ankle -> knee, in the x-z plane
+    phi0 = atan2(-ANKLE_HEIGHT, .16)                    # toe direction at pitch 0
+    # rig.foot's pitch turns the toe vector by -pitch in the x-z plane.
+    candidates = [phi0-(psi-angle), phi0-(psi+angle)]
+    def wrap(a):
+        return (a-near+pi) % (2*pi)-pi+near
+    return min((wrap(c) for c in candidates), key=lambda c: abs(c-near))
+
+
 def climber_leg(q):
     """(progress back->front 0..1, clearance 0..1) for one leg's running stride; q in [0, 1)."""
     if q < .35:
@@ -312,12 +345,23 @@ def climbers(name, phase):
     p = Pose(name, phase)
     strides = {s: climber_leg((phase + (0 if s == 'l' else .5)) % 1.) for s in SIDES}
     plank_body(p, TOP)
+    # While both feet are in the air the hips pike up a little (shoulders stay over the hands),
+    # so the knees passing under the hips clear the floor.
+    lift = PIKE*strides['l'][1]*strides['r'][1]  # smooth (a min() kink spiked the vertical acceleration)
+    if lift:
+        pelvis = add(p.j['pelvis'], (0, 0, lift))
+        p.torso(pelvis, up=unit(sub(p.j['chest'], pelvis)))
     for s in SIDES:
         sg = side_sign(s)
         k, air = strides[s]
         toe = add(mix_point((-1.0, sg*HIP_HALF, 0.), (-.20, sg*HIP_HALF, 0.), k), (0, 0, .14*air))
-        ankle = p.foot(s, toe=toe, pitch=radians(60-35*k), contact=air < 1e-6)
+        ankle = p.foot(s, toe=toe, pitch=radians(60), contact=air < 1e-6)
         p.leg(s, ankle, pole=add(p.j['hip_'+s], (1, 0, 0)))
+        if air > 0:
+            # In the air the foot turns with the shin (a natural ~110 deg ankle) instead of
+            # keeping its floor pitch, which folded it up against the shin mid-swing.
+            free = natural_foot_pitch(p.j['knee_'+s], p.j['ankle_'+s])
+            p.foot(s, ankle=p.j['ankle_'+s], pitch=radians(60)*(1-air)+free*air, contact=False)
     plant_hands(p, {s: (.24, side_sign(s)*.225) for s in SIDES})
     p.view = dict(PLANK_VIEW)
     return p
@@ -330,19 +374,21 @@ def plank_jump_ins(name, phase):
     p = Pose(name, phase)
     hands = {s: (.24, side_sign(s)*.24) for s in SIDES}
     angle = TOP+radians(40)*t
-    toe_x = -.99+.55*t
+    # Feet land about 30 cm behind the hands (they landed 73 cm back, reading as all fours).
+    toe_x = -.99+.94*t
     # A real hop each way: both feet leave the floor (~12 cm) between takeoff and landing.
     airborne = sin(pi*stage(phase, 0, .30))+sin(pi*stage(phase, .45, .75))
     u, ankles = plank_body(p, TOP)
-    # Crouch: feet land under the hips, knees tucked toward the chest.
-    pelvis = mix_point(p.j['pelvis'], (-.30, 0, .42), t)
-    lean = mix_point(u, unit((.95, 0, .30)), t)
+    # Crouch: feet under the hips, hips high, back nearly level so straight arms still reach.
+    pelvis = mix_point(p.j['pelvis'], (-.20, 0, .50), t)
+    lean = mix_point(u, unit((1, 0, .10)), t)
     p.torso(add(pelvis, (0, 0, .025*airborne)), up=unit(lean))
     for s in SIDES:
         sg = side_sign(s)
-        toe = (toe_x, sg*.13, .12*airborne)
+        # Feet together: the knees come in between the arms instead of through them.
+        toe = (toe_x, sg*.06, .12*airborne)
         ankle = p.foot(s, toe=toe, pitch=radians(60), contact=airborne < 1e-9)
-        p.leg(s, ankle, pole=add(p.j['hip_'+s], (1, sg*.2, 0)))
+        p.leg(s, ankle, pole=add(p.j['hip_'+s], (1, sg*.05, 0)))
     plant_hands(p, hands)
     p.view = dict(PLANK_VIEW)
     return p

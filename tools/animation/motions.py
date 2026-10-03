@@ -396,9 +396,17 @@ ALLOWED_CONTACT = {
     # Both hands rest on the straight front thigh.
     'hamstring-stretch': {'hand_l|thigh_l': .01, 'hand_r|thigh_l': .01, 'forearm_l|thigh_l': .01, 'forearm_r|thigh_l': .01,
                           'hand_r|thigh_r': .01, 'hand_l|thigh_r': .01},
+    # Feet together: the legs touch through the jump.
+    # ... and in the crouch the knees press against the insides of the arms.
+    'plank-jump-ins': {'thigh_l|thigh_r': .05, 'shin_l|shin_r': .05, 'shin_l|thigh_r': .03, 'shin_r|thigh_l': .03,
+                       'upper_arm_l|thigh_l': .045, 'upper_arm_r|thigh_r': .045,
+                       'upper_arm_l|shin_l': .02, 'upper_arm_r|shin_r': .02},
     # Knees stay together.
     'quad-stretch': {'hand_l|shin_l': .065, 'hand_r|shin_r': .065, 'forearm_l|shin_l': .03, 'forearm_r|shin_r': .03,
-                     'thigh_l|thigh_r': .015},
+                     'thigh_l|thigh_r': .03},
+    # The helping hand holds the raised elbow; the raised arm lies beside the head.
+    'triceps-stretch': {'hand_r|upper_arm_l': .03, 'forearm_r|upper_arm_l': .02, 'upper_arm_l|head': .03,
+                        'forearm_l|head': .03, 'hand_l|head': .03, 'forearm_r|head': .03},
     # The free hand presses the straight arm across the chest.
     'cross-body-shoulder': {'forearm_l|forearm_r': .03, 'hand_l|forearm_r': .02, 'hand_r|forearm_l': .02},
     'kb-deadlift': {'forearm_l|thigh_l': .02, 'forearm_r|thigh_r': .02, 'hand_l|thigh_l': .02, 'hand_r|thigh_r': .02,

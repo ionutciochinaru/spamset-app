@@ -633,6 +633,15 @@ class Wrapped(Lift):
                 best = min(totals, key=totals.get)
                 for r in run:
                     signs[r] = best
+            # Samples that need no clearance take the direction of the nearest run that does:
+            # an export sample rounding onto one of them beside a run must not get the default
+            # direction, which cannot clear and swung the arm out for a single frame.
+            runs = [i for i in range(n) if need[i] is not None]
+            if runs:
+                for i in range(n):
+                    if need[i] is None:
+                        nearest = min(runs, key=lambda r: min((r - i) % n, (i - r) % n))
+                        signs[i] = signs[nearest]
             table[s] = signs
         return table
 

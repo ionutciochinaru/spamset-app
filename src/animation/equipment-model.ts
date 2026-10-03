@@ -31,8 +31,12 @@ function tubeItem(parent: THREE.Object3D, count: number, radius: number, color: 
   };
 }
 
-function slabItem(parent: THREE.Object3D, color: string): Item {
-  const slab = new Solid(parent, new THREE.BoxGeometry(1, 1, 1), lambert(color), [1.01, 1.2, 1.01]);
+function slabItem(parent: THREE.Object3D, color: string, seeThrough: boolean): Item {
+  // A wall is drawn see-through so it never hides the figure when the camera orbits behind it.
+  const material = lambert(color);
+  if (seeThrough) Object.assign(material, { transparent: true, opacity: 0.35, depthWrite: false });
+  const slab = new Solid(parent, new THREE.BoxGeometry(1, 1, 1), material, [1.01, 1.2, 1.01]);
+  if (seeThrough) slab.outline.visible = false;
   return {
     update(shape, figureCenter) {
       if (shape.kind !== 'slab') return;
@@ -72,6 +76,17 @@ function dumbbellItem(parent: THREE.Object3D, color: string): Item {
   };
 }
 
+/** A vertical slab (a wall), as opposed to a horizontal one (a seat). */
+function isWall(shape: Shape): boolean {
+  if (shape.kind !== 'slab') return false;
+  const [c0, c1, , c3] = shape.corners;
+  const u = [c1[0] - c0[0], c1[1] - c0[1], c1[2] - c0[2]];
+  const w = [c3[0] - c0[0], c3[1] - c0[1], c3[2] - c0[2]];
+  const ny = u[2] * w[0] - u[0] * w[2];
+  const n = Math.hypot(u[1] * w[2] - u[2] * w[1], ny, u[0] * w[1] - u[1] * w[0]);
+  return Math.abs(ny) < 0.7 * n;
+}
+
 export class EquipmentModel {
   readonly group = new THREE.Group();
   private key = '';
@@ -89,7 +104,7 @@ export class EquipmentModel {
         s.kind === 'tube'
           ? tubeItem(this.group, s.points.length, s.radius, s.color)
           : s.kind === 'slab'
-            ? slabItem(this.group, s.color)
+            ? slabItem(this.group, s.color, isWall(s))
             : dumbbellItem(this.group, s.color),
       );
     }

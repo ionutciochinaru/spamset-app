@@ -34,6 +34,8 @@ export type Clip = {
     /** Moving equipment (band, dumbbells). */
     p?: ClipShape[];
     g?: Partial<Record<'l' | 'r', ClipGrip>>;
+    /** Planted palms on a wall: the wall's normal toward the body (x1000); the floor is the default. */
+    pn?: Partial<Record<'l' | 'r', number[]>>;
   }[];
 };
 
@@ -60,4 +62,6 @@ export type Pose = {
   hands?: { l: HandState; r: HandState };
   equipment?: Shape[];
   barGrips?: Partial<Record<'l' | 'r', BarGrip>>;
+  /** Unit normal of the surface each flat palm presses (absent: the floor). */
+  palmSurfaces?: Partial<Record<'l' | 'r', Vec3>>;
 };

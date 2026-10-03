@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { clips } from '@/animation/clips';
 import { Figure } from '@/animation/figure';
 import { PSXPass, snapVertices } from '@/animation/psx';
-import { clipBounds, samplePose } from '@/animation/sample';
+import { clipBounds, clipFootprint, samplePose } from '@/animation/sample';
 import { Canvas, useFrame, useThree } from '@/animation/three-canvas';
 import { Palette, Radius } from '@/constants/theme';
 
@@ -41,6 +41,10 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
     if (psx) snapVertices(figure.group);
   }, [figure, psx]);
   const bounds = useMemo(() => clipBounds(clip), [clip]);
+  useEffect(() => {
+    const ground = clipFootprint(clip);
+    figure.setGround(ground.x, ground.z, ground.radius);
+  }, [clip, figure]);
   const { camera } = useThree();
   const time = useRef(0);
   const reported = useRef(0);
@@ -60,7 +64,9 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
     const target =
       focus && pose.joints[focus]
         ? new THREE.Vector3(...pose.joints[focus])
-        : new THREE.Vector3(...bounds.center).add(new THREE.Vector3(0, -bounds.size * 0.07, 0));
+        : // A standing figure aims a little low (clear of the playback controls); a low, floor
+          // clip is centred instead of sinking into the bottom of the frame.
+          new THREE.Vector3(...bounds.center).add(new THREE.Vector3(0, -Math.min(bounds.size, bounds.height * 1.6) * 0.07, 0));
     const distance = (bounds.size / 2 / Math.tan(THREE.MathUtils.degToRad(FOV / 2))) * 1.3 * zoom;
     camera.position.set(
       target.x + distance * Math.sin(azimuth) * Math.cos(elevation),

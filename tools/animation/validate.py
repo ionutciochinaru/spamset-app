@@ -53,9 +53,12 @@ MOMENTUM_WINDOWS={'kb-getup':_GETUP_WINDOWS}
 # Explosive push-ups: while the hands are in the air the body pivots on the toes, which the
 # point-mass ZMP model does not describe; those samples are reported, not checked.
 HANDS_OFF_MOMENTUM={'clapping-pushup','power-pushup'}
+# Running and hopping planks: while both feet are in the air (climbers' crossing, the jump-in
+# hop) the body pivots on the hands; also reported, not checked. Ground phases are checked.
+FEET_OFF_MOMENTUM={'climbers','plank-jump-ins'}
 
-def hands_off_windows(name,samples=240):
-    off=[not any(k.startswith('palm_') for k in pose_for(name,i/samples)['contacts']) for i in range(samples)]
+def hands_off_windows(name,samples=240,parts=('palm_',)):
+    off=[not any(k.startswith(parts) for k in pose_for(name,i/samples)['contacts']) for i in range(samples)]
     windows=[];i=0
     while i<samples:
         if off[i]:
@@ -117,6 +120,7 @@ def check_v2(name,samples=240):
     # that the point-mass ZMP model does not capture; they are excluded and reported.
     windows=MOMENTUM_WINDOWS.get(name,[])
     if name in HANDS_OFF_MOMENTUM:windows=windows+hands_off_windows(name)
+    if name in FEET_OFF_MOMENTUM:windows=windows+hands_off_windows(name,parts=('toe_','heel_','knee_'))
     checked=[(i,r) for i,r in enumerate(balance) if not any(a<=i/samples<b for a,b in windows)]
     failures=[]
     if clearance < -PENETRATION_TOLERANCE:failures.append(f'interpenetration {pair} {raw:.3f} m at {phase:.3f}')
