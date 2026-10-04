@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { clips } from '@/animation/clips';
 import { BellPicker } from '@/components/bell-picker';
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Card, Heading, Label, Row, Screen, Tag, Title } from '@/components/ui';
+import { Body, Card, Heading, Label, Row, Screen, Steps, Tag, Title } from '@/components/ui';
 import { Palette } from '@/constants/theme';
 import { canDo, EQUIPMENT_LABELS, getExercise, isLoaded, isStretch, isTimed } from '@/core/exercises';
 import { initialPrescription } from '@/core/progression';
@@ -48,12 +48,7 @@ export default function ExerciseDetail() {
 
       <Card>
         <Label>How to</Label>
-        {exercise.cues.map((cue, i) => (
-          <Row key={cue} style={{ alignItems: 'flex-start' }}>
-            <Body style={{ color: Palette.accent, fontWeight: '800', width: 18 }}>{i + 1}</Body>
-            <Body style={{ flex: 1 }}>{cue}</Body>
-          </Row>
-        ))}
+        <Steps items={exercise.cues} />
         <Body muted style={{ fontSize: 14 }}>
           Counting: {exercise.counting}.
         </Body>

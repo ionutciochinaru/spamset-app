@@ -84,6 +84,7 @@ function Capture({ initial }: { initial: CaptureState }) {
         key={state.clip}
         clipId={state.clip}
         controls={false}
+        scan={false}
         phase={state.phase}
         view={{ azimuth: state.az, elevation: state.el }}
         zoom={state.zoom}
@@ -333,7 +334,7 @@ function Chip({ label, onPress, active }: { label: string; onPress: () => void; 
 
 const styles = StyleSheet.create({
   capture: { flex: 1, backgroundColor: Palette.stage, alignItems: 'center', justifyContent: 'center' },
-  captureViewer: { width: '100%', height: '100%', aspectRatio: undefined, borderRadius: 0 },
+  captureViewer: { width: '100%', height: '100%', aspectRatio: undefined, borderRadius: 0, borderWidth: 0 },
   readout: { position: 'absolute', top: 10, left: 12, color: Palette.muted, fontSize: 12, fontVariant: ['tabular-nums'] },
   track: { height: 28, justifyContent: 'center' },
   fill: { position: 'absolute', left: 0, height: 4, backgroundColor: Palette.accent, borderRadius: 2 },

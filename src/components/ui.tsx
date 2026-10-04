@@ -1,15 +1,41 @@
-import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native';
+/**
+ * Spamset visual library: every screen builds from these (docs/design-system.md).
+ * A modern app with a game layer:
+ * - modern base: rounded cards, Space Grotesk titles and buttons, system-font reading text;
+ * - game layer: tactile buttons with a thick bottom edge, pixel type only for HUD values
+ *   (numbers, timers, streak), segmented meters, and the PSX 3D stage with scanlines.
+ * Browse every component at /debug/ui.
+ */
+import { Image as ExpoImage } from 'expo-image';
+import { useEffect, useState, type ReactNode } from 'react';
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type StyleProp,
+  type TextInputProps,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { MaxContentWidth, Palette, Radius, Spacing } from '@/constants/theme';
+import { thumbnails } from '@/animation/thumbnails';
+import { ButtonEdge, DisplayFont, MaxContentWidth, Palette, PixelFont, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 
-export function Screen({ children, scroll = true, style }: { children: ReactNode; scroll?: boolean; style?: ViewStyle }) {
+const scanlines = require('@/assets/images/scanlines.png');
+
+// ---- Layout -------------------------------------------------------------------------
+
+export function Screen({ children, scroll = true, style }: { children: ReactNode; scroll?: boolean; style?: StyleProp<ViewStyle> }) {
   const insets = useSafeAreaInsets();
-  const padding = { paddingTop: insets.top + Spacing.three, paddingBottom: insets.bottom + 96 };
+  const padding = { paddingTop: insets.top + Spacing.three, paddingBottom: insets.bottom + 110 };
   const inner = <View style={[styles.column, style]}>{children}</View>;
   return scroll ? (
-    <ScrollView style={styles.screen} contentContainerStyle={padding}>
+    <ScrollView style={styles.screen} contentContainerStyle={padding} keyboardShouldPersistTaps="handled">
       {inner}
     </ScrollView>
   ) : (
@@ -17,23 +43,89 @@ export function Screen({ children, scroll = true, style }: { children: ReactNode
   );
 }
 
-export function Title({ children, style }: { children: ReactNode; style?: TextStyle }) {
-  return <Text style={[styles.title, style]}>{children}</Text>;
+export function Row({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  return <View style={[styles.row, style]}>{children}</View>;
+}
+
+/** CRT lines for 3D stages and the home hero. Not for screens of text. */
+export function Scanlines({ opacity = 1 }: { opacity?: number }) {
+  return (
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity }]}>
+      <Image source={scanlines} resizeMode="repeat" style={styles.fill} />
+    </View>
+  );
+}
+
+// ---- Type ---------------------------------------------------------------------------
+
+/** HUD type: numbers, timers, streaks, the wordmark. Keep it short; sizes are multiples of 8. */
+export function PixelText({
+  children,
+  size = PixelSize.small,
+  color = Palette.text,
+  style,
+  lines,
+  center,
+}: {
+  children: ReactNode;
+  size?: number;
+  color?: string;
+  style?: TextStyle;
+  lines?: number;
+  center?: boolean;
+}) {
+  return (
+    <Text
+      numberOfLines={lines}
+      style={[
+        styles.pixel,
+        { fontSize: size, lineHeight: Math.round(size * 1.5), color, textShadowOffset: { width: size / 8, height: size / 8 } },
+        center && { textAlign: 'center' },
+        style,
+      ]}>
+      {children}
+    </Text>
+  );
+}
+
+export function Title({ children, style, color = Palette.text }: { children: ReactNode; style?: TextStyle; color?: string }) {
+  return <Text style={[styles.title, { color }, style]}>{children}</Text>;
 }
 
 export function Heading({ children, style }: { children: ReactNode; style?: TextStyle }) {
   return <Text style={[styles.heading, style]}>{children}</Text>;
 }
 
-export function Body({ children, style, muted }: { children: ReactNode; style?: TextStyle; muted?: boolean }) {
+/** Small section label. */
+export function Label({ children, style, color = Palette.muted }: { children: ReactNode; style?: TextStyle; color?: string }) {
+  return <Text style={[styles.label, { color }, style]}>{children}</Text>;
+}
+
+/** Readable paragraph text in the system font. */
+export function Body({ children, style, muted }: { children: ReactNode; style?: StyleProp<TextStyle>; muted?: boolean }) {
   return <Text style={[styles.body, muted && styles.muted, style]}>{children}</Text>;
 }
 
-export function Label({ children, style }: { children: ReactNode; style?: TextStyle }) {
-  return <Text style={[styles.label, style]}>{children}</Text>;
+/** Numbered steps (form cues). */
+export function Steps({ items }: { items: readonly string[] }) {
+  return (
+    <View style={{ gap: Spacing.two + 2 }}>
+      {items.map((item, i) => (
+        <Row key={item} style={{ alignItems: 'flex-start' }}>
+          <View style={styles.stepNumber}>
+            <Text style={styles.stepNumberText}>{i + 1}</Text>
+          </View>
+          <Body style={{ flex: 1 }}>{item}</Body>
+        </Row>
+      ))}
+    </View>
+  );
 }
 
-export function Card({ children, style, onPress }: { children: ReactNode; style?: ViewStyle; onPress?: () => void }) {
+// ---- Surfaces -----------------------------------------------------------------------
+
+/** Card surface. With onPress it dips while pressed. */
+export function Card({ children, style, onPress }: { children: ReactNode; style?: StyleProp<ViewStyle>; onPress?: () => void }) {
   if (!onPress) return <View style={[styles.card, style]}>{children}</View>;
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.cardPressed, style]}>
@@ -42,16 +134,44 @@ export function Card({ children, style, onPress }: { children: ReactNode; style?
   );
 }
 
+/** Recessed surface for stats, inputs and inset content. */
+export function Well({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  return <View style={[styles.card, styles.well, style]}>{children}</View>;
+}
+
+/** Frame for 3D figures and the home hero, with scanlines (the PSX layer). */
+export function Stage({ children, style, scan = true }: { children: ReactNode; style?: StyleProp<ViewStyle>; scan?: boolean }) {
+  return (
+    <View style={[styles.stage, style]}>
+      {children}
+      {scan && <Scanlines />}
+    </View>
+  );
+}
+
+/** Exercise thumbnail. Give it a size, or flex it with `style`. */
+export function Thumb({ clip, size, style, dim }: { clip: string; size?: number; style?: StyleProp<ViewStyle>; dim?: boolean }) {
+  return (
+    <Stage scan={false} style={[size !== undefined && { width: size, height: size }, styles.thumb, dim && { opacity: 0.4 }, style]}>
+      <ExpoImage source={thumbnails[clip]} style={styles.fill} contentFit="cover" />
+    </Stage>
+  );
+}
+
+// ---- Actions ------------------------------------------------------------------------
+
 type ButtonKind = 'primary' | 'go' | 'tonal' | 'ghost' | 'danger';
 
-const BUTTON_COLORS: Record<ButtonKind, [string, string, string]> = {
-  primary: [Palette.primaryFill, Palette.primaryPressed, Palette.onPrimary],
-  go: [Palette.go, Palette.goPressed, Palette.onPrimary],
-  tonal: [Palette.tonal, Palette.tonalPressed, Palette.text],
-  ghost: ['transparent', Palette.pressed, Palette.text],
-  danger: [Palette.danger, '#9e2428', Palette.onPrimary],
+/** [fill, label colour] per kind. */
+const BUTTON_COLORS: Record<ButtonKind, [string, string]> = {
+  primary: [Palette.accent, '#000000'],
+  go: [Palette.go, '#000000'],
+  tonal: [Palette.tonal, Palette.text],
+  ghost: ['transparent', Palette.text],
+  danger: [Palette.danger, Palette.onPrimary],
 };
 
+/** Tactile button: a thick darker bottom edge that it presses down into. */
 export function Button({
   label,
   onPress,
@@ -65,18 +185,22 @@ export function Button({
   kind?: ButtonKind;
   large?: boolean;
   disabled?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }) {
-  const [fill, pressedFill, text] = BUTTON_COLORS[kind];
+  const [fill, text] = BUTTON_COLORS[kind];
+  const edge = kind === 'ghost' ? 'transparent' : ButtonEdge[fill];
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={label}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
         large && styles.buttonLarge,
-        { backgroundColor: pressed ? pressedFill : fill, opacity: disabled ? 0.4 : 1 },
+        { backgroundColor: fill, borderBottomColor: edge, opacity: disabled ? 0.4 : 1 },
+        pressed && styles.buttonPressed,
+        pressed && kind === 'ghost' && { backgroundColor: Palette.pressed },
         style,
       ]}>
       <Text style={[styles.buttonText, large && styles.buttonTextLarge, { color: text }]}>{label}</Text>
@@ -84,80 +208,44 @@ export function Button({
   );
 }
 
-export function Tag({ label, accent }: { label: string; accent?: boolean }) {
+/** Small round action for rows (remove, move). */
+export function IconButton({ label, hint, onPress }: { label: string; hint: string; onPress: () => void }) {
   return (
-    <View style={[styles.tag, accent && styles.tagAccent]}>
-      <Text style={[styles.tagText, accent && styles.tagTextAccent]}>{label}</Text>
-    </View>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={hint}
+      onPress={onPress}
+      hitSlop={6}
+      style={({ pressed }) => [styles.iconButton, pressed && styles.buttonPressed]}>
+      <Text style={styles.iconText}>{label}</Text>
+    </Pressable>
   );
 }
 
-export function Segmented<T extends string>({
-  options,
-  value,
-  onChange,
-}: {
-  options: { value: T; label: string }[];
-  value: T;
-  onChange: (value: T) => void;
-}) {
+/** On/off switch. */
+export function Toggle({ value, onChange, label }: { value: boolean; onChange: (value: boolean) => void; label: string }) {
   return (
-    <View style={styles.segmented}>
-      {options.map((o) => (
-        <Pressable
-          key={o.value}
-          onPress={() => onChange(o.value)}
-          style={[styles.segment, o.value === value && styles.segmentActive]}>
-          <Text style={[styles.segmentText, o.value === value && styles.segmentTextActive]}>{o.label}</Text>
-        </Pressable>
-      ))}
-    </View>
+    <Pressable
+      accessibilityRole="switch"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: value }}
+      hitSlop={8}
+      onPress={() => onChange(!value)}
+      style={[styles.toggle, value && styles.toggleOn]}>
+      <View style={[styles.knob, value && styles.knobOn]} />
+    </Pressable>
   );
 }
 
-export function Stat({ value, label }: { value: string; label: string }) {
+/** Text input. */
+export function Field(props: TextInputProps & { large?: boolean }) {
+  const { large, style, ...rest } = props;
   return (
-    <View style={styles.stat}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
-export function Stepper({
-  label,
-  value,
-  onChange,
-  step = 1,
-  min = 0,
-  max = 999,
-  unit = '',
-}: {
-  label: string;
-  value: number;
-  onChange: (value: number) => void;
-  step?: number;
-  min?: number;
-  max?: number;
-  unit?: string;
-}) {
-  const set = (next: number) => onChange(Math.min(max, Math.max(min, next)));
-  return (
-    <View style={styles.stepperRow}>
-      <Text style={styles.stepperLabel}>{label}</Text>
-      <View style={styles.stepperControls}>
-        <Pressable accessibilityLabel={`Decrease ${label}`} onPress={() => set(value - step)} style={({ pressed }) => [styles.stepperButton, pressed && styles.cardPressed]}>
-          <Text style={styles.stepperSymbol}>−</Text>
-        </Pressable>
-        <Text style={styles.stepperValue}>
-          {value}
-          {unit}
-        </Text>
-        <Pressable accessibilityLabel={`Increase ${label}`} onPress={() => set(value + step)} style={({ pressed }) => [styles.stepperButton, pressed && styles.cardPressed]}>
-          <Text style={styles.stepperSymbol}>+</Text>
-        </Pressable>
-      </View>
-    </View>
+    <TextInput
+      placeholderTextColor={Palette.dim}
+      {...rest}
+      style={[styles.field, large && { fontSize: 20, fontFamily: DisplayFont.bold }, style]}
+    />
   );
 }
 
@@ -200,45 +288,220 @@ export function Chips<T extends string>({
   );
 }
 
-export function Row({ children, style }: { children: ReactNode; style?: ViewStyle }) {
-  return <View style={[styles.row, style]}>{children}</View>;
+export function Segmented<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <View style={styles.segmented}>
+      {options.map((o) => {
+        const on = o.value === value;
+        return (
+          <Pressable
+            key={o.value}
+            accessibilityRole="button"
+            accessibilityState={{ selected: on }}
+            onPress={() => onChange(o.value)}
+            style={[styles.segment, on && styles.segmentOn]}>
+            <Text style={[styles.chipText, on && { color: Palette.bg }]}>{o.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
 }
+
+/** Number picker; the value reads as a HUD number. */
+export function Stepper({
+  label,
+  value,
+  onChange,
+  step = 1,
+  min = 0,
+  max = 999,
+  unit = '',
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  step?: number;
+  min?: number;
+  max?: number;
+  unit?: string;
+}) {
+  const set = (next: number) => onChange(Math.min(max, Math.max(min, next)));
+  const button = (symbol: string, delta: number, name: string) => (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${name} ${label}`}
+      onPress={() => set(value + delta)}
+      style={({ pressed }) => [styles.stepperButton, pressed && styles.buttonPressed]}>
+      <Text style={styles.iconText}>{symbol}</Text>
+    </Pressable>
+  );
+  return (
+    <View style={styles.stepperRow}>
+      <Text style={styles.stepperLabel}>{label}</Text>
+      <View style={styles.stepperControls}>
+        {button('−', -step, 'Decrease')}
+        <PixelText size={PixelSize.medium} color={Psx.hud} center style={{ minWidth: 72 }}>
+          {value}
+          {unit}
+        </PixelText>
+        {button('+', step, 'Increase')}
+      </View>
+    </View>
+  );
+}
+
+// ---- Data ---------------------------------------------------------------------------
+
+export function Tag({ label, accent }: { label: string; accent?: boolean }) {
+  return (
+    <View style={[styles.tag, accent && styles.tagAccent]}>
+      <Text style={[styles.tagText, accent && { color: Palette.accent }]}>{label}</Text>
+    </View>
+  );
+}
+
+/** HUD counter: a pixel number over a plain label. */
+export function Stat({ value, label, color = Psx.hud }: { value: string; label: string; color?: string }) {
+  return (
+    <View style={styles.stat}>
+      <PixelText size={PixelSize.medium} color={color}>
+        {value}
+      </PixelText>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+/** Segmented bar, like a charge meter. */
+export function Meter({ value, max, color = Palette.accent }: { value: number; max: number; color?: string }) {
+  return (
+    <View style={styles.meter} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max, now: value }}>
+      {Array.from({ length: Math.max(1, max) }, (_, i) => (
+        <View key={i} style={[styles.meterSegment, { backgroundColor: i < value ? color : Palette.tonal }]} />
+      ))}
+    </View>
+  );
+}
+
+/** On/off blink, the "PRESS START" way. Use once per screen at most. */
+export function Blink({ children, period = 600 }: { children: ReactNode; period?: number }) {
+  const [on, setOn] = useState(true);
+  useEffect(() => {
+    const id = setInterval(() => setOn((v) => !v), period);
+    return () => clearInterval(id);
+  }, [period]);
+  return <View style={{ opacity: on ? 1 : 0.2 }}>{children}</View>;
+}
+
+// ---- Styles -------------------------------------------------------------------------
 
 export const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Palette.bg },
   column: { width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', paddingHorizontal: Spacing.three, gap: Spacing.three },
-  title: { color: Palette.text, fontSize: 32, fontWeight: '800', letterSpacing: -0.5 },
-  heading: { color: Palette.text, fontSize: 20, fontWeight: '700' },
-  body: { color: Palette.text, fontSize: 16, lineHeight: 22 },
-  muted: { color: Palette.muted },
-  label: { color: Palette.muted, fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8 },
-  card: { backgroundColor: Palette.panel, borderRadius: Radius.card, padding: Spacing.three, gap: Spacing.two },
-  cardPressed: { backgroundColor: Palette.pressed },
-  button: { borderRadius: Radius.button, paddingVertical: 12, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center' },
-  buttonLarge: { paddingVertical: 18, borderRadius: Radius.card },
-  buttonText: { fontSize: 16, fontWeight: '700' },
-  buttonTextLarge: { fontSize: 19 },
-  tag: { backgroundColor: Palette.tonal, borderRadius: Radius.pill, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
-  tagAccent: { backgroundColor: 'rgba(255,107,43,0.16)' },
-  tagText: { color: Palette.muted, fontSize: 12, fontWeight: '700' },
-  tagTextAccent: { color: Palette.accent },
-  segmented: { flexDirection: 'row', backgroundColor: Palette.tonal, borderRadius: Radius.button, padding: 3 },
-  segment: { flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: Radius.button - 3 },
-  segmentActive: { backgroundColor: Palette.text },
-  segmentText: { color: Palette.muted, fontWeight: '700', fontSize: 14 },
-  segmentTextActive: { color: Palette.bg },
-  stat: { flex: 1, gap: 2 },
-  statValue: { color: Palette.text, fontSize: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
-  statLabel: { color: Palette.muted, fontSize: 12, fontWeight: '600' },
+  fill: { width: '100%', height: '100%' },
   row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  chip: { minHeight: 40, paddingHorizontal: 14, borderRadius: Radius.pill, backgroundColor: Palette.tonal, alignItems: 'center', justifyContent: 'center' },
+
+  pixel: { fontFamily: PixelFont, textShadowColor: '#000', textShadowRadius: 0 },
+  title: { fontFamily: DisplayFont.bold, fontSize: 32, lineHeight: 38, letterSpacing: -0.6 },
+  heading: { fontFamily: DisplayFont.bold, fontSize: 19, lineHeight: 24, color: Palette.text, letterSpacing: -0.2 },
+  label: { fontFamily: DisplayFont.semibold, fontSize: 12, letterSpacing: 1.4, textTransform: 'uppercase' },
+  body: { color: Palette.text, fontSize: 16, lineHeight: 23 },
+  muted: { color: Palette.muted },
+  stepNumber: { width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(255,107,43,0.16)', alignItems: 'center', justifyContent: 'center' },
+  stepNumberText: { color: Palette.accent, fontFamily: DisplayFont.bold, fontSize: 13 },
+
+  card: {
+    backgroundColor: Palette.panel,
+    borderRadius: Radius.card,
+    borderWidth: 1,
+    borderColor: Psx.edge,
+    borderTopColor: Psx.edgeTop,
+    padding: Spacing.three,
+    gap: Spacing.two + 2,
+  },
+  cardPressed: { backgroundColor: Palette.pressed, transform: [{ scale: 0.99 }] },
+  well: { backgroundColor: Psx.well, borderTopColor: Psx.edge },
+  stage: { backgroundColor: Palette.stage, borderRadius: Radius.card, overflow: 'hidden', borderWidth: 1, borderColor: Psx.edge },
+  thumb: { aspectRatio: 1, borderRadius: Radius.button - 2 },
+
+  button: {
+    minHeight: 50,
+    borderRadius: Radius.button,
+    borderBottomWidth: 4,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonLarge: { minHeight: 62, borderBottomWidth: 5 },
+  buttonPressed: { transform: [{ translateY: 3 }], borderBottomWidth: 1, marginBottom: 3 },
+  buttonText: { fontFamily: DisplayFont.bold, fontSize: 16, letterSpacing: 0.6, textTransform: 'uppercase' },
+  buttonTextLarge: { fontSize: 19 },
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Palette.tonal,
+    borderBottomWidth: 3,
+    borderBottomColor: ButtonEdge[Palette.tonal],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconText: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 18 },
+
+  toggle: { width: 52, height: 32, borderRadius: 16, backgroundColor: Palette.track, padding: 3, justifyContent: 'center' },
+  toggleOn: { backgroundColor: Palette.accent },
+  knob: { width: 26, height: 26, borderRadius: 13, backgroundColor: Palette.text },
+  knobOn: { alignSelf: 'flex-end', backgroundColor: '#fff' },
+
+  field: {
+    color: Palette.text,
+    fontSize: 16,
+    backgroundColor: Psx.well,
+    borderRadius: Radius.button,
+    borderWidth: 1,
+    borderColor: Psx.edgeTop,
+    paddingHorizontal: 16,
+    minHeight: 50,
+  },
+
+  chip: { minHeight: 40, paddingHorizontal: 16, borderRadius: Radius.pill, backgroundColor: Palette.tonal, alignItems: 'center', justifyContent: 'center' },
   chipOn: { backgroundColor: Palette.accent },
-  chipText: { color: Palette.muted, fontWeight: '700', fontSize: 14 },
-  chipTextOn: { color: Palette.bg },
+  chipText: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 14 },
+  chipTextOn: { color: '#000' },
+
+  segmented: { flexDirection: 'row', backgroundColor: Palette.tonal, borderRadius: Radius.pill, padding: 3 },
+  segment: { flex: 1, minHeight: 38, alignItems: 'center', justifyContent: 'center', borderRadius: Radius.pill },
+  segmentOn: { backgroundColor: Palette.text },
+
   stepperRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
   stepperLabel: { color: Palette.text, fontSize: 15, flex: 1 },
-  stepperControls: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  stepperButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: Palette.tonal, alignItems: 'center', justifyContent: 'center' },
-  stepperSymbol: { color: Palette.text, fontSize: 20, fontWeight: '700' },
-  stepperValue: { color: Palette.text, fontSize: 17, fontWeight: '800', minWidth: 52, textAlign: 'center', fontVariant: ['tabular-nums'] },
+  stepperControls: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  stepperButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: Palette.tonal,
+    borderBottomWidth: 3,
+    borderBottomColor: ButtonEdge[Palette.tonal],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  tag: { backgroundColor: Palette.tonal, borderRadius: Radius.pill, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
+  tagAccent: { backgroundColor: 'rgba(255,107,43,0.16)' },
+  tagText: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 12 },
+
+  stat: { flex: 1, gap: 8 },
+  statLabel: { color: Palette.muted, fontSize: 12, fontWeight: '600' },
+  meter: { flexDirection: 'row', gap: 3, height: 10 },
+  meterSegment: { flex: 1, borderRadius: 2 },
 });

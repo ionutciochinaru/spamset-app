@@ -11,8 +11,9 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { isLoaded, getExercise, type Equipment } from '@/core/exercises';
 import { initialPrescription, targetReps, type Effort, type Prescription } from '@/core/progression';
 import { applyProgression, type SessionLog, type SetEntry } from '@/core/session';
+import { DEFAULT_SCHEDULE, type SpamSchedule } from '@/core/spamset';
 import type { LoadPlan } from '@/core/timeline';
-import type { Workout } from '@/core/workouts';
+import type { Target, Workout } from '@/core/workouts';
 
 export type AuthMode = 'offline' | 'account';
 export type Units = 'kg' | 'lb';
@@ -24,6 +25,8 @@ export type Settings = {
   /** Equipment you own; the library and workouts hide what needs anything else. Read with ownedEquipment(). */
   equipment?: Equipment[];
   haptics: boolean;
+  /** Spam set notifications. Read with spamSchedule(). */
+  spamset?: SpamSchedule;
 };
 
 type State = {
@@ -54,6 +57,8 @@ type Actions = {
     amrapRounds: Record<number, number>;
     effort: Record<string, Effort>;
   }) => SessionLog;
+  /** Log a finished spam set as a one-exercise session (History only; it does not move progression). */
+  logSpamset: (exercise: string, target: Target, done: number, startedAt: string) => SessionLog;
   deleteSession: (id: string) => void;
   saveCustomWorkout: (workout: Workout) => void;
   deleteCustomWorkout: (id: string) => void;
@@ -65,6 +70,12 @@ type Actions = {
 export type RemoteState = Pick<State, 'settings' | 'prescriptions' | 'customWorkouts' | 'stateUpdatedAt'>;
 
 export const DEFAULT_SETTINGS: Settings = { units: 'kg', bells: [8, 12, 16, 20, 24], equipment: ['kettlebell'], haptics: true };
+
+export function spamSchedule(settings: Settings): SpamSchedule {
+  return settings.spamset ?? DEFAULT_SCHEDULE;
+}
+
+export const SPAMSET_WORKOUT_ID = 'spamset';
 
 /** Settings saved before equipment existed (or synced from such a device) owned kettlebells only. */
 export function ownedEquipment(settings: Settings): Equipment[] {
@@ -133,6 +144,26 @@ export const useApp = create<State & Actions>()(
           progress: result.progress,
         };
         set((s) => ({ sessions: [log, ...s.sessions], prescriptions: result.prescriptions, stateUpdatedAt: now() }));
+        return log;
+      },
+
+      logSpamset: (exercise, target, done, startedAt) => {
+        const { prescriptions, settings } = get();
+        const load = isLoaded(getExercise(exercise))
+          ? (prescriptions[exercise] ?? initialPrescription(exercise, settings.bells)).load
+          : 0;
+        const log: SessionLog = {
+          id: newId(),
+          workoutId: SPAMSET_WORKOUT_ID,
+          workoutName: 'Spam set',
+          startedAt,
+          finishedAt: now(),
+          entries: [{ exercise, blockKind: 'intervals', block: 0, load, target, done }],
+          amrapRounds: {},
+          effort: {},
+          progress: {},
+        };
+        set((s) => ({ sessions: [log, ...s.sessions], stateUpdatedAt: now() }));
         return log;
       },
 

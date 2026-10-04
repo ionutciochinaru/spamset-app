@@ -82,3 +82,19 @@ export function applyProgression(
   }
   return { prescriptions, progress };
 }
+
+/**
+ * Consecutive local days with at least one logged session or spam set, counting back from
+ * today. A day not yet trained today doesn't break the streak until it ends.
+ */
+export function dayStreak(sessions: Pick<SessionLog, 'startedAt'>[], now = new Date()): number {
+  const days = new Set(sessions.map((s) => new Date(s.startedAt).toDateString()));
+  const day = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (!days.has(day.toDateString())) day.setDate(day.getDate() - 1);
+  let streak = 0;
+  while (days.has(day.toDateString())) {
+    streak++;
+    day.setDate(day.getDate() - 1);
+  }
+  return streak;
+}

@@ -6,7 +6,7 @@ import { Palette } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
 import { totalReps, volumeKg, type SessionLog } from '@/core/session';
 import { deleteSession } from '@/lib/sync';
-import { formatLoad, useApp } from '@/store/app-store';
+import { formatLoad, SPAMSET_WORKOUT_ID, useApp } from '@/store/app-store';
 
 const CHANGE_LABEL = { 'load-up': 'Heavier bell next', 'load-down': 'Lighter bell next', 'reps-up': 'More reps next', hold: 'Hold', maxed: 'Top of the range' };
 
@@ -53,7 +53,7 @@ export default function History() {
           </View>
           <Row style={{ justifyContent: 'space-between' }}>
             <Body muted style={styles.axis}>{weeks[0].label}</Body>
-            <Body muted style={styles.axis}>This week · {formatLoad(weeks.at(-1)!.kg, units)}</Body>
+            <Body muted style={styles.axis}>This week · {weeks.at(-1)!.kg ? formatLoad(weeks.at(-1)!.kg, units) : '0 kg'}</Body>
           </Row>
         </Card>
       )}
@@ -64,7 +64,9 @@ export default function History() {
         return (
           <Card key={s.id} onPress={() => setOpen(expanded ? undefined : s.id)}>
             <Row style={{ justifyContent: 'space-between' }}>
-              <Heading style={{ flex: 1 }}>{s.workoutName}</Heading>
+              <Heading style={{ flex: 1 }}>
+                {s.workoutId === SPAMSET_WORKOUT_ID && s.entries[0] ? `Spam set · ${getExercise(s.entries[0].exercise).name}` : s.workoutName}
+              </Heading>
               <Body muted>
                 {new Date(s.startedAt).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
               </Body>
@@ -72,7 +74,7 @@ export default function History() {
             <Row>
               <Stat value={`${minutes}`} label="Minutes" />
               <Stat value={`${totalReps(s)}`} label="Reps" />
-              <Stat value={formatLoad(volumeKg(s), units)} label="Volume" />
+              <Stat value={volumeKg(s) ? formatLoad(volumeKg(s), units) : '–'} label="Volume" />
             </Row>
             {expanded && (
               <View style={{ gap: 6, marginTop: 6 }}>
@@ -120,7 +122,7 @@ function summarize(s: SessionLog): { exercise: string; text: string }[] {
 const styles = StyleSheet.create({
   chart: { height: 90, flexDirection: 'row', alignItems: 'flex-end', gap: 6 },
   barColumn: { flex: 1, height: '100%', justifyContent: 'flex-end' },
-  bar: { backgroundColor: Palette.track, borderRadius: 4, minHeight: 2 },
+  bar: { backgroundColor: Palette.track, minHeight: 2, borderTopWidth: 2, borderTopColor: 'rgba(255,255,255,0.3)' },
   barCurrent: { backgroundColor: Palette.accent },
   axis: { fontSize: 12 },
 });

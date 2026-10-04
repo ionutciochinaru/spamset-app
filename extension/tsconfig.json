@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["ES2022", "DOM"],
+    "types": ["chrome"],
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"]
+}

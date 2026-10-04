@@ -4,6 +4,10 @@ A kettlebell training app for iOS, Android and web, built with Expo. It runs cir
 
 ## Features
 
+- **Spam sets** (`src/core/spamset.ts`, `src/app/spamset.tsx`): one short exercise at your interval through the day.
+  - Set the interval, active hours, days and which exercise groups to draw from (`src/app/spamset-settings.tsx`). Picks respect your equipment and use your current targets.
+  - iOS/Android: local notifications scheduled on the device (`src/lib/spamset-notify.ts`), so they arrive with the app closed. Tapping one opens a one-exercise session; Done logs it to History.
+  - Web: the open page notifies with a timer (`src/lib/spamset-notify.web.ts`). The Chrome extension (`extension/`) delivers them with the tab closed.
 - **Exercises (75):**
   - 15 kettlebell lifts: swing, deadlift, goblet squat, lunges, rows, side bend, curl, halo, pullover, clean, press, snatch and the Turkish get-up.
   - 46 bodyweight and small-gear exercises (chair, pull-up bar, doorframe, dumbbells, band) and 14 stretches.
@@ -45,6 +49,17 @@ mismatched URL; nothing falls back to production. Setup: [docs/supabase-vps.md](
 3. Enable the Google and Apple providers in the stack's `.env`. Redirect URLs: `spamset://auth-callback` and your web origin.
 
 On iOS, Apple sign-in is native; on Android and web it uses browser OAuth. Google uses browser OAuth everywhere.
+
+## Chrome extension
+
+`extension/` holds a Manifest V3 extension that fires spam sets with the web app closed. The page passes it the schedule through a content script. The extension then plans with the same `src/core/spamset.ts`, keeps one `chrome.alarms` alarm for the next slot, and opens `/spamset` when a notification is clicked.
+
+```sh
+npm run extension                                         # build extension/dist for http://localhost:8081
+SPAMSET_WEB_ORIGINS=https://your.web.app npm run extension  # also connect to a deployed web app
+```
+
+Load it in Chrome from `chrome://extensions` → Developer mode → Load unpacked → `extension/dist`. Then open the web app once so the extension receives your schedule.
 
 ## Animation pipeline
 

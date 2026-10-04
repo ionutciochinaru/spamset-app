@@ -1,3 +1,5 @@
+import { PressStart2P_400Regular, useFonts } from '@expo-google-fonts/press-start-2p';
+import { SpaceGrotesk_600SemiBold, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -5,6 +7,7 @@ import { useEffect } from 'react';
 
 import { Palette } from '@/constants/theme';
 import { useSession } from '@/lib/auth';
+import { useSpamsetScheduler } from '@/lib/spamset-scheduler';
 import { syncNow } from '@/lib/sync';
 import { useApp } from '@/store/app-store';
 
@@ -15,14 +18,22 @@ const theme = {
   colors: { ...DarkTheme.colors, background: Palette.bg, card: Palette.bg, primary: Palette.accent, text: Palette.text },
 };
 
+/** Lives inside the signed-in stack so notification taps can navigate. */
+function SpamsetScheduler() {
+  useSpamsetScheduler();
+  return null;
+}
+
 export default function RootLayout() {
   const authMode = useApp((s) => s.authMode);
   const setAuthMode = useApp((s) => s.setAuthMode);
   const session = useSession();
 
+  const [fontsLoaded, fontError] = useFonts({ PressStart2P_400Regular, SpaceGrotesk_600SemiBold, SpaceGrotesk_700Bold });
+
   useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
+    if (fontsLoaded || fontError) SplashScreen.hideAsync();
+  }, [fontsLoaded, fontError]);
 
   // Returning from web OAuth, or a restored session, means account mode. Sync once signed in.
   useEffect(() => {
@@ -30,6 +41,9 @@ export default function RootLayout() {
     if (authMode !== 'account') setAuthMode('account');
     syncNow().catch((e) => console.warn('Sync failed', e));
   }, [session, authMode, setAuthMode]);
+
+  // Keep the splash up until the fonts are ready, so screens never flash in fallback type.
+  if (!fontsLoaded && !fontError) return null;
 
   return (
     <ThemeProvider value={theme}>
@@ -50,15 +64,25 @@ export default function RootLayout() {
             options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
           />
           <Stack.Screen
+            name="debug/ui"
+            options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
+          />
+          <Stack.Screen
             name="debug/animations"
             options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
           />
           <Stack.Screen name="session" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
+          <Stack.Screen name="spamset" options={{ presentation: 'fullScreenModal' }} />
+          <Stack.Screen
+            name="spamset-settings"
+            options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
+          />
         </Stack.Protected>
         <Stack.Protected guard={authMode === undefined}>
           <Stack.Screen name="sign-in" />
         </Stack.Protected>
       </Stack>
+      {authMode !== undefined && <SpamsetScheduler />}
     </ThemeProvider>
   );
 }

@@ -1,15 +1,12 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { thumbnails } from '@/animation/thumbnails';
 import { EQUIPMENT_LABELS, getExercise } from '@/core/exercises';
 import { compileWorkout, estimateSeconds } from '@/core/timeline';
 import { BLOCK_LABELS, workoutEquipment, workoutExercises, type Workout } from '@/core/workouts';
-import { Palette, Radius } from '@/constants/theme';
 import { ownedEquipment, useApp } from '@/store/app-store';
 
-import { Body, Card, Heading, Row, Tag } from './ui';
+import { Body, Card, Heading, Row, Tag, Thumb } from './ui';
 
 export function workoutMinutes(workout: Workout, plan = useApp.getState().loadPlan()): number {
   return Math.max(1, Math.round(estimateSeconds(compileWorkout(workout, plan)) / 60));
@@ -39,7 +36,7 @@ export function WorkoutCard({ workout }: { workout: Workout }) {
       </Body>
       <View style={styles.thumbs}>
         {exercises.slice(0, 5).map((id) => (
-          <Image key={id} source={thumbnails[getExercise(id).animation]} style={styles.thumb} contentFit="cover" />
+          <Thumb key={id} clip={getExercise(id).animation} style={styles.thumb} />
         ))}
       </View>
     </Card>
@@ -48,5 +45,5 @@ export function WorkoutCard({ workout }: { workout: Workout }) {
 
 const styles = StyleSheet.create({
   thumbs: { flexDirection: 'row', gap: 6 },
-  thumb: { flex: 1, maxWidth: 110, aspectRatio: 1, borderRadius: Radius.button - 4, backgroundColor: Palette.bg },
+  thumb: { flex: 1, maxWidth: 110 },
 });

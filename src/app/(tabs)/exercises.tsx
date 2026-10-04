@@ -1,12 +1,10 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { SectionList, StyleSheet, Switch, TextInput, View } from 'react-native';
+import { SectionList, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { thumbnails } from '@/animation/thumbnails';
-import { Body, Card, Chips, Heading, Label, Row, Tag, Title } from '@/components/ui';
-import { MaxContentWidth, Palette, Radius, Spacing } from '@/constants/theme';
+import { Body, Card, Chips, Field, Heading, Label, Row, Scanlines, Tag, Thumb, Title, Toggle } from '@/components/ui';
+import { MaxContentWidth, Palette, Spacing } from '@/constants/theme';
 import {
   canDo,
   CATEGORY_LABELS,
@@ -45,6 +43,7 @@ export default function Exercises() {
   const hidden = EXERCISES.filter((e) => !canDo(e, owned)).length;
 
   return (
+    <View style={styles.screen}>
     <SectionList
       style={styles.screen}
       contentContainerStyle={{ paddingTop: insets.top + Spacing.three, paddingBottom: insets.bottom + 96 }}
@@ -57,12 +56,10 @@ export default function Exercises() {
       ListHeaderComponent={
         <View style={[styles.column, { gap: Spacing.three, paddingBottom: Spacing.two }]}>
           <Title>Exercises</Title>
-          <TextInput
+          <Field
             value={query}
             onChangeText={setQuery}
             placeholder="Search exercises or muscles"
-            placeholderTextColor={Palette.dim}
-            style={styles.search}
             autoCorrect={false}
             autoCapitalize="none"
             returnKeyType="search"
@@ -79,12 +76,7 @@ export default function Exercises() {
               <Body muted style={{ fontSize: 14, flex: 1 }}>
                 Only what my equipment allows ({hidden} hidden)
               </Body>
-              <Switch
-                value={mineOnly}
-                onValueChange={setMineOnly}
-                trackColor={{ true: Palette.accent, false: Palette.track }}
-                accessibilityLabel="Only show exercises my equipment allows"
-              />
+              <Toggle value={mineOnly} onChange={setMineOnly} label="Only show exercises my equipment allows" />
             </Row>
           )}
         </View>
@@ -107,6 +99,8 @@ export default function Exercises() {
         </View>
       }
     />
+    <Scanlines opacity={0.3} />
+    </View>
   );
 }
 
@@ -116,9 +110,9 @@ function ExerciseRow({ exercise: e, owned }: { exercise: Exercise; owned: boolea
   const load = isLoaded(e) ? (prescription ?? initialPrescription(e.id, settings.bells)).load : 0;
   return (
     <Card onPress={() => router.push({ pathname: '/exercise/[id]', params: { id: e.id } })} style={styles.card}>
-      <Image source={thumbnails[e.animation]} style={[styles.thumb, !owned && { opacity: 0.4 }]} contentFit="cover" />
+      <Thumb clip={e.animation} size={88} dim={!owned} />
       <View style={styles.text}>
-        <Heading style={{ fontSize: 18 }}>{e.name}</Heading>
+        <Heading>{e.name}</Heading>
         <Body muted style={{ fontSize: 14 }}>
           {e.primary.join(' · ')}
         </Body>
@@ -136,16 +130,7 @@ function ExerciseRow({ exercise: e, owned }: { exercise: Exercise; owned: boolea
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Palette.bg },
   column: { width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', paddingHorizontal: Spacing.three },
-  search: {
-    color: Palette.text,
-    fontSize: 16,
-    backgroundColor: Palette.panel,
-    borderRadius: Radius.button,
-    paddingHorizontal: 16,
-    minHeight: 48,
-  },
   card: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  thumb: { width: 88, height: 88, borderRadius: Radius.button, backgroundColor: Palette.bg },
   text: { flex: 1, gap: 4 },
   tags: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginTop: 2 },
 });

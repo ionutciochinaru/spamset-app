@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
 import { Body, Button, Card, Heading, Label, Row, Segmented, Title } from '@/components/ui';
-import { MaxContentWidth, Palette, Radius, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Palette, PixelFont, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise, isStretch } from '@/core/exercises';
 import type { Effort } from '@/core/progression';
 import { currentStep, elapsed, remaining, runnerReducer, startRunner, type RunnerState } from '@/core/runner';
@@ -278,17 +278,20 @@ function Finish({ state, workoutId, startedAt }: { state: RunnerState; workoutId
   );
 }
 
+/** Timers and counts in HUD pixel type. */
+const HUD = { color: Psx.hud, fontFamily: PixelFont, textShadowColor: '#000', textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0 } as const;
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Palette.bg },
   column: { flex: 1, width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', paddingHorizontal: Spacing.three, gap: Spacing.two },
   body: { flex: 1, gap: Spacing.three, justifyContent: 'flex-end' },
-  track: { height: 4, backgroundColor: Palette.track, borderRadius: 2, overflow: 'hidden' },
+  track: { height: 6, backgroundColor: Palette.track, borderRadius: 3, overflow: 'hidden' },
   progress: { height: '100%', backgroundColor: Palette.accent },
   viewer: { flex: 1, aspectRatio: undefined, minHeight: 220 },
   nextViewer: { height: 160, aspectRatio: undefined, borderRadius: Radius.button },
-  clock: { color: Palette.text, fontSize: 40, fontWeight: '800', fontVariant: ['tabular-nums'] },
-  restClock: { color: Palette.text, fontSize: 96, fontWeight: '800', textAlign: 'center', fontVariant: ['tabular-nums'] },
-  review: { color: Palette.text, fontSize: 56, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  clock: { ...HUD, fontSize: 32, lineHeight: 44 },
+  restClock: { ...HUD, fontSize: 64, lineHeight: 90, textAlign: 'center' },
+  review: { ...HUD, fontSize: 48, lineHeight: 64 },
   stepper: { width: 80 },
   center: { textAlign: 'center', paddingVertical: 20 },
 });

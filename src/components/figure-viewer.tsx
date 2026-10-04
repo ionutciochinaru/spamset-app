@@ -8,7 +8,8 @@ import { Figure } from '@/animation/figure';
 import { PSXPass, snapVertices } from '@/animation/psx';
 import { clipBounds, clipFootprint, samplePose } from '@/animation/sample';
 import { Canvas, useFrame, useThree } from '@/animation/three-canvas';
-import { Palette, Radius } from '@/constants/theme';
+import { Scanlines } from '@/components/ui';
+import { DisplayFont, Palette, Psx, Radius } from '@/constants/theme';
 
 type Orbit = { azimuth: number; elevation: number };
 
@@ -117,6 +118,7 @@ export function FigureViewer({
   zoom,
   focus,
   psx = true,
+  scan = true,
 }: {
   clipId: string;
   style?: ViewStyle;
@@ -131,6 +133,8 @@ export function FigureViewer({
   focus?: string;
   /** PlayStation-style rendering; on by default. */
   psx?: boolean;
+  /** CRT scanlines over the stage (off for review captures). */
+  scan?: boolean;
 }) {
   const clip = clips[clipId];
   // Start from the watch camera, so the side it draws near (and single-arm work) faces you.
@@ -181,6 +185,7 @@ export function FigureViewer({
           <Scene clipId={clipId} orbit={orbit} speed={speed} paused={paused} phase={phase} onPhase={onPhase} zoom={zoom} focus={focus} psx={psx} />
         </Canvas>
       </View>
+      {scan && <Scanlines />}
       {controls && (
         <View style={styles.controls} pointerEvents="box-none">
           <Chip label={paused ? 'Play' : 'Pause'} onPress={() => setPaused((p) => !p)} />
@@ -199,17 +204,24 @@ export function FigureViewer({
 
 function Chip({ label, onPress }: { label: string; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}>
+    <Pressable accessibilityRole="button" onPress={onPress} hitSlop={4} style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}>
       <Text style={styles.chipText}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  frame: { backgroundColor: Palette.stage, borderRadius: Radius.card, overflow: 'hidden', aspectRatio: 1 },
+  frame: {
+    backgroundColor: Palette.stage,
+    borderRadius: Radius.card,
+    overflow: 'hidden',
+    aspectRatio: 1,
+    borderWidth: 1,
+    borderColor: Psx.edge,
+  },
   controls: { position: 'absolute', bottom: 10, left: 10, right: 10, flexDirection: 'row', gap: 8 },
-  chip: { backgroundColor: 'rgba(48,48,44,0.85)', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999 },
+  chip: { backgroundColor: 'rgba(48,48,44,0.88)', paddingHorizontal: 12, minHeight: 32, justifyContent: 'center', borderRadius: Radius.pill },
   chipPressed: { backgroundColor: Palette.pressed },
-  chipText: { color: Palette.text, fontSize: 13, fontWeight: '600' },
+  chipText: { color: Palette.text, fontFamily: DisplayFont.semibold, fontSize: 13 },
   hint: { position: 'absolute', top: 10, right: 12, color: Palette.dim, fontSize: 12 },
 });

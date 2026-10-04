@@ -40,7 +40,14 @@
       "expo-asset",
       "expo-sqlite",
       "expo-apple-authentication",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#ff6b2b"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

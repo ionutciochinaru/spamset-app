@@ -1,12 +1,9 @@
-import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { thumbnails } from '@/animation/thumbnails';
 import { BellPicker } from '@/components/bell-picker';
-import { Body, Button, Card, Heading, Label, Row, Screen, Tag, Title } from '@/components/ui';
+import { Body, Button, Card, Heading, Label, Row, Screen, Tag, Thumb, Title } from '@/components/ui';
 import { workoutMinutes } from '@/components/workout-card';
-import { Palette, Radius } from '@/constants/theme';
 import { getExercise, isLoaded } from '@/core/exercises';
 import { formatTarget } from '@/core/timeline';
 import { BLOCK_LABELS, getWorkout, workoutExercises, type Block } from '@/core/workouts';
@@ -95,7 +92,7 @@ function ExerciseLine({ id, detail }: { id: string; detail?: string }) {
   const exercise = getExercise(id);
   return (
     <Row style={styles.line}>
-      <Image source={thumbnails[exercise.animation]} style={styles.thumb} contentFit="cover" />
+      <Thumb clip={exercise.animation} size={48} />
       <Body style={{ flex: 1 }} >{exercise.name}</Body>
       {detail && <Body muted>{detail}</Body>}
     </Row>
@@ -104,5 +101,4 @@ function ExerciseLine({ id, detail }: { id: string; detail?: string }) {
 
 const styles = StyleSheet.create({
   line: { gap: 12 },
-  thumb: { width: 48, height: 48, borderRadius: Radius.button - 6, backgroundColor: Palette.bg },
 });

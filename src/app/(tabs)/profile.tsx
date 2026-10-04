@@ -1,9 +1,8 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { View } from 'react-native';
 
-import { Body, Button, Card, Chips, Heading, Label, Row, Screen, Segmented, Title } from '@/components/ui';
-import { Palette, Radius } from '@/constants/theme';
+import { Body, Button, Card, Chips, Heading, Label, Row, Screen, Segmented, Title, Toggle } from '@/components/ui';
 import { accountsEnabled, signInWithApple, signInWithGoogle, signOut, useSession } from '@/lib/auth';
 import { syncNow } from '@/lib/sync';
 import { EQUIPMENT_LABELS, OWNABLE_EQUIPMENT, type Equipment } from '@/core/exercises';
@@ -102,15 +101,13 @@ export default function Profile() {
           <Body muted style={{ fontSize: 14 }}>
             Select every bell you own. Progression only suggests these.
           </Body>
-          <View style={styles.bells}>
-            {COMMON_BELLS.map((kg) => {
-              const has = settings.bells.includes(kg);
-              return (
-                <Pressable key={kg} onPress={() => toggleBell(kg)} style={[styles.bell, has && styles.owned]}>
-                  <Text style={[styles.bellText, has && styles.ownedText]}>{formatLoad(kg, settings.units)}</Text>
-                </Pressable>
-              );
-            })}
+          <View>
+            <Chips<string>
+              wrap
+              options={COMMON_BELLS.map((kg) => ({ value: String(kg), label: formatLoad(kg, settings.units) }))}
+              selected={settings.bells.map(String)}
+              onToggle={(kg) => toggleBell(Number(kg))}
+            />
           </View>
         </Card>
       )}
@@ -124,22 +121,11 @@ export default function Profile() {
         />
         <Row style={{ justifyContent: 'space-between', marginTop: 8 }}>
           <Body>Vibrate on countdowns</Body>
-          <Switch
-            value={settings.haptics}
-            onValueChange={(haptics) => update({ haptics })}
-            trackColor={{ true: Palette.accent, false: Palette.track }}
-          />
+          <Toggle value={settings.haptics} onChange={(haptics) => update({ haptics })} label="Vibrate on countdowns" />
         </Row>
       </Card>
       <Button label="Animation review" kind="ghost" onPress={() => router.push('/debug/animations')} />
+      <Button label="Visual library" kind="ghost" onPress={() => router.push('/debug/ui')} />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  bells: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  bell: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: Radius.pill, backgroundColor: Palette.tonal, minWidth: 64, alignItems: 'center' },
-  owned: { backgroundColor: Palette.accent },
-  bellText: { color: Palette.muted, fontWeight: '700' },
-  ownedText: { color: Palette.bg },
-});

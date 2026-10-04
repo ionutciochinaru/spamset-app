@@ -8,7 +8,12 @@ Expo (SDK 57) app for iOS, Android and web. Kettlebell workouts with a live 3D f
 - `src/animation/`: 3D figure (`figure.ts`), clip sampling, and generated `clips.ts` / `thumbnails.ts` (do not edit; regenerate with `npm run animations`).
 - `src/store/app-store.ts`: local-first zustand store persisted to `expo-sqlite/localStorage`.
 - `src/lib/`: Supabase client, auth (Google / Apple / offline), sync.
+- `extension/`: Chrome extension (MV3) for web spam sets; bundles `src/core/spamset.ts` with esbuild (`npm run extension`). Typechecked by `npm run typecheck` via `extension/tsconfig.json`.
 - `tools/animation/`: Python rig and motion authoring shared with the Spamset watch app. The 3D figure must keep matching the watch renderer's look (`render.py`).
+
+## UI
+
+- Build every screen from the visual library in `src/components/ui.tsx` (a modern app with a game layer; pixel type for HUD numbers only). Follow `docs/design-system.md`, and add missing components to the library and to `/debug/ui` rather than styling one-offs.
 
 ## Supabase environments
 

@@ -1,10 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ExercisePicker } from '@/components/exercise-picker';
-import { Body, Button, Card, Label, Row, Screen, Stepper, Title } from '@/components/ui';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Body, Button, Card, Field, Heading, IconButton, Label, Row, Screen, Stepper, Title, Well } from '@/components/ui';
+import { Palette, Spacing } from '@/constants/theme';
 import { BLOCK_HELP, BLOCK_KINDS, defaultBlock, describeWorkout, emptyWorkout, moveItem, normalizeBlock, retarget, validateWorkout } from '@/core/builder';
 import { getExercise, isTimed } from '@/core/exercises';
 import { compileWorkout, estimateSeconds } from '@/core/timeline';
@@ -44,12 +44,11 @@ export default function Builder() {
     <Screen>
       <View style={{ height: 40 }} />
       <Title>{editing ? 'Edit workout' : 'New workout'}</Title>
-      <TextInput
+      <Field
+        large
         value={workout.name}
         onChangeText={(name) => setWorkout((w) => ({ ...w, name }))}
         placeholder="Workout name"
-        placeholderTextColor={Palette.dim}
-        style={styles.name}
         maxLength={40}
       />
       {minutes > 0 && <Body muted>About {minutes} minutes</Body>}
@@ -63,7 +62,7 @@ export default function Builder() {
             <Row style={{ gap: 4 }}>
               <IconButton label="↑" hint="Move block up" onPress={() => setBlocks(moveItem(workout.blocks, index, index - 1))} />
               <IconButton label="↓" hint="Move block down" onPress={() => setBlocks(moveItem(workout.blocks, index, index + 1))} />
-              <IconButton label="✕" hint="Remove block" onPress={() => setBlocks(workout.blocks.filter((_, i) => i !== index))} />
+              <IconButton label="X" hint="Remove block" onPress={() => setBlocks(workout.blocks.filter((_, i) => i !== index))} />
             </Row>
           </Row>
           <BlockEditor block={block} onChange={(b) => updateBlock(index, b)} />
@@ -74,18 +73,20 @@ export default function Builder() {
         <Card>
           <Label>Add a block</Label>
           {BLOCK_KINDS.map((kind) => (
-            <Pressable
+            <Card
               key={kind}
+              style={styles.kind}
               onPress={() => {
                 const last = workout.blocks.at(-1);
                 const exercise = last ? ('exercise' in last ? last.exercise : last.stations[0]?.exercise) : undefined;
                 setBlocks([...workout.blocks, defaultBlock(kind, exercise)]);
                 setAdding(false);
-              }}
-              style={({ pressed }) => [styles.kind, pressed && { backgroundColor: Palette.pressed }]}>
-              <Text style={styles.kindName}>{BLOCK_LABELS[kind]}</Text>
-              <Text style={styles.kindHelp}>{BLOCK_HELP[kind]}</Text>
-            </Pressable>
+              }}>
+              <Heading style={{ fontSize: 16 }}>{BLOCK_LABELS[kind]}</Heading>
+              <Body muted style={{ fontSize: 13 }}>
+                {BLOCK_HELP[kind]}
+              </Body>
+            </Card>
           ))}
           <Button label="Cancel" kind="ghost" onPress={() => setAdding(false)} />
         </Card>
@@ -113,13 +114,6 @@ export default function Builder() {
   );
 }
 
-function IconButton({ label, hint, onPress }: { label: string; hint: string; onPress: () => void }) {
-  return (
-    <Pressable accessibilityLabel={hint} onPress={onPress} hitSlop={6} style={({ pressed }) => [styles.icon, pressed && { backgroundColor: Palette.pressed }]}>
-      <Text style={styles.iconText}>{label}</Text>
-    </Pressable>
-  );
-}
 
 function BlockEditor({ block, onChange }: { block: Block; onChange: (block: Block) => void }) {
   switch (block.kind) {
@@ -220,12 +214,12 @@ function Stations({ stations, onChange, timed }: { stations: Station[]; onChange
   return (
     <View style={{ gap: Spacing.two }}>
       {stations.map((station, i) => (
-        <View key={i} style={styles.station}>
+        <Well key={i} style={styles.station}>
           <Row style={{ justifyContent: 'space-between' }}>
-            <Text style={styles.stationTitle}>
-              Station {i + 1}: {getExercise(station.exercise).name}
-            </Text>
-            <IconButton label="✕" hint="Remove station" onPress={() => onChange(stations.filter((_, k) => k !== i))} />
+            <Heading style={{ flex: 1, fontSize: 16 }}>
+              {i + 1}. {getExercise(station.exercise).name}
+            </Heading>
+            <IconButton label="X" hint="Remove station" onPress={() => onChange(stations.filter((_, k) => k !== i))} />
           </Row>
           <ExercisePicker value={station.exercise} onChange={(exercise) => update(i, timed ? { ...station, exercise } : retarget(station, exercise))} />
           {!timed && 'reps' in station.target && (
@@ -248,7 +242,7 @@ function Stations({ stations, onChange, timed }: { stations: Station[]; onChange
               onChange={(seconds) => update(i, { ...station, target: { seconds } })}
             />
           )}
-        </View>
+        </Well>
       ))}
       <Button
         label="+ Add station"
@@ -263,20 +257,6 @@ function Stations({ stations, onChange, timed }: { stations: Station[]; onChange
 }
 
 const styles = StyleSheet.create({
-  name: {
-    color: Palette.text,
-    fontSize: 20,
-    fontWeight: '700',
-    backgroundColor: Palette.panel,
-    borderRadius: Radius.button,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  kind: { padding: 12, borderRadius: Radius.button, backgroundColor: Palette.tonal, gap: 2 },
-  kindName: { color: Palette.text, fontWeight: '700', fontSize: 16 },
-  kindHelp: { color: Palette.muted, fontSize: 13 },
-  icon: { width: 32, height: 32, borderRadius: 16, backgroundColor: Palette.tonal, alignItems: 'center', justifyContent: 'center' },
-  iconText: { color: Palette.text, fontSize: 15, fontWeight: '700' },
-  station: { backgroundColor: Palette.bg, borderRadius: Radius.button, padding: 10, gap: 8 },
-  stationTitle: { color: Palette.text, fontWeight: '700', flex: 1 },
+  kind: { padding: 12, gap: 4 },
+  station: { padding: 10, gap: 8 },
 });
