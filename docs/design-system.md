@@ -22,7 +22,7 @@ Every screen builds from `src/components/ui.tsx`, and every token lives in `src/
    | Press Start 2P | `PixelFont` | HUD only: numbers, timers, countdowns, streak, the SPAMSET wordmark, PRESS START |
 
    Pixel sizes are multiples of 8 (`PixelSize`: 8, 16, 24, 32). Never set a sentence or a name in pixel type.
-3. **Colour has a job.** Orange (`Palette.accent`) marks the main action and targets, green (`Palette.go`) starts a workout, and yellow (`Psx.hud`) is for HUD numbers. Cyan (`Psx.cyan`) is used sparingly for live labels on the home hero; red (`Palette.danger`) means destructive.
+3. **Colour has a job.** Orange (`Palette.accent`) marks the main action and targets, green (`Palette.go`) starts a set or rates it Easy, and yellow (`Psx.hud`) is for HUD numbers. Cyan (`Psx.cyan`) is used sparingly for live labels on the home hero; red (`Palette.danger`) means destructive.
 4. **The PSX lives in the 3D.** Scanlines go on 3D stages and the home hero only, never over text. The figure keeps its PSX rendering.
 5. **Buttons are tactile.** A thick darker bottom edge that the button presses into. Cards dip slightly when pressed. There are no bevels and no hard pixel shadows on surfaces.
 6. **One game moment per screen.** The home screen is the game hub: the hero stage, countdown, PRESS START and streak. Other screens stay calm, with HUD numbers where there are numbers. `Blink` appears at most once per screen.

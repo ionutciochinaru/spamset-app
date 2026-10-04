@@ -56,14 +56,6 @@ export default function RootLayout() {
             options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
           />
           <Stack.Screen
-            name="workout/[id]"
-            options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
-          />
-          <Stack.Screen
-            name="builder"
-            options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
-          />
-          <Stack.Screen
             name="debug/ui"
             options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
           />
@@ -71,7 +63,6 @@ export default function RootLayout() {
             name="debug/animations"
             options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
           />
-          <Stack.Screen name="session" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
           <Stack.Screen name="spamset" options={{ presentation: 'fullScreenModal' }} />
           <Stack.Screen
             name="spamset-settings"

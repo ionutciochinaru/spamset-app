@@ -4,13 +4,11 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Blink, Body, Button, Card, Heading, Label, Meter, PixelText, Stage, Stat, Tag, Thumb, Title } from '@/components/ui';
-import { workoutMinutes } from '@/components/workout-card';
+import { Blink, Body, Button, Card, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
 import { dayStreak, totalReps, volumeKg } from '@/core/session';
 import { clockText, planSpamsets, spamCandidates, upcomingTimes } from '@/core/spamset';
-import { BLOCK_LABELS, PRESET_WORKOUTS, workoutEquipment, workoutExercises, workoutFocus } from '@/core/workouts';
 import { openSpamset, useTargetText } from '@/lib/spamset-scheduler';
 import { formatLoad, ownedEquipment, spamSchedule, SPAMSET_WORKOUT_ID, useApp } from '@/store/app-store';
 
@@ -43,7 +41,6 @@ function countdown(at: Date, now: Date): string {
 export default function Home() {
   const insets = useSafeAreaInsets();
   const sessions = useApp((s) => s.sessions);
-  const customWorkouts = useApp((s) => s.customWorkouts);
   const settings = useApp((s) => s.settings);
   const owned = useMemo(() => ownedEquipment(settings), [settings]);
   const schedule = spamSchedule(settings);
@@ -63,27 +60,23 @@ export default function Home() {
     ? upcomingTimes(schedule, new Date(dayStart.getTime() - 1), 200, 0).filter((t) => t.getDate() === dayStart.getDate()).length
     : 0;
 
+  const todays = sessions.filter(
+    (s) => s.workoutId === SPAMSET_WORKOUT_ID && s.entries.length && new Date(s.startedAt).toDateString() === now.toDateString(),
+  );
+
   const streak = useMemo(() => dayStreak(sessions), [sessions]);
   const week = useMemo(() => {
     const since = startOfWeek().toISOString();
     const recent = sessions.filter((s) => s.startedAt >= since);
     const today = new Date().toDateString();
     return {
-      count: recent.filter((s) => s.workoutId !== SPAMSET_WORKOUT_ID).length,
+      count: recent.length,
       spam: sessions.filter((s) => s.workoutId === SPAMSET_WORKOUT_ID && new Date(s.startedAt).toDateString() === today).length,
       volume: recent.reduce((sum, s) => sum + volumeKg(s), 0),
       reps: recent.reduce((sum, s) => sum + totalReps(s), 0),
     };
   }, [sessions]);
 
-  // Main quest: the training session done least recently that your equipment allows.
-  const quest = useMemo(() => {
-    const all = [...PRESET_WORKOUTS, ...customWorkouts].filter(
-      (w) => workoutFocus(w) !== 'mobility' && workoutEquipment(w).every((e) => owned.includes(e)),
-    );
-    const lastDone = (id: string) => sessions.find((s) => s.workoutId === id)?.startedAt ?? '';
-    return [...all].sort((a, b) => lastDone(a.id).localeCompare(lastDone(b.id)))[0];
-  }, [sessions, customWorkouts, owned]);
 
   const date = now.toLocaleDateString('en', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase().replace(',', '');
 
@@ -148,7 +141,7 @@ export default function Home() {
         <Card>
           <Label>This week</Label>
           <View style={styles.counters}>
-            <Stat label="Sessions" value={String(week.count)} />
+            <Stat label="Spam sets" value={String(week.count)} />
             <Stat label="Reps" value={String(week.reps)} />
             <Stat label="Volume" value={week.volume ? formatLoad(week.volume, settings.units) : '0'} />
           </View>
@@ -165,31 +158,24 @@ export default function Home() {
           )}
         </Card>
 
-        {/* Up next: the suggested workout. */}
-        {quest && (
-          <Card>
-            <Pressable onPress={() => router.push({ pathname: '/workout/[id]', params: { id: quest.id } })} style={{ gap: 10 }}>
-              <View style={styles.hud}>
-                <Label>Up next</Label>
+        {/* Today's spam sets. */}
+        {todays.length > 0 && (
+          <Card onPress={() => router.push('/history')}>
+            <View style={styles.hud}>
+              <Label>Done today</Label>
+              <Body muted style={{ fontSize: 14 }}>
+                History ›
+              </Body>
+            </View>
+            {todays.slice(0, 5).map((s) => (
+              <Row key={s.id}>
+                <Thumb clip={getExercise(s.entries[0].exercise).animation} size={40} />
+                <Body style={{ flex: 1 }}>{getExercise(s.entries[0].exercise).name}</Body>
                 <Body muted style={{ fontSize: 14 }}>
-                  ~{workoutMinutes(quest)} min
+                  {new Date(s.startedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                 </Body>
-              </View>
-              <Heading style={{ fontSize: 22, lineHeight: 28 }}>{quest.name}</Heading>
-              <View style={styles.counters}>
-                {[...new Set(quest.blocks.map((b) => BLOCK_LABELS[b.kind]))].map((k) => (
-                  <Tag key={k} label={k} accent />
-                ))}
-              </View>
-              <View style={styles.thumbs}>
-                {workoutExercises(quest)
-                  .slice(0, 4)
-                  .map((id) => (
-                    <Thumb key={id} clip={getExercise(id).animation} style={{ flex: 1 }} />
-                  ))}
-              </View>
-            </Pressable>
-            <Button label={`Start ${quest.name}`} kind="go" onPress={() => router.push({ pathname: '/session', params: { workout: quest.id } })} />
+              </Row>
+            ))}
           </Card>
         )}
       </View>

@@ -1,128 +1,172 @@
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Body, Button, Card, Heading, Label, Row, Screen, Stat, Title } from '@/components/ui';
-import { Palette } from '@/constants/theme';
-import { getExercise } from '@/core/exercises';
-import { totalReps, volumeKg, type SessionLog } from '@/core/session';
+import { Body, Button, Card, Label, PixelText, Row, Screen, Stat, Tag, Thumb, Title } from '@/components/ui';
+import { Palette, PixelSize, Psx } from '@/constants/theme';
+import { getExercise, isLoaded } from '@/core/exercises';
+import type { Change } from '@/core/progression';
+import { dayStreak, totalReps, type SessionLog } from '@/core/session';
 import { deleteSession } from '@/lib/sync';
-import { formatLoad, SPAMSET_WORKOUT_ID, useApp } from '@/store/app-store';
+import { formatLoad, useApp } from '@/store/app-store';
 
-const CHANGE_LABEL = { 'load-up': 'Heavier bell next', 'load-down': 'Lighter bell next', 'reps-up': 'More reps next', hold: 'Hold', maxed: 'Top of the range' };
+const CHANGE_LABEL: Record<Change, string> = {
+  'load-up': 'Heavier bell next',
+  'load-down': 'Lighter bell next',
+  'reps-up': 'More next time',
+  'reps-down': 'Less next time',
+  hold: 'Same next time',
+  maxed: 'Top of the range',
+};
 
-/** Weekly volume for the last eight weeks, newest last. */
-function weeklyVolume(sessions: SessionLog[]): { label: string; kg: number }[] {
-  const weeks: { label: string; kg: number; start: Date }[] = [];
-  const monday = new Date();
-  monday.setHours(0, 0, 0, 0);
-  monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
-  for (let i = 7; i >= 0; i--) {
-    const start = new Date(monday);
-    start.setDate(start.getDate() - i * 7);
-    weeks.push({ start, kg: 0, label: start.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) });
-  }
+const DAYS = 14;
+const dayKey = (d: Date) => d.toDateString();
+
+/** Logs per day for the last two weeks, oldest first. */
+function dailyCounts(sessions: SessionLog[]): { date: Date; count: number }[] {
+  const today = new Date();
+  const days = Array.from({ length: DAYS }, (_, i) => {
+    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (DAYS - 1 - i));
+    return { date, count: 0 };
+  });
+  const index = new Map(days.map((d, i) => [dayKey(d.date), i]));
   for (const s of sessions) {
-    const at = new Date(s.startedAt);
-    const week = [...weeks].reverse().find((w) => at >= w.start);
-    if (week) week.kg += volumeKg(s);
+    const i = index.get(dayKey(new Date(s.startedAt)));
+    if (i !== undefined) days[i].count++;
   }
-  return weeks;
+  return days;
 }
 
 export default function History() {
   const sessions = useApp((s) => s.sessions);
-  const units = useApp((s) => s.settings.units);
   const [open, setOpen] = useState<string>();
-  const weeks = useMemo(() => weeklyVolume(sessions), [sessions]);
-  const peak = Math.max(1, ...weeks.map((w) => w.kg));
+  const days = useMemo(() => dailyCounts(sessions), [sessions]);
+  const peak = Math.max(1, ...days.map((d) => d.count));
+  const streak = useMemo(() => dayStreak(sessions), [sessions]);
+  const weekCount = days.slice(-7).reduce((n, d) => n + d.count, 0);
+  const weekReps = useMemo(() => {
+    const since = days[DAYS - 7].date.getTime();
+    return sessions.filter((s) => Date.parse(s.startedAt) >= since).reduce((n, s) => n + totalReps(s), 0);
+  }, [sessions, days]);
+
+  // Newest first, grouped by day.
+  const groups = useMemo(() => {
+    const map = new Map<string, SessionLog[]>();
+    for (const s of sessions) {
+      const key = dayKey(new Date(s.startedAt));
+      map.set(key, [...(map.get(key) ?? []), s]);
+    }
+    return [...map];
+  }, [sessions]);
 
   return (
     <Screen>
       <Title>History</Title>
-      {!sessions.length && <Body muted>No sessions yet. Finish a workout and it shows up here.</Body>}
+      {!sessions.length && <Body muted>No spam sets yet. Do one from Today and it shows up here.</Body>}
 
       {sessions.length > 0 && (
         <Card>
-          <Label>Weekly volume</Label>
-          <View style={styles.chart} accessibilityLabel="Weekly volume, last eight weeks">
-            {weeks.map((w, i) => (
+          <Row>
+            <Stat value={String(weekCount)} label="Last 7 days" />
+            <Stat value={String(weekReps)} label="Reps" />
+            <Stat value={String(streak)} label="Day streak" />
+          </Row>
+          <View style={styles.chart} accessibilityLabel="Spam sets per day, last two weeks">
+            {days.map((d, i) => (
               <View key={i} style={styles.barColumn}>
-                <View style={[styles.bar, { height: `${(w.kg / peak) * 100}%` }, i === weeks.length - 1 && styles.barCurrent]} />
+                <View style={[styles.bar, { height: `${(d.count / peak) * 100}%` }, i === DAYS - 1 && styles.barToday]} />
               </View>
             ))}
           </View>
           <Row style={{ justifyContent: 'space-between' }}>
-            <Body muted style={styles.axis}>{weeks[0].label}</Body>
-            <Body muted style={styles.axis}>This week · {weeks.at(-1)!.kg ? formatLoad(weeks.at(-1)!.kg, units) : '0 kg'}</Body>
+            <Body muted style={styles.axis}>
+              {days[0].date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+            </Body>
+            <Body muted style={styles.axis}>
+              Today
+            </Body>
           </Row>
         </Card>
       )}
 
-      {sessions.map((s) => {
-        const minutes = Math.round((Date.parse(s.finishedAt) - Date.parse(s.startedAt)) / 60000);
-        const expanded = open === s.id;
-        return (
-          <Card key={s.id} onPress={() => setOpen(expanded ? undefined : s.id)}>
-            <Row style={{ justifyContent: 'space-between' }}>
-              <Heading style={{ flex: 1 }}>
-                {s.workoutId === SPAMSET_WORKOUT_ID && s.entries[0] ? `Spam set · ${getExercise(s.entries[0].exercise).name}` : s.workoutName}
-              </Heading>
-              <Body muted>
-                {new Date(s.startedAt).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
-              </Body>
-            </Row>
-            <Row>
-              <Stat value={`${minutes}`} label="Minutes" />
-              <Stat value={`${totalReps(s)}`} label="Reps" />
-              <Stat value={volumeKg(s) ? formatLoad(volumeKg(s), units) : '–'} label="Volume" />
-            </Row>
-            {expanded && (
-              <View style={{ gap: 6, marginTop: 6 }}>
-                {Object.entries(s.amrapRounds).map(([block, rounds]) => (
-                  <Body key={block}>AMRAP: {rounds} rounds</Body>
-                ))}
-                {summarize(s).map((line) => (
-                  <Row key={line.exercise} style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <Body style={{ flex: 1 }}>{getExercise(line.exercise).name}</Body>
-                    <Body muted style={{ flex: 1, textAlign: 'right' }}>
-                      {line.text}
-                    </Body>
-                  </Row>
-                ))}
-                {Object.entries(s.progress).map(([exercise, p]) => (
-                  <Body key={exercise} style={{ fontSize: 14, color: p.change === 'hold' ? Palette.muted : Palette.accent }}>
-                    {getExercise(exercise).name}: {CHANGE_LABEL[p.change]}. {p.reason}
-                  </Body>
-                ))}
-                <Button label="Delete session" kind="ghost" onPress={() => deleteSession(s.id)} />
-              </View>
-            )}
-          </Card>
-        );
-      })}
+      {groups.map(([key, logs]) => (
+        <View key={key} style={{ gap: 8 }}>
+          <Row style={{ justifyContent: 'space-between' }}>
+            <Label>
+              {key === dayKey(new Date())
+                ? 'Today'
+                : new Date(logs[0].startedAt).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })}
+            </Label>
+            <PixelText size={PixelSize.small} color={Psx.hud}>
+              {logs.length}
+            </PixelText>
+          </Row>
+          {logs.map((s) => (
+            <LogRow key={s.id} log={s} open={open === s.id} onToggle={() => setOpen(open === s.id ? undefined : s.id)} />
+          ))}
+        </View>
+      ))}
     </Screen>
   );
 }
 
-function summarize(s: SessionLog): { exercise: string; text: string }[] {
-  const groups = new Map<string, string[]>();
-  for (const e of s.entries) {
-    const list = groups.get(e.exercise) ?? [];
-    const done = 'reps' in e.target ? `${e.done}` : `${e.done}s`;
-    list.push(e.load ? `${done}×${e.load}` : done);
-    groups.set(e.exercise, list);
+function LogRow({ log, open, onToggle }: { log: SessionLog; open: boolean; onToggle: () => void }) {
+  const units = useApp((s) => s.settings.units);
+  const entry = log.entries[0];
+  const time = new Date(log.startedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  // Logs from before the app focused on spam sets were whole workouts.
+  if (!entry || log.entries.length > 1) {
+    return (
+      <Card>
+        <Row style={{ justifyContent: 'space-between' }}>
+          <Body style={{ flex: 1 }}>{log.workoutName}</Body>
+          <Body muted>
+            {time} · {totalReps(log)} reps
+          </Body>
+        </Row>
+      </Card>
+    );
   }
-  // Loads are kg; bodyweight and stretches have none.
-  return [...groups].map(([exercise, sets]) => ({
-    exercise,
-    text: s.entries.some((e) => e.exercise === exercise && e.load) ? `${sets.join(', ')} kg` : sets.join(', '),
-  }));
+  const exercise = getExercise(entry.exercise);
+  const done = 'reps' in entry.target ? `${entry.done} reps` : `${entry.done} s`;
+  const effort = log.effort[entry.exercise];
+  const progress = log.progress[entry.exercise];
+  return (
+    <Card onPress={onToggle} style={{ padding: 12 }}>
+      <Row>
+        <Thumb clip={exercise.animation} size={48} />
+        <View style={{ flex: 1, gap: 2 }}>
+          <Body style={{ fontWeight: '600' }}>{exercise.name}</Body>
+          <Body muted style={{ fontSize: 14 }}>
+            {time} · {done}
+            {isLoaded(exercise) && entry.load ? ` · ${formatLoad(entry.load, units)}` : ''}
+          </Body>
+        </View>
+        {effort && <Tag label={effort[0].toUpperCase() + effort.slice(1)} accent={effort === 'easy'} />}
+      </Row>
+      {open && (
+        <View style={{ gap: 8, marginTop: 4 }}>
+          {progress && (
+            <Body style={{ fontSize: 14, color: progress.change === 'hold' ? Palette.muted : Palette.accent }}>
+              {CHANGE_LABEL[progress.change]}. {progress.reason}
+            </Body>
+          )}
+          {progress?.suggest && (
+            <Pressable onPress={() => router.push({ pathname: '/exercise/[id]', params: { id: progress.suggest! } })}>
+              <Body style={{ color: Palette.accent }}>See {getExercise(progress.suggest).name} ›</Body>
+            </Pressable>
+          )}
+          <Button label="Delete" kind="ghost" onPress={() => deleteSession(log.id)} />
+        </View>
+      )}
+    </Card>
+  );
 }
 
 const styles = StyleSheet.create({
-  chart: { height: 90, flexDirection: 'row', alignItems: 'flex-end', gap: 6 },
+  chart: { height: 80, flexDirection: 'row', alignItems: 'flex-end', gap: 4, marginTop: 4 },
   barColumn: { flex: 1, height: '100%', justifyContent: 'flex-end' },
-  bar: { backgroundColor: Palette.track, minHeight: 2, borderTopWidth: 2, borderTopColor: 'rgba(255,255,255,0.3)' },
-  barCurrent: { backgroundColor: Palette.accent },
+  bar: { backgroundColor: Palette.tonal, minHeight: 3, borderRadius: 3 },
+  barToday: { backgroundColor: Palette.accent },
   axis: { fontSize: 12 },
 });

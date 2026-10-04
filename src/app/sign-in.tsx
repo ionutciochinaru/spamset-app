@@ -32,8 +32,8 @@ export default function SignIn() {
       </View>
       <Title>Spamset</Title>
       <Body muted>
-        Circuits, EMOMs, ladders and strength sets for your kettlebells. It tracks every set and tells you when to move up
-        a bell. Drag the figure to check the form from any angle.
+        One short exercise at your interval, all day. Tap the notification, do the set, rate it, and the next one adapts.
+        Small sets add up.
       </Body>
 
       <View style={styles.actions}>

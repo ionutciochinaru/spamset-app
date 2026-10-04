@@ -1,7 +1,6 @@
 /** Shared by the native and web tab bars. */
 export const TABS = [
   { name: 'index', label: 'Today', sf: 'flame.fill', md: 'local_fire_department', web: 'local_fire_department' },
-  { name: 'workouts', label: 'Workouts', sf: 'list.bullet.rectangle', md: 'fitness_center', web: 'fitness_center' },
   { name: 'exercises', label: 'Exercises', sf: 'figure.strengthtraining.functional', md: 'sports_gymnastics', web: 'sports_gymnastics' },
   { name: 'history', label: 'History', sf: 'chart.bar.fill', md: 'bar_chart', web: 'bar_chart' },
   { name: 'profile', label: 'Profile', sf: 'person.crop.circle', md: 'person', web: 'person' },

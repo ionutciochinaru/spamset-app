@@ -64,7 +64,7 @@ export default function ExerciseDetail() {
           <Label>Your bell</Label>
           <BellPicker exercise={id} load={prescription.load} />
           <Body muted style={{ fontSize: 14 }}>
-            Strength sets target {prescription.reps} reps next. Progression moves you up when every set tops the rep range.
+            Spam sets ask for {prescription.reps} reps next. Rate them Easy twice at 20 reps and you move up a bell.
           </Body>
         </Card>
       ) : isStretch(exercise) ? (
@@ -78,7 +78,8 @@ export default function ExerciseDetail() {
         <Card>
           <Label>Progression</Label>
           <Body muted style={{ fontSize: 14 }}>
-            Strength sets target {prescription.reps} {unit} next. Each session adds {isTimed(exercise) ? 'time' : 'reps'} until every set tops the range
+            Spam sets ask for {prescription.reps} {unit} next. Two Easy ratings add {isTimed(exercise) ? '5 s' : 'a rep'}, up to{' '}
+            {isTimed(exercise) ? '60 s' : '20 reps'}
             {harder ? `, then it suggests ${harder.name}.` : '.'}
           </Body>
           {harder && (

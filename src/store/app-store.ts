@@ -9,11 +9,9 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { isLoaded, getExercise, type Equipment } from '@/core/exercises';
-import { initialPrescription, targetReps, type Effort, type Prescription } from '@/core/progression';
-import { applyProgression, type SessionLog, type SetEntry } from '@/core/session';
+import { initialPrescription, progressSpamset, type Effort, type Prescription } from '@/core/progression';
+import type { SessionLog, Target } from '@/core/session';
 import { DEFAULT_SCHEDULE, type SpamSchedule } from '@/core/spamset';
-import type { LoadPlan } from '@/core/timeline';
-import type { Target, Workout } from '@/core/workouts';
 
 export type AuthMode = 'offline' | 'account';
 export type Units = 'kg' | 'lb';
@@ -34,7 +32,11 @@ type State = {
   settings: Settings;
   prescriptions: Record<string, Prescription>;
   sessions: SessionLog[];
-  customWorkouts: Workout[];
+  /**
+   * Workouts built before the app focused on spam sets. Unused, but kept (and synced as
+   * they are) so nobody's saved data is erased.
+   */
+  customWorkouts: unknown[];
   /** Session ids already uploaded, and when app state last changed / synced. */
   syncedSessionIds: string[];
   stateUpdatedAt: string;
@@ -49,19 +51,9 @@ type Actions = {
   setAuthMode: (mode: AuthMode | undefined) => void;
   updateSettings: (patch: Partial<Settings>) => void;
   setPrescriptionLoad: (exercise: string, load: number) => void;
-  loadPlan: () => LoadPlan;
-  saveSession: (input: {
-    workout: Workout;
-    startedAt: string;
-    entries: SetEntry[];
-    amrapRounds: Record<number, number>;
-    effort: Record<string, Effort>;
-  }) => SessionLog;
-  /** Log a finished spam set as a one-exercise session (History only; it does not move progression). */
-  logSpamset: (exercise: string, target: Target, done: number, startedAt: string) => SessionLog;
+  /** Log a finished spam set as a one-entry session; a rating moves that exercise's target. */
+  logSpamset: (input: { exercise: string; target: Target; done: number; startedAt: string; effort?: Effort }) => SessionLog;
   deleteSession: (id: string) => void;
-  saveCustomWorkout: (workout: Workout) => void;
-  deleteCustomWorkout: (id: string) => void;
   mergeRemote: (remote: { sessions: SessionLog[]; state?: RemoteState }) => void;
   markSynced: (ids: string[]) => void;
   rateAnimation: (exercise: string, rating: Omit<AnimationRating, 'updatedAt'>) => void;
@@ -120,68 +112,32 @@ export const useApp = create<State & Actions>()(
           };
         }),
 
-      loadPlan: () => {
+      logSpamset: ({ exercise, target, done, startedAt, effort }) => {
         const { prescriptions, settings } = get();
-        return {
-          load: (exercise) => (prescriptions[exercise] ?? initialPrescription(exercise, settings.bells)).load,
-          reps: (exercise, range) =>
-            targetReps(prescriptions[exercise] ?? initialPrescription(exercise, settings.bells, range[0]), range),
-        };
-      },
-
-      saveSession: ({ workout, startedAt, entries, amrapRounds, effort }) => {
-        const { prescriptions, settings } = get();
-        const result = applyProgression(workout, entries, effort, prescriptions, settings.bells);
-        const log: SessionLog = {
-          id: newId(),
-          workoutId: workout.id,
-          workoutName: workout.name,
-          startedAt,
-          finishedAt: now(),
-          entries,
-          amrapRounds,
-          effort,
-          progress: result.progress,
-        };
-        set((s) => ({ sessions: [log, ...s.sessions], prescriptions: result.prescriptions, stateUpdatedAt: now() }));
-        return log;
-      },
-
-      logSpamset: (exercise, target, done, startedAt) => {
-        const { prescriptions, settings } = get();
-        const load = isLoaded(getExercise(exercise))
-          ? (prescriptions[exercise] ?? initialPrescription(exercise, settings.bells)).load
-          : 0;
+        const prev = prescriptions[exercise] ?? initialPrescription(exercise, settings.bells);
+        const result = effort ? progressSpamset(prev, effort, exercise, settings.bells) : undefined;
         const log: SessionLog = {
           id: newId(),
           workoutId: SPAMSET_WORKOUT_ID,
           workoutName: 'Spam set',
           startedAt,
           finishedAt: now(),
-          entries: [{ exercise, blockKind: 'intervals', block: 0, load, target, done }],
+          entries: [{ exercise, blockKind: 'spamset', block: 0, load: isLoaded(getExercise(exercise)) ? prev.load : 0, target, done }],
           amrapRounds: {},
-          effort: {},
-          progress: {},
+          effort: effort ? { [exercise]: effort } : {},
+          progress: result
+            ? { [exercise]: { change: result.change, reason: result.reason, ...(result.suggest ? { suggest: result.suggest } : {}) } }
+            : {},
         };
-        set((s) => ({ sessions: [log, ...s.sessions], stateUpdatedAt: now() }));
+        set((s) => ({
+          sessions: [log, ...s.sessions],
+          prescriptions: result ? { ...s.prescriptions, [exercise]: result.next } : s.prescriptions,
+          stateUpdatedAt: now(),
+        }));
         return log;
       },
 
       deleteSession: (id) => set((s) => ({ sessions: s.sessions.filter((x) => x.id !== id), stateUpdatedAt: now() })),
-
-      saveCustomWorkout: (workout) =>
-        set((s) => {
-          const exists = s.customWorkouts.some((w) => w.id === workout.id);
-          return {
-            customWorkouts: exists
-              ? s.customWorkouts.map((w) => (w.id === workout.id ? workout : w))
-              : [...s.customWorkouts, workout],
-            stateUpdatedAt: now(),
-          };
-        }),
-
-      deleteCustomWorkout: (id) =>
-        set((s) => ({ customWorkouts: s.customWorkouts.filter((w) => w.id !== id), stateUpdatedAt: now() })),
 
       mergeRemote: ({ sessions, state }) =>
         set((s) => {

@@ -85,7 +85,7 @@ export default function Profile() {
       <Card>
         <Label>Your equipment</Label>
         <Body muted style={{ fontSize: 14 }}>
-          Bodyweight and stretches are always available. Exercises and workouts that need anything else only show when you have it.
+          Bodyweight and stretches are always available. Spam sets only pick exercises your equipment allows.
         </Body>
         <Chips
           wrap

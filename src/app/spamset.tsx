@@ -5,15 +5,17 @@ import { Platform, View } from 'react-native';
 
 import { FigureViewer } from '@/components/figure-viewer';
 import { Body, Button, Card, Label, PixelText, Row, Screen, Stepper, Steps, Title } from '@/components/ui';
+import type { SessionLog } from '@/core/session';
 import { Palette, PixelSize, Psx } from '@/constants/theme';
-import { getExercise, isTimed } from '@/core/exercises';
-import { initialPrescription } from '@/core/progression';
+import { getExercise, isStretch, isTimed } from '@/core/exercises';
+import { initialPrescription, type Effort } from '@/core/progression';
 import { pickFor, planSpamsets, spamCandidates, spamTarget, targetText } from '@/core/spamset';
 import { ownedEquipment, spamSchedule, useApp } from '@/store/app-store';
 
 /**
  * One spam set: the exercise from a notification (or "Do one now"), its 3D demo and your
- * current target. Done logs it to History; Swap draws another from your pool.
+ * current target. Done asks how it felt (Easy / Good / Hard), which moves the target, then
+ * logs it to History. Swap draws another from your pool.
  */
 export default function Spamset() {
   const params = useLocalSearchParams<{ exercise?: string }>();
@@ -36,12 +38,15 @@ export default function Spamset() {
   };
   const [done, setDone] = useState(goal);
   const [left, setLeft] = useState<number | undefined>(undefined);
-  const [logged, setLogged] = useState(false);
+  // Done → rate (skipped for stretches) → logged.
+  const [rating, setRating] = useState<number | undefined>(undefined);
+  const [logged, setLogged] = useState<SessionLog | undefined>(undefined);
 
-  const finish = (amount: number) => {
-    logSpamset(exerciseId, target, amount, startedAt);
-    setLogged(true);
+  const log = (amount: number, effort?: Effort) => {
+    setLogged(logSpamset({ exercise: exerciseId, target, done: amount, startedAt, effort }));
+    setRating(undefined);
   };
+  const finish = (amount: number) => (isStretch(exercise) ? log(amount) : setRating(amount));
 
   // Countdown for holds and stretches; logs itself at zero.
   useEffect(() => {
@@ -68,12 +73,39 @@ export default function Spamset() {
   const next = planSpamsets(schedule, owned, new Date(), 1)[0];
   const close = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
+  if (rating !== undefined) {
+    return (
+      <Screen>
+        <View style={{ height: 40 }} />
+        <Label>How was it?</Label>
+        <Title>{exercise.name}</Title>
+        <Body muted>Your rating sets the next target. Easy twice adds {timed ? '5 s' : 'a rep'}; hard twice steps back.</Body>
+        <Button label="Easy" kind="go" large onPress={() => log(rating, 'easy')} />
+        <Button label="Good" kind="primary" large onPress={() => log(rating, 'good')} />
+        <Button label="Hard" kind="tonal" large onPress={() => log(rating, 'hard')} />
+      </Screen>
+    );
+  }
+
   if (logged) {
+    const progress = logged.progress[exerciseId];
     return (
       <Screen>
         <View style={{ height: 40 }} />
         <Label>Spam set logged</Label>
         <Title>Nice. {exercise.name} done.</Title>
+        {progress && (
+          <Card>
+            <Body style={{ color: progress.change === 'hold' ? Palette.text : Palette.accent }}>{progress.reason}</Body>
+            {progress.suggest && (
+              <Button
+                label={`See ${getExercise(progress.suggest).name}`}
+                kind="tonal"
+                onPress={() => router.push({ pathname: '/exercise/[id]', params: { id: progress.suggest! } })}
+              />
+            )}
+          </Card>
+        )}
         <Body muted>
           {next
             ? `Next one at ${next.at.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}${
@@ -82,7 +114,14 @@ export default function Spamset() {
             : 'Spam sets are off. Turn them on to get one at your interval.'}
         </Body>
         <Button label="Close" kind="primary" large onPress={close} />
-        <Button label="One more" kind="tonal" onPress={() => { swap(); setLogged(false); }} />
+        <Button
+          label="One more"
+          kind="tonal"
+          onPress={() => {
+            swap();
+            setLogged(undefined);
+          }}
+        />
       </Screen>
     );
   }

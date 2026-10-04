@@ -1,27 +1,22 @@
 # Spamset
 
-A kettlebell training app for iOS, Android and web, built with Expo. It runs circuits, EMOMs, AMRAPs, intervals, ladders and strength sets, tracks every set, and applies progressive overload using the bells you own. Each exercise is demonstrated by a looping 3D figure you can drag to inspect the form from any angle.
+Spam sets for iOS, Android and web, built with Expo: one short exercise at your interval through the day. Tap the notification, do the set, rate it, and the next target adapts. Each exercise is demonstrated by a looping 3D figure you can drag to inspect the form from any angle.
 
 ## Features
 
 - **Spam sets** (`src/core/spamset.ts`, `src/app/spamset.tsx`): one short exercise at your interval through the day.
   - Set the interval, active hours, days and which exercise groups to draw from (`src/app/spamset-settings.tsx`). Picks respect your equipment and use your current targets.
-  - iOS/Android: local notifications scheduled on the device (`src/lib/spamset-notify.ts`), so they arrive with the app closed. Tapping one opens a one-exercise session; Done logs it to History.
+  - iOS/Android: local notifications scheduled on the device (`src/lib/spamset-notify.ts`), so they arrive with the app closed. Tapping one opens a one-exercise session; Done asks Easy / Good / Hard and logs it to History.
   - Web: the open page notifies with a timer (`src/lib/spamset-notify.web.ts`). The Chrome extension (`extension/`) delivers them with the tab closed.
 - **Exercises (75):**
   - 15 kettlebell lifts: swing, deadlift, goblet squat, lunges, rows, side bend, curl, halo, pullover, clean, press, snatch and the Turkish get-up.
   - 46 bodyweight and small-gear exercises (chair, pull-up bar, doorframe, dumbbells, band) and 14 stretches.
-  - Set the equipment you own in Profile; lists, the picker and suggestions hide what you can't do.
-- **Workout builder** (`src/app/builder.tsx`, `src/core/builder.ts`): combine any blocks and exercises into your own workouts. They sync with your account.
-- **Training types:** strength sets (double progression), circuits, EMOM, AMRAP, intervals/Tabata, ladders. Workouts are lists of blocks, compiled into a step timeline (`src/core/timeline.ts`).
-- **Progressive overload** (`src/core/progression.ts`)
-  - **Strength sets:** add reps within the rep range; when every set hits the top, move to your next heavier bell. Two sessions in a row below the range step back down.
-  - **Timed and circuit work:** two Easy ratings in a row move you up a bell.
-  - **Bodyweight:** reps climb by one (holds by 5 s) to the top of the range, then the app suggests the harder variant. Stretches don't progress.
-- **Session runner** (`src/core/runner.ts`, `src/app/session.tsx`)
-  - Rep sets: Done, then confirm the reps you actually did.
-  - Countdowns for timed work, rest, EMOM minutes and AMRAPs.
-  - Pause, +15 s rest, haptic cues and keep-awake.
+  - Set the equipment you own in Profile; spam sets only pick what you can do.
+- **Progression** (`src/core/progression.ts`): each exercise keeps its own target.
+  - Easy twice in a row adds a rep (5 s for holds). At the top of the range (20 reps, 60 s) kettlebell work moves to your next bell, and bodyweight work suggests its harder variant.
+  - Hard twice in a row steps back a rep, or to a lighter bell at the bottom.
+  - Stretches don't progress.
+- **History:** spam sets per day for the last two weeks, your day streak, and every set with its rating and what changed.
 - **3D demonstrations:** the figure from the Spamset watch app, rendered live with three.js. It uses the same proportions, tapered limbs, orange shirt, trousers, shoes and kettlebell. The side nearer the camera is drawn in ivory, as on the watch.
 - **Accounts:** Google, Apple, or offline. Data is local-first (SQLite-backed storage on device) and syncs to Supabase when you sign in.
 
@@ -30,7 +25,7 @@ A kettlebell training app for iOS, Android and web, built with Expo. It runs cir
 ```sh
 npm install
 npx expo start          # press w for web; use a development build for iOS/Android
-npm test                # jest: progression, timelines, runner
+npm test                # jest: spam set schedule, progression, library
 npm run typecheck
 npx expo lint
 ```

@@ -1,4 +1,4 @@
-import { defaultLoad, progressByEffort, progressSets, type Prescription } from '../progression';
+import { defaultLoad, initialPrescription, progressSpamset, spamRange, type Prescription } from '../progression';
 
 const bells = [8, 12, 16, 20, 24];
 const at = (load: number, reps: number, extra: Partial<Prescription> = {}): Prescription => ({
@@ -9,65 +9,61 @@ const at = (load: number, reps: number, extra: Partial<Prescription> = {}): Pres
   ...extra,
 });
 
-describe('progressSets (double progression)', () => {
-  it('adds a rep when every set reaches the target', () => {
-    const r = progressSets(at(16, 10), [10, 15], [10, 10, 11], 'good', bells);
-    expect(r.change).toBe('reps-up');
-    expect(r.next).toMatchObject({ load: 16, reps: 11 });
+describe('starting point', () => {
+  it('starts reps at 8, holds at 20 s, bodyweight with no load', () => {
+    expect(initialPrescription('pushup', bells)).toMatchObject({ load: 0, reps: 8 });
+    expect(initialPrescription('plank', bells).reps).toBe(20);
+    expect(defaultLoad('kb-swing', bells)).toBeGreaterThan(0);
   });
 
-  it('adds two reps when rated easy, capped at the top of the range', () => {
-    expect(progressSets(at(16, 10), [10, 15], [10, 10], 'easy', bells).next.reps).toBe(12);
-    expect(progressSets(at(16, 14), [10, 15], [14, 14], 'easy', bells).next.reps).toBe(15);
+  it('starts hinges mid-range and presses on the lightest bell', () => {
+    expect(defaultLoad('kb-deadlift', bells)).toBe(16);
+    expect(defaultLoad('kb-press', bells)).toBe(8);
   });
+});
 
-  it('moves to the next bell and resets reps when every set hits the top', () => {
-    const r = progressSets(at(16, 15), [10, 15], [15, 15, 15], 'good', bells);
-    expect(r.change).toBe('load-up');
-    expect(r.next).toMatchObject({ load: 20, reps: 10 });
-  });
-
-  it('holds when rated hard even if the top was reached', () => {
-    const r = progressSets(at(16, 15), [10, 15], [15, 15], 'hard', bells);
-    expect(r.change).toBe('hold');
-    expect(r.next.load).toBe(16);
-  });
-
-  it('reports maxed with the heaviest bell', () => {
-    expect(progressSets(at(24, 15), [10, 15], [15, 15], 'good', bells).change).toBe('maxed');
-  });
-
-  it('holds after one miss and deloads after two consecutive misses', () => {
-    const first = progressSets(at(20, 10), [10, 15], [10, 8], 'hard', bells);
+describe('progressSpamset', () => {
+  it('needs two easy ratings to add a rep', () => {
+    const first = progressSpamset(at(0, 10), 'easy', 'pushup', bells);
     expect(first.change).toBe('hold');
-    expect(first.next.missStreak).toBe(1);
-    const second = progressSets(first.next, [10, 15], [9, 7], 'hard', bells);
-    expect(second.change).toBe('load-down');
-    expect(second.next).toMatchObject({ load: 16, reps: 10, missStreak: 0 });
+    const second = progressSpamset(first.next, 'easy', 'pushup', bells);
+    expect(second.change).toBe('reps-up');
+    expect(second.next.reps).toBe(11);
   });
 
-  it('clamps an out-of-range stored target into the block range', () => {
-    const r = progressSets(at(16, 3), [8, 12], [8, 8], 'good', bells);
-    expect(r.next.reps).toBe(9);
-  });
-});
-
-describe('progressByEffort', () => {
-  it('needs two consecutive easy sessions to add load', () => {
-    const one = progressByEffort(at(16, 10), 'easy', bells);
-    expect(one.next.load).toBe(16);
-    const two = progressByEffort(one.next, 'easy', bells);
-    expect(two).toMatchObject({ change: 'load-up', next: { load: 20, easyStreak: 0 } });
+  it('adds 5 s to holds', () => {
+    const r = progressSpamset(at(0, 30, { easyStreak: 1 }), 'easy', 'plank', bells);
+    expect(r.next.reps).toBe(35);
+    expect(r.reason).toContain('35 s');
   });
 
-  it('hard resets the easy streak', () => {
-    expect(progressByEffort(at(16, 10, { easyStreak: 1 }), 'hard', bells).next.easyStreak).toBe(0);
+  it('moves a kettlebell exercise up a bell at the top of the range', () => {
+    const r = progressSpamset(at(16, 20, { easyStreak: 1 }), 'easy', 'kb-swing', bells);
+    expect(r.change).toBe('load-up');
+    expect(r.next).toMatchObject({ load: 20, reps: 8 });
   });
-});
 
-describe('defaultLoad', () => {
-  it('starts hinges mid-range and arms on the lightest bell', () => {
-    expect(defaultLoad('kb-swing', bells)).toBe(16);
-    expect(defaultLoad('kb-curl', bells)).toBe(8);
+  it('suggests the harder variant when bodyweight tops out', () => {
+    const r = progressSpamset(at(0, spamRange('pushup')[1], { easyStreak: 1 }), 'easy', 'pushup', bells);
+    expect(r.change).toBe('maxed');
+    expect(r.suggest).toBe('close-pushup');
+  });
+
+  it('steps back after two hard ratings, then to a lighter bell at the bottom', () => {
+    const first = progressSpamset(at(0, 10), 'hard', 'pushup', bells);
+    expect(first.change).toBe('hold');
+    expect(progressSpamset(first.next, 'hard', 'pushup', bells).next.reps).toBe(9);
+    const bottom = progressSpamset(at(16, 3, { missStreak: 1 }), 'hard', 'kb-swing', bells);
+    expect(bottom).toMatchObject({ change: 'load-down', next: { load: 12, reps: 8 } });
+  });
+
+  it('good resets the streaks and keeps the target', () => {
+    const r = progressSpamset(at(0, 10, { easyStreak: 1, missStreak: 1 }), 'good', 'pushup', bells);
+    expect(r.next).toMatchObject({ reps: 10, easyStreak: 0, missStreak: 0 });
+  });
+
+  it('never changes a stretch', () => {
+    const prev = at(0, 30, { easyStreak: 1 });
+    expect(progressSpamset(prev, 'easy', 'cat-cow', bells).next).toBe(prev);
   });
 });

@@ -1,10 +1,10 @@
 # Spamset (app)
 
-Expo (SDK 57) app for iOS, Android and web. Kettlebell workouts with a live 3D form demonstration. See README.md for features and setup.
+Expo (SDK 57) app for iOS, Android and web. Spam sets (one short exercise at your interval, via notifications) with a live 3D form demonstration. See README.md for features and setup.
 
 ## Layout
 
-- `src/core/`: pure TypeScript domain logic (exercises, workouts/training types, timeline compiler, progression, runner reducer, session logs). Keep it free of React/Expo imports and covered by `src/core/__tests__`.
+- `src/core/`: pure TypeScript domain logic (exercises, spam set schedule, progression, session logs). Keep it free of React/Expo imports and covered by `src/core/__tests__`.
 - `src/animation/`: 3D figure (`figure.ts`), clip sampling, and generated `clips.ts` / `thumbnails.ts` (do not edit; regenerate with `npm run animations`).
 - `src/store/app-store.ts`: local-first zustand store persisted to `expo-sqlite/localStorage`.
 - `src/lib/`: Supabase client, auth (Google / Apple / offline), sync.

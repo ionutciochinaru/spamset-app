@@ -6,7 +6,7 @@
  */
 import { canDo, EXERCISES, exerciseCategory, getExercise, isStretch, isTimed, type Category, type Equipment } from './exercises';
 import type { Prescription } from './progression';
-import type { Target } from './workouts';
+import type { Target } from './session';
 
 export type SpamSchedule = {
   enabled: boolean;
