@@ -10,6 +10,13 @@ Expo (SDK 57) app for iOS, Android and web. Kettlebell workouts with a live 3D f
 - `src/lib/`: Supabase client, auth (Google / Apple / offline), sync.
 - `tools/animation/`: Python rig and motion authoring shared with the Spamset watch app. The 3D figure must keep matching the watch renderer's look (`render.py`).
 
+## Supabase environments
+
+- Spamset has two self-hosted Supabase stacks on the Hostinger VPS: `dev-spamset` and `prod-spamset` (see `docs/supabase-vps.md`). Development and preview builds use `dev-spamset`; production builds use `prod-spamset`. Never fall back from development to production.
+- The same VPS hosts Loadout's stacks (`dev-loadout`, `prod-loadout`). Never use, query, migrate or modify them, or any Checkmate project, from this repo.
+- Verify the target is a Spamset stack before any Supabase operation. Never delete, reset, truncate or drop data; prefer additive, reversible migrations.
+- Confirm any production database write, migration or configuration change with the user before running it.
+
 ## Checks
 
 Run before declaring work done: `npm test`, `npm run typecheck`, `npx expo lint`.

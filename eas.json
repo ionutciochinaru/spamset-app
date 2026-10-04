@@ -1,0 +1,47 @@
+{
+  "cli": {
+    "version": ">= 20.5.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "autoIncrement": true,
+      "env": {
+        "SPAMSET_ENV": "dev-spamset",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://dev-api.spamset.example",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+      },
+      "environment": "development",
+      "channel": "development"
+    },
+    "preview": {
+      "distribution": "internal",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "SPAMSET_ENV": "dev-spamset",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://dev-api.spamset.example",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+      },
+      "environment": "preview",
+      "channel": "preview"
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "SPAMSET_ENV": "prod-spamset",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://api.spamset.example",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+      },
+      "environment": "production",
+      "channel": "production"
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

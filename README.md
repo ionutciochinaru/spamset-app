@@ -33,12 +33,14 @@ Expo Go does not include every native module this app uses (GL, Apple sign-in). 
 
 ## Accounts (optional)
 
-Without Supabase keys the app runs offline-only. To enable sign-in:
+Without Supabase keys the app runs offline-only. Accounts sync to Spamset's own self-hosted
+Supabase stacks on the Hostinger VPS: **dev-spamset** for development and preview builds,
+**prod-spamset** for production. `app.config.ts` maps each EAS profile to its stack and refuses a
+mismatched URL; nothing falls back to production. Setup: [docs/supabase-vps.md](docs/supabase-vps.md).
 
-1. Create a Supabase project, or run `eas integrations:supabase:connect`.
-2. Copy `.env.example` to `.env.local` and fill in `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-3. Apply `supabase/migrations/0001_init.sql`. It creates the tables with row-level security.
-4. In Supabase Auth, enable the Google and Apple providers. Add redirect URLs: `spamset://auth-callback` and your web origin.
+1. Copy `.env.example` to `.env.local` and fill in dev-spamset's `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (its `ANON_KEY`).
+2. Apply `supabase/migrations/0001_init.sql`. It creates the tables with row-level security.
+3. Enable the Google and Apple providers in the stack's `.env`. Redirect URLs: `spamset://auth-callback` and your web origin.
 
 On iOS, Apple sign-in is native; on Android and web it uses browser OAuth. Google uses browser OAuth everywhere.
 
