@@ -4,14 +4,16 @@ A kettlebell training app for iOS, Android and web, built with Expo. It runs cir
 
 ## Features
 
-- **Exercises (14):**
-  - Swing, deadlift, goblet squat, reverse and side lunges, upright and bent-over rows, side bend, curl and halo.
-  - Single-arm clean, press and snatch, and the Turkish get-up.
+- **Exercises (75):**
+  - 15 kettlebell lifts: swing, deadlift, goblet squat, lunges, rows, side bend, curl, halo, pullover, clean, press, snatch and the Turkish get-up.
+  - 46 bodyweight and small-gear exercises (chair, pull-up bar, doorframe, dumbbells, band) and 14 stretches.
+  - Set the equipment you own in Profile; lists, the picker and suggestions hide what you can't do.
 - **Workout builder** (`src/app/builder.tsx`, `src/core/builder.ts`): combine any blocks and exercises into your own workouts. They sync with your account.
 - **Training types:** strength sets (double progression), circuits, EMOM, AMRAP, intervals/Tabata, ladders. Workouts are lists of blocks, compiled into a step timeline (`src/core/timeline.ts`).
 - **Progressive overload** (`src/core/progression.ts`)
   - **Strength sets:** add reps within the rep range; when every set hits the top, move to your next heavier bell. Two sessions in a row below the range step back down.
   - **Timed and circuit work:** two Easy ratings in a row move you up a bell.
+  - **Bodyweight:** reps climb by one (holds by 5 s) to the top of the range, then the app suggests the harder variant. Stretches don't progress.
 - **Session runner** (`src/core/runner.ts`, `src/app/session.tsx`)
   - Rep sets: Done, then confirm the reps you actually did.
   - Countdowns for timed work, rest, EMOM minutes and AMRAPs.

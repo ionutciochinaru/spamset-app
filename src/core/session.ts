@@ -1,4 +1,4 @@
-import { getExercise } from './exercises';
+import { getExercise, isStretch } from './exercises';
 import { initialPrescription, progressByEffort, progressSets, type Effort, type Prescription, type Progress } from './progression';
 import type { BlockKind, Target, Workout } from './workouts';
 
@@ -22,8 +22,8 @@ export type SessionLog = {
   /** AMRAP rounds completed, keyed by block index. */
   amrapRounds: Record<number, number>;
   effort: Record<string, Effort>;
-  /** Progression applied at save time, for History to explain. */
-  progress: Record<string, { change: Progress['change']; reason: string }>;
+  /** Progression applied at save time, for History to explain (`suggest`: a harder variant). */
+  progress: Record<string, { change: Progress['change']; reason: string; suggest?: string }>;
 };
 
 /** Reps of a rep-counted entry, both sides counted for unilateral exercises. */
@@ -39,6 +39,10 @@ export function volumeKg(log: SessionLog): number {
 
 export function totalReps(log: SessionLog): number {
   return log.entries.reduce((sum, e) => sum + entryReps(e), 0);
+}
+
+function summary({ change, reason, suggest }: Progress): SessionLog['progress'][string] {
+  return suggest ? { change, reason, suggest } : { change, reason };
 }
 
 /**
@@ -58,23 +62,23 @@ export function applyProgression(
 
   workout.blocks.forEach((block, index) => {
     const blockEntries = entries.filter((e) => e.block === index);
-    if (block.kind === 'sets') {
+    if (block.kind === 'sets' && !isStretch(getExercise(block.exercise))) {
       const prev = prescriptions[block.exercise] ?? initialPrescription(block.exercise, bells, block.repRange[0]);
       const reps = blockEntries.filter((e) => e.exercise === block.exercise).map((e) => e.done);
       if (!reps.length) return;
-      const result = progressSets(prev, block.repRange, reps, effort[block.exercise], bells);
+      const result = progressSets(prev, block.repRange, reps, effort[block.exercise], bells, block.exercise);
       prescriptions[block.exercise] = result.next;
-      progress[block.exercise] = { change: result.change, reason: result.reason };
+      progress[block.exercise] = summary(result);
       seen.add(block.exercise);
     }
   });
 
   for (const exercise of new Set(entries.map((e) => e.exercise))) {
-    if (seen.has(exercise)) continue;
+    if (seen.has(exercise) || isStretch(getExercise(exercise))) continue;
     const prev = prescriptions[exercise] ?? initialPrescription(exercise, bells);
-    const result = progressByEffort(prev, effort[exercise], bells);
+    const result = progressByEffort(prev, effort[exercise], bells, exercise);
     prescriptions[exercise] = result.next;
-    progress[exercise] = { change: result.change, reason: result.reason };
+    progress[exercise] = summary(result);
   }
   return { prescriptions, progress };
 }

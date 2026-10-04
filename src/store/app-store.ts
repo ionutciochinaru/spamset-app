@@ -8,6 +8,7 @@ import 'expo-sqlite/localStorage/install';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { isLoaded, getExercise, type Equipment } from '@/core/exercises';
 import { initialPrescription, targetReps, type Effort, type Prescription } from '@/core/progression';
 import { applyProgression, type SessionLog, type SetEntry } from '@/core/session';
 import type { LoadPlan } from '@/core/timeline';
@@ -20,6 +21,8 @@ export type Settings = {
   units: Units;
   /** Kettlebells you own, in kg. Progression only moves between these. */
   bells: number[];
+  /** Equipment you own; the library and workouts hide what needs anything else. Read with ownedEquipment(). */
+  equipment?: Equipment[];
   haptics: boolean;
 };
 
@@ -61,7 +64,12 @@ type Actions = {
 
 export type RemoteState = Pick<State, 'settings' | 'prescriptions' | 'customWorkouts' | 'stateUpdatedAt'>;
 
-export const DEFAULT_SETTINGS: Settings = { units: 'kg', bells: [8, 12, 16, 20, 24], haptics: true };
+export const DEFAULT_SETTINGS: Settings = { units: 'kg', bells: [8, 12, 16, 20, 24], equipment: ['kettlebell'], haptics: true };
+
+/** Settings saved before equipment existed (or synced from such a device) owned kettlebells only. */
+export function ownedEquipment(settings: Settings): Equipment[] {
+  return settings.equipment ?? ['kettlebell'];
+}
 
 const STORAGE_KEY = 'spamset';
 // The app was called Kettlebell Swing: move data saved under the old key on first launch.
@@ -175,4 +183,14 @@ export const useApp = create<State & Actions>()(
 export function formatLoad(kg: number, units: Units): string {
   if (!kg) return 'Bodyweight';
   return units === 'kg' ? `${kg} kg` : `${Math.round(kg * 2.20462)} lb`;
+}
+
+/** Load for an exercise line: the bell for kettlebell work, nothing for bodyweight and stretches. */
+export function loadLabel(exerciseId: string, kg: number, units: Units): string {
+  return isLoaded(getExercise(exerciseId)) ? formatLoad(kg, units) : '';
+}
+
+/** Join the non-empty parts of a detail line with middle dots. */
+export function joinDetail(...parts: (string | undefined | false)[]): string {
+  return parts.filter(Boolean).join(' · ');
 }

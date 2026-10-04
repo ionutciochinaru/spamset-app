@@ -60,7 +60,7 @@
     "lint": "expo lint",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "animations": "python3 tools/animation/export_3d.py && python3 tools/animation/export_thumbs.py",
+    "animations": "python3 tools/animation/export_3d.py --review && python3 tools/animation/export_thumbs.py",
     "validate:animations": "python3 tools/animation/validate.py --output /tmp/kb-geometry.json"
   },
   "private": true,

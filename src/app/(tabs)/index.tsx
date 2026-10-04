@@ -4,8 +4,8 @@ import { useMemo } from 'react';
 import { Body, Button, Card, Heading, Label, Row, Screen, Stat, Title } from '@/components/ui';
 import { WorkoutCard } from '@/components/workout-card';
 import { totalReps, volumeKg } from '@/core/session';
-import { PRESET_WORKOUTS } from '@/core/workouts';
-import { formatLoad, useApp } from '@/store/app-store';
+import { PRESET_WORKOUTS, workoutEquipment, workoutFocus } from '@/core/workouts';
+import { formatLoad, useApp, ownedEquipment } from '@/store/app-store';
 
 function startOfWeek(date = new Date()) {
   const d = new Date(date);
@@ -17,7 +17,8 @@ function startOfWeek(date = new Date()) {
 export default function Today() {
   const sessions = useApp((s) => s.sessions);
   const customWorkouts = useApp((s) => s.customWorkouts);
-  const units = useApp((s) => s.settings.units);
+  const settings = useApp((s) => s.settings);
+  const units = settings.units;
 
   const week = useMemo(() => {
     const since = startOfWeek().toISOString();
@@ -29,12 +30,16 @@ export default function Today() {
     };
   }, [sessions]);
 
-  // Suggest the preset trained least recently, so the week rotates through training types.
+  // Suggest the training session done least recently that your equipment allows, so the week
+  // rotates through training types. Stretch-only sessions are extras, not the main suggestion.
   const next = useMemo(() => {
-    const all = [...PRESET_WORKOUTS, ...customWorkouts];
+    const owned = ownedEquipment(settings);
+    const all = [...PRESET_WORKOUTS, ...customWorkouts].filter(
+      (w) => workoutFocus(w) !== 'mobility' && workoutEquipment(w).every((e) => owned.includes(e)),
+    );
     const lastDone = (id: string) => sessions.find((s) => s.workoutId === id)?.startedAt ?? '';
     return [...all].sort((a, b) => lastDone(a.id).localeCompare(lastDone(b.id)))[0];
-  }, [sessions, customWorkouts]);
+  }, [sessions, customWorkouts, settings]);
 
   const last = sessions[0];
   const today = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
@@ -42,7 +47,7 @@ export default function Today() {
   return (
     <Screen>
       <Label>{today}</Label>
-      <Title>Ready to swing?</Title>
+      <Title>Ready to work?</Title>
 
       <Card>
         <Label>This week</Label>

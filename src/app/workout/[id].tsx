@@ -7,7 +7,7 @@ import { BellPicker } from '@/components/bell-picker';
 import { Body, Button, Card, Heading, Label, Row, Screen, Tag, Title } from '@/components/ui';
 import { workoutMinutes } from '@/components/workout-card';
 import { Palette, Radius } from '@/constants/theme';
-import { getExercise } from '@/core/exercises';
+import { getExercise, isLoaded } from '@/core/exercises';
 import { formatTarget } from '@/core/timeline';
 import { BLOCK_LABELS, getWorkout, workoutExercises, type Block } from '@/core/workouts';
 import { useApp } from '@/store/app-store';
@@ -38,6 +38,7 @@ export default function WorkoutDetail() {
   if (!workout) return null;
   const plan = loadPlan();
   void prescriptions; // Re-render when progression or bells change.
+  const loaded = workoutExercises(workout).filter((e) => isLoaded(getExercise(e)));
 
   return (
     <Screen>
@@ -67,18 +68,20 @@ export default function WorkoutDetail() {
         );
       })}
 
-      <Card>
-        <Heading>Bells</Heading>
-        <Body muted style={{ fontSize: 14 }}>
-          Progression picks these automatically. Change one here if you want a different bell today.
-        </Body>
-        {workoutExercises(workout).map((exercise) => (
-          <View key={exercise} style={{ gap: 6 }}>
-            <Body>{getExercise(exercise).name}</Body>
-            <BellPicker exercise={exercise} load={plan.load(exercise)} />
-          </View>
-        ))}
-      </Card>
+      {loaded.length > 0 && (
+        <Card>
+          <Heading>Bells</Heading>
+          <Body muted style={{ fontSize: 14 }}>
+            Progression picks these automatically. Change one here if you want a different bell today.
+          </Body>
+          {loaded.map((exercise) => (
+            <View key={exercise} style={{ gap: 6 }}>
+              <Body>{getExercise(exercise).name}</Body>
+              <BellPicker exercise={exercise} load={plan.load(exercise)} />
+            </View>
+          ))}
+        </Card>
+      )}
 
       <Button label="Start workout" kind="go" large onPress={() => router.push({ pathname: '/session', params: { workout: workout.id } })} />
       {custom.some((w) => w.id === workout.id) && (

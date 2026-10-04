@@ -2,19 +2,19 @@ import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
 import { Body, Button, Card, Heading, Label, Row, Segmented, Title } from '@/components/ui';
 import { MaxContentWidth, Palette, Radius, Spacing } from '@/constants/theme';
-import { getExercise } from '@/core/exercises';
+import { getExercise, isStretch } from '@/core/exercises';
 import type { Effort } from '@/core/progression';
 import { currentStep, elapsed, remaining, runnerReducer, startRunner, type RunnerState } from '@/core/runner';
 import type { SessionLog } from '@/core/session';
 import { compileWorkout, formatTarget, type Step } from '@/core/timeline';
 import { getWorkout } from '@/core/workouts';
-import { formatLoad, useApp } from '@/store/app-store';
+import { joinDetail, loadLabel, useApp } from '@/store/app-store';
 
 function clock(seconds: number): string {
   const s = Math.ceil(seconds);
@@ -114,7 +114,7 @@ function WorkView({ state, step, now, dispatch }: ViewProps<'work'>) {
       <FigureViewer clipId={exercise.animation} controls={false} style={styles.viewer} />
       <Row style={{ justifyContent: 'space-between' }}>
         <Heading style={{ color: Palette.accent }}>
-          {formatTarget(step.target, step.exercise)} · {formatLoad(step.load, units)}
+          {joinDetail(formatTarget(step.target, step.exercise), loadLabel(step.exercise, step.load, units))}
         </Heading>
         <Text style={styles.clock}>{big}</Text>
       </Row>
@@ -171,7 +171,7 @@ function RestView({ state, step, now, dispatch }: ViewProps<'rest'>) {
             <>
               <Heading>{nextExercise.name}</Heading>
               <Body muted>
-                {formatTarget(next.target, next.exercise)} · {formatLoad(next.load, units)} · {next.label}
+                {joinDetail(formatTarget(next.target, next.exercise), loadLabel(next.exercise, next.load, units), next.label)}
               </Body>
               <FigureViewer clipId={nextExercise.animation} controls={false} style={styles.nextViewer} />
             </>
@@ -207,7 +207,7 @@ function AmrapView({ state, step, now, dispatch }: ViewProps<'amrap'>) {
               <Body style={{ color: i === focus ? Palette.accent : Palette.text }}>{getExercise(s.exercise).name}</Body>
             </Pressable>
             <Body muted>
-              {formatTarget(s.target, s.exercise)} · {formatLoad(s.load, units)}
+              {joinDetail(formatTarget(s.target, s.exercise), loadLabel(s.exercise, s.load, units))}
             </Body>
           </Row>
         ))}
@@ -224,7 +224,8 @@ function Finish({ state, workoutId, startedAt }: { state: RunnerState; workoutId
   const insets = useSafeAreaInsets();
   const saveSession = useApp((s) => s.saveSession);
   const custom = useApp((s) => s.customWorkouts);
-  const exercises = [...new Set(state.entries.map((e) => e.exercise))];
+  // Stretches never progress, so only training exercises are rated.
+  const exercises = [...new Set(state.entries.map((e) => e.exercise))].filter((id) => !isStretch(getExercise(id)));
   const [effort, setEffort] = useState<Record<string, Effort>>(() => Object.fromEntries(exercises.map((e) => [e, 'good'])));
   const [saved, setSaved] = useState<SessionLog>();
 
@@ -234,10 +235,11 @@ function Finish({ state, workoutId, startedAt }: { state: RunnerState; workoutId
   };
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 16 }]}>
+    <ScrollView style={styles.screen} contentContainerStyle={{ paddingTop: insets.top + 24, paddingBottom: insets.bottom + 16 }}>
       <View style={[styles.column, { gap: Spacing.three }]}>
         <Title>{saved ? 'Saved' : 'Workout done'}</Title>
         {!state.entries.length && <Body muted>Nothing was logged.</Body>}
+        {state.entries.length > 0 && !exercises.length && !saved && <Body muted>Nice stretch. Save it to your history.</Body>}
         {!saved &&
           exercises.map((id) => (
             <Card key={id}>
@@ -272,7 +274,7 @@ function Finish({ state, workoutId, startedAt }: { state: RunnerState; workoutId
           </>
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 

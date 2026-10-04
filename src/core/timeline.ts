@@ -1,4 +1,4 @@
-import { getExercise } from './exercises';
+import { getExercise, isTimed } from './exercises';
 import type { Block, BlockKind, Target, Workout } from './workouts';
 
 export type WorkMode =
@@ -38,7 +38,7 @@ export type Step = WorkStep | RestStep | AmrapStep;
 
 export type LoadPlan = {
   load: (exerciseId: string) => number;
-  /** Target reps for a strength-sets block, from the exercise's progression. */
+  /** Target reps (seconds for holds) for a strength-sets block, from the exercise's progression. */
   reps: (exerciseId: string, repRange: [number, number]) => number;
 };
 
@@ -67,8 +67,10 @@ function compileBlock(block: Block, index: number, plan: LoadPlan): Step[] {
   switch (block.kind) {
     case 'sets': {
       const reps = plan.reps(block.exercise, block.repRange);
+      // Timed exercises (planks, holds) count the range in seconds.
+      const target: Target = isTimed(getExercise(block.exercise)) ? { seconds: reps } : { reps };
       for (let s = 0; s < block.sets; s++) {
-        work(block.exercise, { reps }, `Set ${s + 1} of ${block.sets}`);
+        work(block.exercise, target, `Set ${s + 1} of ${block.sets}`);
         if (s < block.sets - 1) rest(block.rest, 'Rest');
       }
       break;

@@ -1,6 +1,14 @@
 /** Custom workout editing: sensible block defaults, validation and ids. */
-import { getExercise } from './exercises';
-import { BLOCK_LABELS, type Block, type BlockKind, type Station, type Workout } from './workouts';
+import { getExercise, isTimed } from './exercises';
+import { BLOCK_LABELS, type Block, type BlockKind, type Station, type Target, type Workout } from './workouts';
+
+const byIdTimed = (id: string) => {
+  try {
+    return isTimed(getExercise(id));
+  } catch {
+    return false;
+  }
+};
 
 export const BLOCK_KINDS: BlockKind[] = ['sets', 'circuit', 'emom', 'amrap', 'intervals', 'ladder'];
 
@@ -13,12 +21,23 @@ export const BLOCK_HELP: Record<BlockKind, string> = {
   ladder: 'Reps climb (or descend) each rung with short rests.',
 };
 
-const station = (exercise: string, reps = 10): Station => ({ exercise, target: { reps } });
+/** A target in the exercise's own unit: reps, or seconds for holds and timed moves. */
+export function defaultTarget(exercise: string): Target {
+  return isTimed(getExercise(exercise)) ? { seconds: 30 } : { reps: 10 };
+}
+
+/** Keep a station's target when the unit still fits, otherwise switch to the new exercise's default. */
+export function retarget(station: Station, exercise: string): Station {
+  const fits = isTimed(getExercise(exercise)) === 'seconds' in station.target;
+  return { ...station, exercise, target: fits ? station.target : defaultTarget(exercise) };
+}
+
+const station = (exercise: string): Station => ({ exercise, target: defaultTarget(exercise) });
 
 export function defaultBlock(kind: BlockKind, exercise = 'kb-swing'): Block {
   switch (kind) {
     case 'sets':
-      return { kind, exercise, sets: 3, repRange: [8, 12], rest: 60 };
+      return { kind, exercise, sets: 3, repRange: isTimed(getExercise(exercise)) ? [20, 45] : [8, 12], rest: 60 };
     case 'circuit':
       return { kind, rounds: 3, restBetweenStations: 15, restBetweenRounds: 60, stations: [station(exercise)] };
     case 'emom':
@@ -28,7 +47,7 @@ export function defaultBlock(kind: BlockKind, exercise = 'kb-swing'): Block {
     case 'intervals':
       return { kind, work: 30, rest: 30, rounds: 8, stations: [{ exercise, target: { seconds: 30 } }] };
     case 'ladder':
-      return { kind, exercise, from: 2, to: 10, step: 2, rest: 30 };
+      return { kind, exercise: isTimed(getExercise(exercise)) ? 'kb-swing' : exercise, from: 2, to: 10, step: 2, rest: 30 };
   }
 }
 
@@ -55,6 +74,7 @@ export function validateWorkout(workout: Workout): string[] {
     }
     if (block.kind === 'sets' && block.repRange[0] > block.repRange[1]) errors.push(`${label}: minimum reps exceed maximum.`);
     if (block.kind === 'ladder' && block.from === block.to) errors.push(`${label}: start and end rungs are the same.`);
+    if (block.kind === 'ladder' && exercises.some((id) => byIdTimed(id))) errors.push(`${label}: ladders need an exercise counted in reps.`);
   });
   return errors;
 }

@@ -5,8 +5,8 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ExercisePicker } from '@/components/exercise-picker';
 import { Body, Button, Card, Label, Row, Screen, Stepper, Title } from '@/components/ui';
 import { Palette, Radius, Spacing } from '@/constants/theme';
-import { BLOCK_HELP, BLOCK_KINDS, defaultBlock, describeWorkout, emptyWorkout, moveItem, normalizeBlock, validateWorkout } from '@/core/builder';
-import { getExercise } from '@/core/exercises';
+import { BLOCK_HELP, BLOCK_KINDS, defaultBlock, describeWorkout, emptyWorkout, moveItem, normalizeBlock, retarget, validateWorkout } from '@/core/builder';
+import { getExercise, isTimed } from '@/core/exercises';
 import { compileWorkout, estimateSeconds } from '@/core/timeline';
 import { BLOCK_LABELS, type Block, type Station, type Workout } from '@/core/workouts';
 import { useApp } from '@/store/app-store';
@@ -123,28 +123,45 @@ function IconButton({ label, hint, onPress }: { label: string; hint: string; onP
 
 function BlockEditor({ block, onChange }: { block: Block; onChange: (block: Block) => void }) {
   switch (block.kind) {
-    case 'sets':
+    case 'sets': {
+      // Holds (planks, timed moves) use a range in seconds.
+      const timed = isTimed(getExercise(block.exercise));
+      const unit = timed ? ' s' : '';
       return (
         <>
-          <ExercisePicker value={block.exercise} onChange={(exercise) => onChange({ ...block, exercise })} />
+          <ExercisePicker
+            value={block.exercise}
+            onChange={(exercise) =>
+              onChange(
+                isTimed(getExercise(exercise)) === timed
+                  ? { ...block, exercise }
+                  : { ...block, exercise, repRange: isTimed(getExercise(exercise)) ? [20, 45] : [8, 12] },
+              )
+            }
+          />
           <Stepper label="Sets" value={block.sets} min={1} max={20} onChange={(sets) => onChange({ ...block, sets })} />
           <Stepper
-            label="Min reps"
+            label={timed ? 'Shortest hold' : 'Min reps'}
+            unit={unit}
             value={block.repRange[0]}
-            min={1}
+            step={timed ? 5 : 1}
+            min={timed ? 5 : 1}
             max={block.repRange[1]}
             onChange={(min) => onChange({ ...block, repRange: [min, block.repRange[1]] })}
           />
           <Stepper
-            label="Max reps"
+            label={timed ? 'Longest hold' : 'Max reps'}
+            unit={unit}
             value={block.repRange[1]}
+            step={timed ? 5 : 1}
             min={block.repRange[0]}
-            max={50}
+            max={timed ? 300 : 50}
             onChange={(max) => onChange({ ...block, repRange: [block.repRange[0], max] })}
           />
           <Stepper label="Rest" unit=" s" value={block.rest} step={15} min={0} max={600} onChange={(rest) => onChange({ ...block, rest })} />
         </>
       );
+    }
     case 'ladder':
       return (
         <>
@@ -210,7 +227,7 @@ function Stations({ stations, onChange, timed }: { stations: Station[]; onChange
             </Text>
             <IconButton label="✕" hint="Remove station" onPress={() => onChange(stations.filter((_, k) => k !== i))} />
           </Row>
-          <ExercisePicker value={station.exercise} onChange={(exercise) => update(i, { ...station, exercise })} />
+          <ExercisePicker value={station.exercise} onChange={(exercise) => update(i, timed ? { ...station, exercise } : retarget(station, exercise))} />
           {!timed && 'reps' in station.target && (
             <Stepper
               label={getExercise(station.exercise).unilateral ? 'Reps per side' : 'Reps'}
@@ -218,6 +235,17 @@ function Stations({ stations, onChange, timed }: { stations: Station[]; onChange
               min={1}
               max={100}
               onChange={(reps) => update(i, { ...station, target: { reps } })}
+            />
+          )}
+          {!timed && 'seconds' in station.target && (
+            <Stepper
+              label="Time"
+              unit=" s"
+              value={station.target.seconds}
+              step={5}
+              min={5}
+              max={300}
+              onChange={(seconds) => update(i, { ...station, target: { seconds } })}
             />
           )}
         </View>

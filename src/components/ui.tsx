@@ -161,6 +161,45 @@ export function Stepper({
   );
 }
 
+/**
+ * Pill toggles that scroll sideways on narrow screens. Pass `selected` as one value for a
+ * single choice or several for a multi-select; `onToggle` gets the tapped value.
+ */
+export function Chips<T extends string>({
+  options,
+  selected,
+  onToggle,
+  wrap,
+}: {
+  options: { value: T; label: string }[];
+  selected: T | readonly T[];
+  onToggle: (value: T) => void;
+  /** Wrap onto several lines instead of scrolling (settings cards). */
+  wrap?: boolean;
+}) {
+  const isOn = (v: T) => (Array.isArray(selected) ? selected.includes(v) : selected === v);
+  const chips = options.map((o) => {
+    const on = isOn(o.value);
+    return (
+      <Pressable
+        key={o.value}
+        accessibilityRole="button"
+        accessibilityState={{ selected: on }}
+        hitSlop={4}
+        onPress={() => onToggle(o.value)}
+        style={({ pressed }) => [styles.chip, on && styles.chipOn, pressed && !on && { backgroundColor: Palette.tonalPressed }]}>
+        <Text style={[styles.chipText, on && styles.chipTextOn]}>{o.label}</Text>
+      </Pressable>
+    );
+  });
+  if (wrap) return <View style={[styles.row, { flexWrap: 'wrap' }]}>{chips}</View>;
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+      {chips}
+    </ScrollView>
+  );
+}
+
 export function Row({ children, style }: { children: ReactNode; style?: ViewStyle }) {
   return <View style={[styles.row, style]}>{children}</View>;
 }
@@ -192,6 +231,10 @@ export const styles = StyleSheet.create({
   statValue: { color: Palette.text, fontSize: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
   statLabel: { color: Palette.muted, fontSize: 12, fontWeight: '600' },
   row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  chip: { minHeight: 40, paddingHorizontal: 14, borderRadius: Radius.pill, backgroundColor: Palette.tonal, alignItems: 'center', justifyContent: 'center' },
+  chipOn: { backgroundColor: Palette.accent },
+  chipText: { color: Palette.muted, fontWeight: '700', fontSize: 14 },
+  chipTextOn: { color: Palette.bg },
   stepperRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
   stepperLabel: { color: Palette.text, fontSize: 15, flex: 1 },
   stepperControls: { flexDirection: 'row', alignItems: 'center', gap: 6 },

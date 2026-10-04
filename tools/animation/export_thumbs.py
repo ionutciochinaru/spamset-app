@@ -9,12 +9,15 @@ from pathlib import Path
 
 try:
     from . import render
-    from .export_3d import EXERCISES
+    from .export_3d import EXERCISES as LIFTS, SPAMSET
     from .motions import pose_for
 except ImportError:
     import render
-    from export_3d import EXERCISES
+    from export_3d import EXERCISES as LIFTS, SPAMSET
     from motions import pose_for
+
+# Every exercise the app lists: the bell-only lifts plus the whole Spamset catalog.
+EXERCISES = LIFTS + [e['id'] for e in SPAMSET if e['id'] not in LIFTS]
 
 ROOT = Path(__file__).resolve().parents[2]
 # Phase showing each movement's most recognisable position.
@@ -23,7 +26,7 @@ PHASE = {'kb-pullover': .4, 'kb-press': .5, 'kb-clean': 0., 'kb-snatch': 0., 'kb
 
 
 def main():
-    render.WIDTH, render.HEIGHT = 420, 234
+    render.WIDTH, render.HEIGHT = 320, 320  # square: every list shows thumbnails in square tiles
     out = ROOT / 'assets/images/exercises'
     out.mkdir(parents=True, exist_ok=True)
     for exercise in EXERCISES:

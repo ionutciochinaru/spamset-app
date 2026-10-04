@@ -1,4 +1,10 @@
-export type Pattern = 'hinge' | 'squat' | 'lunge' | 'pull' | 'press' | 'arms' | 'core' | 'full-body';
+import { BODYWEIGHT_EXERCISES } from './exercises-bodyweight';
+import { STRETCHES } from './exercises-stretches';
+
+export type Pattern = 'hinge' | 'squat' | 'lunge' | 'pull' | 'press' | 'arms' | 'core' | 'full-body' | 'mobility';
+
+/** What an exercise needs besides the floor. 'none' is bodyweight. */
+export type Equipment = 'kettlebell' | 'none' | 'chair' | 'pullup-bar' | 'doorframe' | 'dumbbells' | 'band';
 
 export type Exercise = {
   id: string;
@@ -6,6 +12,13 @@ export type Exercise = {
   /** Clip id in assets/animations (exported from tools/animation). */
   animation: string;
   pattern: Pattern;
+  equipment: Equipment;
+  /** Stretches are held or flowed through and never progress. Default strength. */
+  kind?: 'strength' | 'stretch';
+  /** Counted in seconds (holds, timed movements) rather than reps. Default reps. */
+  unit?: 'reps' | 'seconds';
+  /** Next harder variant, suggested once this one tops its range. */
+  harder?: string;
   /** Worked one side at a time; targets are per side. */
   unilateral: boolean;
   /** How a single repetition is counted. */
@@ -17,12 +30,13 @@ export type Exercise = {
   cues: string[];
 };
 
-export const EXERCISES: Exercise[] = [
+const KETTLEBELL_EXERCISES: Exercise[] = [
   {
     id: 'kb-swing',
     name: 'Two-hand swing',
     animation: 'kb-swing',
     pattern: 'hinge',
+    equipment: 'kettlebell',
     unilateral: false,
     counting: 'One backswing and float to chest height',
     primary: ['Glutes', 'Hamstrings'],
@@ -39,6 +53,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Deadlift',
     animation: 'kb-deadlift',
     pattern: 'hinge',
+    equipment: 'kettlebell',
     unilateral: false,
     counting: 'One lift from the floor to standing',
     primary: ['Glutes', 'Hamstrings'],
@@ -55,6 +70,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Goblet squat',
     animation: 'goblet-squat',
     pattern: 'squat',
+    equipment: 'kettlebell',
     unilateral: false,
     counting: 'One descent and stand',
     primary: ['Quads', 'Glutes'],
@@ -71,6 +87,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Goblet reverse lunge',
     animation: 'kb-reverse-lunge',
     pattern: 'lunge',
+    equipment: 'kettlebell',
     unilateral: true,
     counting: 'One step back and return, per side',
     primary: ['Quads', 'Glutes'],
@@ -86,6 +103,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Goblet side lunge',
     animation: 'kb-side-lunge',
     pattern: 'lunge',
+    equipment: 'kettlebell',
     unilateral: true,
     counting: 'One shift and return, per side',
     primary: ['Adductors', 'Glutes', 'Quads'],
@@ -101,6 +119,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Upright row',
     animation: 'kb-upright-row',
     pattern: 'pull',
+    equipment: 'kettlebell',
     unilateral: false,
     counting: 'One pull and lower',
     primary: ['Shoulders', 'Upper back'],
@@ -116,6 +135,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Bent-over row',
     animation: 'kb-bent-row',
     pattern: 'pull',
+    equipment: 'kettlebell',
     unilateral: true,
     counting: 'One row and lower, per side',
     primary: ['Upper back', 'Lats'],
@@ -132,6 +152,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Side bend',
     animation: 'kb-side-bend',
     pattern: 'core',
+    equipment: 'kettlebell',
     unilateral: true,
     counting: 'One bend and return, per side',
     primary: ['Obliques'],
@@ -148,6 +169,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Curl',
     animation: 'kb-curl',
     pattern: 'arms',
+    equipment: 'kettlebell',
     unilateral: false,
     counting: 'One curl and lower',
     primary: ['Biceps'],
@@ -164,6 +186,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Halo',
     animation: 'kb-halo',
     pattern: 'core',
+    equipment: 'kettlebell',
     unilateral: true,
     counting: 'One full circle, per direction',
     primary: ['Shoulders'],
@@ -180,6 +203,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Single-arm clean',
     animation: 'kb-clean',
     pattern: 'hinge',
+    equipment: 'kettlebell',
     unilateral: true,
     counting: 'One clean from the backswing to the rack, per side',
     primary: ['Glutes', 'Hamstrings'],
@@ -196,6 +220,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Single-arm press',
     animation: 'kb-press',
     pattern: 'press',
+    equipment: 'kettlebell',
     unilateral: true,
     counting: 'One press from the rack to lockout, per side',
     primary: ['Shoulders', 'Triceps'],
@@ -212,6 +237,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Single-arm snatch',
     animation: 'kb-snatch',
     pattern: 'hinge',
+    equipment: 'kettlebell',
     unilateral: true,
     counting: 'One snatch from the backswing to lockout, per side',
     primary: ['Glutes', 'Hamstrings', 'Shoulders'],
@@ -228,6 +254,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Turkish get-up',
     animation: 'kb-getup',
     pattern: 'full-body',
+    equipment: 'kettlebell',
     unilateral: true,
     counting: 'One get-up to standing and back down, per side',
     repSeconds: 30,
@@ -246,6 +273,7 @@ export const EXERCISES: Exercise[] = [
     name: 'Standing pullover',
     animation: 'kb-pullover',
     pattern: 'press',
+    equipment: 'kettlebell',
     unilateral: false,
     counting: 'One arc over the head and back to the chest',
     primary: ['Lats', 'Triceps'],
@@ -259,10 +287,60 @@ export const EXERCISES: Exercise[] = [
   },
 ];
 
+export const EXERCISES: Exercise[] = [...KETTLEBELL_EXERCISES, ...BODYWEIGHT_EXERCISES, ...STRETCHES];
+
 const byId = new Map(EXERCISES.map((e) => [e.id, e]));
 
 export function getExercise(id: string): Exercise {
   const exercise = byId.get(id);
   if (!exercise) throw new Error(`Unknown exercise: ${id}`);
   return exercise;
+}
+
+/** Uses a weight that progression moves between (your kettlebells). */
+export function isLoaded(exercise: Exercise): boolean {
+  return exercise.equipment === 'kettlebell';
+}
+
+export function isTimed(exercise: Exercise): boolean {
+  return exercise.unit === 'seconds';
+}
+
+export function isStretch(exercise: Exercise): boolean {
+  return exercise.kind === 'stretch';
+}
+
+export const EQUIPMENT_LABELS: Record<Equipment, string> = {
+  kettlebell: 'Kettlebells',
+  none: 'Bodyweight',
+  chair: 'Chair',
+  'pullup-bar': 'Pull-up bar',
+  doorframe: 'Doorframe',
+  dumbbells: 'Dumbbells',
+  band: 'Resistance band',
+};
+
+/** Equipment you can own (bodyweight needs nothing). */
+export const OWNABLE_EQUIPMENT: Exclude<Equipment, 'none'>[] = ['kettlebell', 'chair', 'pullup-bar', 'doorframe', 'dumbbells', 'band'];
+
+export function canDo(exercise: Exercise, owned: readonly Equipment[]): boolean {
+  return exercise.equipment === 'none' || owned.includes(exercise.equipment);
+}
+
+export type Category = 'kettlebell' | 'bodyweight' | 'core' | 'gear' | 'stretch';
+
+export const CATEGORY_LABELS: Record<Category, string> = {
+  kettlebell: 'Kettlebell',
+  bodyweight: 'Bodyweight',
+  core: 'Core',
+  gear: 'Other gear',
+  stretch: 'Stretch',
+};
+
+/** Library grouping: stretches, bells, bodyweight core, other bodyweight, other equipment. */
+export function exerciseCategory(exercise: Exercise): Category {
+  if (isStretch(exercise)) return 'stretch';
+  if (exercise.equipment === 'kettlebell') return 'kettlebell';
+  if (exercise.equipment !== 'none') return 'gear';
+  return exercise.pattern === 'core' ? 'core' : 'bodyweight';
 }

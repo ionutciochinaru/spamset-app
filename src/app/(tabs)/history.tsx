@@ -8,7 +8,7 @@ import { totalReps, volumeKg, type SessionLog } from '@/core/session';
 import { deleteSession } from '@/lib/sync';
 import { formatLoad, useApp } from '@/store/app-store';
 
-const CHANGE_LABEL = { 'load-up': 'Heavier bell next', 'load-down': 'Lighter bell next', 'reps-up': 'More reps next', hold: 'Hold', maxed: 'Maxed out' };
+const CHANGE_LABEL = { 'load-up': 'Heavier bell next', 'load-down': 'Lighter bell next', 'reps-up': 'More reps next', hold: 'Hold', maxed: 'Top of the range' };
 
 /** Weekly volume for the last eight weeks, newest last. */
 function weeklyVolume(sessions: SessionLog[]): { label: string; kg: number }[] {
@@ -106,10 +106,15 @@ function summarize(s: SessionLog): { exercise: string; text: string }[] {
   const groups = new Map<string, string[]>();
   for (const e of s.entries) {
     const list = groups.get(e.exercise) ?? [];
-    list.push('reps' in e.target ? `${e.done}×${e.load}` : `${e.done}s×${e.load}`);
+    const done = 'reps' in e.target ? `${e.done}` : `${e.done}s`;
+    list.push(e.load ? `${done}×${e.load}` : done);
     groups.set(e.exercise, list);
   }
-  return [...groups].map(([exercise, sets]) => ({ exercise, text: `${sets.join(', ')} kg` }));
+  // Loads are kg; bodyweight and stretches have none.
+  return [...groups].map(([exercise, sets]) => ({
+    exercise,
+    text: s.entries.some((e) => e.exercise === exercise && e.load) ? `${sets.join(', ')} kg` : sets.join(', '),
+  }));
 }
 
 const styles = StyleSheet.create({

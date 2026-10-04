@@ -2,11 +2,12 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
-import { Body, Button, Card, Heading, Label, Row, Screen, Segmented, Title } from '@/components/ui';
+import { Body, Button, Card, Chips, Heading, Label, Row, Screen, Segmented, Title } from '@/components/ui';
 import { Palette, Radius } from '@/constants/theme';
 import { accountsEnabled, signInWithApple, signInWithGoogle, signOut, useSession } from '@/lib/auth';
 import { syncNow } from '@/lib/sync';
-import { formatLoad, useApp, type Units } from '@/store/app-store';
+import { EQUIPMENT_LABELS, OWNABLE_EQUIPMENT, type Equipment } from '@/core/exercises';
+import { formatLoad, ownedEquipment, useApp, type Units } from '@/store/app-store';
 
 const COMMON_BELLS = [4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 32, 36, 40, 44, 48];
 
@@ -22,6 +23,10 @@ export default function Profile() {
     const bells = settings.bells.includes(kg) ? settings.bells.filter((b) => b !== kg) : [...settings.bells, kg];
     if (bells.length) update({ bells: bells.sort((a, b) => a - b) });
   };
+
+  const owned = ownedEquipment(settings);
+  const toggleEquipment = (item: Equipment) =>
+    update({ equipment: owned.includes(item) ? owned.filter((e) => e !== item) : [...owned, item] });
 
   const attempt = async (action: () => Promise<unknown>) => {
     setStatus(undefined);
@@ -79,21 +84,36 @@ export default function Profile() {
       </Card>
 
       <Card>
-        <Label>Your kettlebells</Label>
+        <Label>Your equipment</Label>
         <Body muted style={{ fontSize: 14 }}>
-          Select every bell you own. Progression only suggests these.
+          Bodyweight and stretches are always available. Exercises and workouts that need anything else only show when you have it.
         </Body>
-        <View style={styles.bells}>
-          {COMMON_BELLS.map((kg) => {
-            const owned = settings.bells.includes(kg);
-            return (
-              <Pressable key={kg} onPress={() => toggleBell(kg)} style={[styles.bell, owned && styles.owned]}>
-                <Text style={[styles.bellText, owned && styles.ownedText]}>{formatLoad(kg, settings.units)}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <Chips
+          wrap
+          options={OWNABLE_EQUIPMENT.map((e) => ({ value: e, label: EQUIPMENT_LABELS[e] }))}
+          selected={owned}
+          onToggle={toggleEquipment}
+        />
       </Card>
+
+      {owned.includes('kettlebell') && (
+        <Card>
+          <Label>Your kettlebells</Label>
+          <Body muted style={{ fontSize: 14 }}>
+            Select every bell you own. Progression only suggests these.
+          </Body>
+          <View style={styles.bells}>
+            {COMMON_BELLS.map((kg) => {
+              const has = settings.bells.includes(kg);
+              return (
+                <Pressable key={kg} onPress={() => toggleBell(kg)} style={[styles.bell, has && styles.owned]}>
+                  <Text style={[styles.bellText, has && styles.ownedText]}>{formatLoad(kg, settings.units)}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </Card>
+      )}
 
       <Card>
         <Label>Units</Label>

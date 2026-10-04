@@ -3,11 +3,11 @@ import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { thumbnails } from '@/animation/thumbnails';
-import { getExercise } from '@/core/exercises';
+import { EQUIPMENT_LABELS, getExercise } from '@/core/exercises';
 import { compileWorkout, estimateSeconds } from '@/core/timeline';
-import { BLOCK_LABELS, workoutExercises, type Workout } from '@/core/workouts';
+import { BLOCK_LABELS, workoutEquipment, workoutExercises, type Workout } from '@/core/workouts';
 import { Palette, Radius } from '@/constants/theme';
-import { useApp } from '@/store/app-store';
+import { ownedEquipment, useApp } from '@/store/app-store';
 
 import { Body, Card, Heading, Row, Tag } from './ui';
 
@@ -18,6 +18,8 @@ export function workoutMinutes(workout: Workout, plan = useApp.getState().loadPl
 export function WorkoutCard({ workout }: { workout: Workout }) {
   const kinds = [...new Set(workout.blocks.map((b) => BLOCK_LABELS[b.kind]))];
   const exercises = workoutExercises(workout);
+  const owned = ownedEquipment(useApp((s) => s.settings));
+  const missing = workoutEquipment(workout).filter((e) => !owned.includes(e));
   return (
     <Card onPress={() => router.push({ pathname: '/workout/[id]', params: { id: workout.id } })}>
       <Row style={{ justifyContent: 'space-between' }}>
@@ -27,6 +29,9 @@ export function WorkoutCard({ workout }: { workout: Workout }) {
       <Row style={{ flexWrap: 'wrap' }}>
         {kinds.map((k) => (
           <Tag key={k} label={k} accent />
+        ))}
+        {missing.map((e) => (
+          <Tag key={e} label={`Needs ${EQUIPMENT_LABELS[e].toLowerCase()}`} />
         ))}
       </Row>
       <Body muted style={{ fontSize: 14 }}>
