@@ -407,7 +407,7 @@ ALLOWED_CONTACT = {
                        'upper_arm_l|shin_l': .02, 'upper_arm_r|shin_r': .02},
     # Knees stay together.
     'quad-stretch': {'hand_l|shin_l': .065, 'hand_r|shin_r': .065, 'forearm_l|shin_l': .03, 'forearm_r|shin_r': .03,
-                     'thigh_l|thigh_r': .03},
+                     'thigh_l|thigh_r': .03, 'shin_r|thigh_l': .015, 'shin_l|thigh_r': .015},
     # The helping hand holds the raised elbow; the raised arm lies beside the head.
     'triceps-stretch': {'hand_r|upper_arm_l': .03, 'forearm_r|upper_arm_l': .02, 'upper_arm_l|head': .03,
                         'forearm_l|head': .03, 'hand_l|head': .03, 'forearm_r|head': .03},

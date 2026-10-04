@@ -95,7 +95,9 @@ TEMPO = {'climbers': 1.6, 'reverse-lunge': 1.4,
          # The reaching arm swept 165 deg in under half a second (6 m/s).
          'side-bend': 1.6,
          # Standing up in 1.5 s needed more horizontal push than the feet can give.
-         'sit-stand': 1.5}
+         'sit-stand': 1.5,
+         # Heel to the bottom and back: about 0.9 m of foot travel each way.
+         'quad-stretch': 1.8}
 
 CATALOG = json.loads((Path(__file__).resolve().parents[1] / 'spamset-catalog.json').read_text())
 PROFILES = json.loads((Path(__file__).resolve().parents[1] / 'profiles.json').read_text())

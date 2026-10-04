@@ -157,7 +157,11 @@ def side_lean(p, angle):
     pelvis = p.j['pelvis']
     up = (0, sin(angle), cos(angle))
     p.up = up
-    p.j['chest'] = add(pelvis, mul(up, TORSO))
+    # Curved through the mid-back (the lower spine takes a third of the bend), not one rod
+    # hinged at the pelvis.
+    lower = (0, sin(angle/3), cos(angle/3))
+    p.j['spine_mid'] = add(pelvis, mul(lower, TORSO/2))
+    p.j['chest'] = add(p.j['spine_mid'], mul(up, TORSO/2))
     p.j['neck'] = add(p.j['chest'], mul(up, NECK))
     p.j['head'] = add(p.j['neck'], mul(up, HEAD))
     side = unit(cross(up, p.forward))
@@ -238,7 +242,7 @@ def overhead_reach(name, phase):
     t = hold_cycle(phase, into=.30, hold=.30)
     p = standing(name, phase)
     # Hands meet just within reach of straight arms (the midline is farther from each shoulder).
-    top = add(p.j['chest'], (.04, 0, .495))
+    top = add(p.j['chest'], (.04, 0, .512))  # nearly straight arms (they stayed bent ~40 deg)
     rise, join = stage(t, 0, .80), stage(t, .80, 1.)
     for s in SIDES:
         sg = side_sign(s)
@@ -271,9 +275,10 @@ def triceps_stretch(name, phase):
     grip = add(elbow, (.09, -.04, .0))
     # At rest the hands hang just clear of the thighs (no automatic arm clearance here).
     rest = add(shoulder_r, (.02, -.09, -.53))
-    path = mix_point(rest, front, stage(t, .30, .60))
-    path = mix_point(path, over, stage(t, .60, .82))
-    path = mix_point(path, grip, stage(t, .82, 1.))
+    # Even stages: the hand's short last legs flicked at ~3.6 m/s on the release.
+    path = mix_point(rest, front, stage(t, .22, .52))
+    path = mix_point(path, over, stage(t, .52, .76))
+    path = mix_point(path, grip, stage(t, .76, 1.))
     # Elbow forward and up: the upper arm passes in front of the head, not through it.
     p.arm('r', path, pole=add(shoulder_r, (.8, -.2, .4)))
     set_head(p, pitch=radians(10)*fold)
@@ -291,23 +296,24 @@ def cross_body_shoulder(name, phase):
     # Held a little in front of the chest (it sank 2 cm into it).
     across = add(p.j['chest'], (.29, -.28, -.02))
     wrist = mix_point(mix_point(rest_wrist(p, 'l'), front, lift), across, sweep)
-    p.arm('l', wrist, pole=add(shoulder, (-.2, .3, -.4)) if not sweep else add(shoulder, (.4, 0, -.2)))
+    # The pole turns with the sweep (switching it at once made the elbow jump 12-15 cm).
+    p.arm('l', wrist, pole=mix_point(add(shoulder, (-.2, .3, -.4)), add(shoulder, (.4, 0, -.2)), smooth(sweep)))
     elbow = p.j['elbow_l']
-    # The helping hand presses the outside of the upper arm, not into it.
-    grip = add(mix_point(elbow, shoulder, .22), (.08, -.01, .02))
+    # The helping palm presses just above the elbow, from the front.
+    grip = add(mix_point(elbow, shoulder, .12), (.07, 0, .03))
     p.arm('r', mix_point(rest_wrist(p, 'r'), grip, press), pole=add(p.j['shoulder_r'], (-.1, -.5, -.35)))
     p.view = dict(UPPER_VIEW, azimuth=25)
     return p
 
 def behind_back_clasp(name, phase):
     """S18 #14 / S19: hands swing back, fingers interlink, straight arms lift."""
-    t = ease_hold(phase)
+    t = hold_cycle(phase, into=.30, hold=.30)  # slower release (the hands snapped apart)
     lift = stage(t, .55, 1.)
     p = standing(name, phase, lean=-radians(5)*lift)
     reach = UPPER_ARM+FOREARM-.008
     for s in SIDES:
         shoulder = p.j['shoulder_'+s]
-        dy = -side_sign(s)*(SHOULDER_HALF-.035)
+        dy = -side_sign(s)*(SHOULDER_HALF-.05)  # two clasped fists side by side, not overlapping
         low_dx, high_dx = -.16, -.36
         dx = low_dx+(high_dx-low_dx)*lift
         clasp = add(shoulder, (dx, dy, -sqrt(reach**2-dx*dx-dy*dy)))
@@ -369,7 +375,7 @@ def oblique_twist(name, phase):
     """S21 #1 (standing): hands clasped at chest height, elbows out; rotate, hips square."""
     side, t = alternating(phase, into=.3, hold=.25)
     p = standing(name, phase)
-    twist(p, side_sign(side)*radians(60)*t)
+    twist(p, side_sign(side)*radians(50)*t)  # within a thoracic twist on square hips
     up, forward, _ = body_axes(p)
     across = unit(cross(up, forward))
     # Hands at chest height stay clear of the head from the viewing angle.
@@ -382,7 +388,7 @@ def oblique_twist(name, phase):
     p.view = {'azimuth': 0, 'elevation': 44}
     return p
 
-def kneel_on_all_fours(p, pelvis=(-.35, 0, .485)):
+def kneel_on_all_fours(p, pelvis=(-.35, 0, .497)):  # knees rest on the mat, not 1 cm into it
     p.torso(pelvis, up=sagittal(radians(12)))
     for s in SIDES:
         hip = p.j['hip_'+s]
@@ -412,10 +418,18 @@ def cat_cow(name, phase):
     cow = hold_cycle((phase*2) % 1., into=.35, hold=.25) if phase >= .5 else 0.
     p = Pose(name, phase)
     kneel_on_all_fours(p)
-    hands_under_shoulders(p)
     pelvis, chest = p.j['pelvis'], p.j['chest']
     normal = mul(p.forward, -1)  # the torso's forward is the belly side; the back is opposite
-    p.j['spine_mid'] = add(mix_point(pelvis, chest, .5), mul(normal, .085*cat-.07*cow))
+    # Each spine half keeps its length: as the back rounds or sags the chest draws toward the
+    # pelvis (a fixed chest stretched both halves by ~17 mm). Hands are placed after this.
+    bow = .085*cat-.07*cow
+    axis = unit(sub(chest, pelvis))
+    chord = 2*sqrt(max(0., (TORSO/2)**2-bow*bow))
+    shift = mul(axis, chord-TORSO)
+    for k in ('chest', 'neck', 'head', 'face', 'shoulder_l', 'shoulder_r'):
+        p.j[k] = add(p.j[k], shift)
+    p.j['spine_mid'] = add(add(pelvis, mul(axis, chord/2)), mul(normal, bow))
+    hands_under_shoulders(p)
     set_head(p, pitch=radians(55)*cat-radians(40)*cow)
     p.view = {'azimuth': 84, 'elevation': 8}
     return p
@@ -423,10 +437,11 @@ def cat_cow(name, phase):
 
 def quad_stretch(name, phase):
     """S18 #9: lift the heel toward the bottom, catch the ankle, knees together, hips forward."""
-    # Longer release than ease_hold: the leg came down at ~8 m/s.
-    t = hold_cycle(phase, into=.30, hold=.30)
+    # Longer lift and release than ease_hold: the leg came down at ~8 m/s.
+    t = hold_cycle(phase, into=.36, hold=.26)
     shift = stage(t, 0, .25)
-    p = Pose(name, phase).torso((0, -.07*shift, .945))
+    # Weight well over the standing foot before the heel lifts.
+    p = Pose(name, phase).torso((0, -.09*shift, .945))
     ankle_r = p.foot('r', ankle=(0, -HIP_HALF, ANKLE_HEIGHT))
     p.leg('r', ankle_r)
     hip = p.j['hip_l']
@@ -504,10 +519,12 @@ def hip_flexor_lunge(name, phase):
 
 def supine(p, pelvis_x=-.02):
     """Lying on the back, head toward -x."""
-    chest = (pelvis_x-TORSO, 0, .052)
-    p.torso((pelvis_x, 0, .052), up=(-1, 0, 0))
+    # Resting on the drawn body: pelvis and back on the mat, the back of the skull on it too
+    # (the head centre sat ~5 cm low, sinking the skull into the floor).
+    chest = (pelvis_x-TORSO, 0, .07)
+    p.torso((pelvis_x, 0, .07), up=(-1, 0, 0))
     p.j['neck'] = add(p.j['chest'], (-NECK, 0, .0))
-    p.j['head'] = add(p.j['neck'], (-HEAD, 0, .02))
+    p.j['head'] = add(p.j['neck'], (-HEAD, 0, .035))
     p.j['face'] = add(p.j['head'], (0, 0, .075))
     p.contacts['upper_back'] = (chest[0], 0, 0)
     p.contacts['head_ground'] = (p.j['head'][0], 0, 0)

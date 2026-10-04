@@ -136,8 +136,13 @@ export class HandModel {
     const palmCenter = wrist.clone().addScaledVector(y, PALM.length / 2 + 0.006);
     // A hand flat on the floor rests on it: the exported wrist sits ~5 cm up, which left the
     // palm hovering. Drop palm, fingers and thumb together onto the floor plane.
+    // Fades out as a lifting hand rises (a hard switch made the hand jump ~4 cm when it left
+    // or met the floor).
     const drop = new THREE.Vector3();
-    if (floor && !surface) drop.y = Math.min(0, PALM.thick / 2 + 0.002 - palmCenter.y);
+    if (!surface) {
+      const near = floor ? 1 : 1 - THREE.MathUtils.smoothstep(wrist.y, 0.06, 0.14);
+      drop.y = Math.min(0, PALM.thick / 2 + 0.002 - palmCenter.y) * near;
+    }
     palmCenter.add(drop);
     this.palm.place(palmCenter, x, y, z, [PALM.width, PALM.length, PALM.thick]);
 

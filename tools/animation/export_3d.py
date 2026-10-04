@@ -55,6 +55,8 @@ GRIP_REACH = .06
 UNDERHAND = {'chin-ups'}
 # Free hands closed into fists (hand state 3).
 FISTS = {'punches'}
+# Clasped or interlaced hands read as closed hands while they are together.
+CLASPS = {'behind-back-clasp', 'side-to-side-chops', 'overhead-reach'}
 
 
 def tube(points, width, color):
@@ -169,7 +171,8 @@ def export(exercise, review=False):
         # surface, 3 a fist.
         held = equipment_grips(exercise, pose)
         gripping = {s for prop in pose['props'] for s in prop.get('grips', {})} | set(held)
-        free = 3 if exercise in FISTS else 0
+        together = sum((a - b) ** 2 for a, b in zip(pose['joints']['palm_l'], pose['joints']['palm_r'])) ** .5 < .12
+        free = 3 if exercise in FISTS or (exercise in CLASPS and together) else 0
         hands = [1 if s in gripping else 2 if 'palm_' + s in pose['contacts'] else free for s in ('l', 'r')]
         frame = {'j': [coord for name in JOINTS for coord in to_three(joints[name])], 'b': bells, 'hs': hands}
         shapes = equipment(pose)

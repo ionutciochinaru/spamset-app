@@ -201,14 +201,14 @@ def decline_pushup(name, phase):
 def pike_pushup(name, phase):
     """S31: from an inverted V, bend the elbows to lower the head toward the floor; press back."""
     t = pulse(phase)
-    hip_z = .80
+    hip_z = .90  # hips high in the inverted V
     back = sqrt((THIGH+SHIN-.006)**2-(hip_z-ANKLE_HEIGHT-.036)**2)
     reach = TORSO+UPPER_ARM+FOREARM-.07
     front = sqrt(reach**2-(hip_z-.03)**2)
     top = atan2(hip_z-.03, front)
     # The trunk keeps its angle; hips and head lower together toward the hands.
     u = unit((cos(top), 0, -sin(top)))
-    p = Pose(name, phase).torso((.08*t, 0, hip_z-.11*t), up=u)
+    p = Pose(name, phase).torso((.08*t, 0, hip_z-.145*t), up=u)  # head drops to just above the floor
     for s in SIDES:
         ankle = p.foot(s, ankle=(-back, side_sign(s)*HIP_HALF, ANKLE_HEIGHT+.036), pitch=radians(14))
         p.leg(s, ankle, pole=add(p.j['hip_'+s], (1, 0, 0)))

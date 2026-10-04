@@ -74,7 +74,7 @@ def fly_steps(name, phase):
     # The lifting leg starts exactly where the standing leg stands (same spot, same IK) and
     # swings back about the hip, so the feet and knees match when the sides switch.
     start = (0., side_sign(side)*.08, ANKLE_HEIGHT)
-    ankle = add(hip, rotate(sub(start, hip), (0, 1, 0), radians(55)*t))
+    ankle = add(add(hip, rotate(sub(start, hip), (0, 1, 0), radians(55)*stage(t, .12, 1.))), (0, 0, .04*stage(t, 0, .25)))
     # The foot only points once it has left the floor (pitching it low drove the toe in).
     p.foot(side, ankle=ankle, pitch=radians(50)*stage(t, .2, 1.), contact=t < 1e-6)
     p.leg(side, ankle)
@@ -96,8 +96,11 @@ def side_leg_raises(name, phase):
     # The raised leg is built like the standing one (same IK, same rest length), so at rest it
     # matches it exactly: a straight free leg 1 cm into the floor popped the knees at the switch.
     rest = hip[2]-ANKLE_HEIGHT
-    d = (0, sg*sin(radians(40)*t), -cos(radians(40)*t))
-    ankle = add(hip, mul(d, rest))
+    swing = radians(40)*stage(t, .1, 1.)  # the leg swings out once the foot is off the floor
+    d = (0, sg*sin(swing), -cos(swing))
+    # The foot leaves and meets the floor vertically (the arc starts sideways along the floor,
+    # so it slid as it lifted and landed).
+    ankle = add(add(hip, mul(d, rest)), (0, 0, .04*stage(t, 0, .25)))
     p.foot(side, ankle=ankle, contact=t < 1e-6)
     p.leg(side, ankle)
     for s in SIDES:

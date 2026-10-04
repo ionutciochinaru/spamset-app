@@ -151,6 +151,8 @@ def bicycle_crunches(name, phase):
         if s == lead:
             pole = mix_point(pole, p.j['knee_'+side], t)
         p.arm(s, wrist, pole=pole)
+    # The head turns with the shoulders (it stayed still, so only the elbow seemed to move).
+    set_head(p, yaw=.7*turn)
     # More side-on: each leading elbow reads crossing toward the opposite knee.
     p.view = {'azimuth': 70, 'elevation': 14}
     return p
@@ -185,8 +187,10 @@ def prone(p, pelvis_x=-.02, lift=0., chest_lift=0.):
     """Face down, head toward -x; the person's left side is at -y."""
     # Pelvis 8 cm up: the drawn thighs and shirt rest on the floor instead of floating.
     p.torso((pelvis_x, 0, .08), up=(-1, 0, 0))
-    lower = toward_head(radians(0))
-    upper = toward_head(chest_lift)
+    # The chest rests on its front (a flat line through the pelvis buried the chest and the
+    # face in the mat): the trunk rises slightly from the hips.
+    lower = toward_head(radians(4))
+    upper = toward_head(chest_lift+radians(4))
     articulate(p, lower, upper)
     for s in SIDES:
         sg = side_sign(s)
@@ -262,7 +266,8 @@ def alt_arm_leg_plank(name, phase):
     side, local = two_reps(phase)
     t = hold_cycle(local, into=.3, hold=.3)
     p = Pose(name, phase)
-    u, ankles = plank_body(p, TOP)
+    # Feet wide (about 40 cm) for a stable base under one hand and one foot.
+    u, ankles = plank_body(p, TOP, foot_y=.20)
     leg = 'r' if side == 'l' else 'l'
     hip = p.j['hip_'+leg]
     d = rotate(mul(u, -1), (0, 1, 0), radians(22)*t)
