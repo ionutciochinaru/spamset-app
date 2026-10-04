@@ -1,86 +1,72 @@
 # Spamset Supabase on the VPS
 
-Spamset has two self-hosted Supabase stacks on the Hostinger VPS (`srv1826492.hstgr.cloud`,
-187.124.30.77), next to Loadout's and fully separate from them:
+Spamset runs self-hosted Supabase on the Hostinger VPS (`srv1826492.hstgr.cloud`, 187.124.30.77):
 
-| Environment | Used by | URL (`app.config.ts`) |
-| --- | --- | --- |
-| `dev-spamset` | local development, `development` and `preview` builds | `https://dev-api.spamset.example` (TODO) |
-| `prod-spamset` | `production` builds | `https://api.spamset.example` (TODO) |
+| Environment | Used by | URL (`app.config.ts`) | Directory | Ports (loopback) |
+| --- | --- | --- | --- | --- |
+| `dev-spamset` | local development, `development` and `preview` builds | `https://spamset-dev.loadoutlog.com` | `/root/dev-spamset` | 28000, 28443, 25432, 26543 |
+| `prod-spamset` | `production` builds | TODO | `/root/prod-spamset` | 38000, 38443, 35432, 36543 |
 
-The VPS runs Caddy in front of each stack's Kong gateway. Copy whatever layout `dev-loadout`
-uses on the server (directory, compose project, Caddy file) and change the names, ports and
-secrets as below. Never reuse a Loadout stack, its database, or its keys.
+The same server holds Loadout's stacks, shelved (stopped, data kept): `/root/supabase`
+(prod-loadout, `api.loadoutlog.com`) and `/root/dev-loadout`. Never reuse or modify them. The
+shared HTTPS proxy, `supabase-caddy`, lives in the `/root/supabase` compose project and must keep
+running; its Caddyfile is `/root/supabase/docker/Caddyfile`, and stacks reach it over the
+external `loadout-proxy` network.
 
-## 1. DNS
+## Create a stack
 
-Point both hostnames (A record) at `187.124.30.77`.
+1. DNS (Cloudflare): an `A` record for the host pointing at `187.124.30.77`, **DNS only**
+   (grey cloud), so Caddy can issue the certificate itself.
+2. Run the setup script. It refuses to touch anything that exists, adds 2 GB swap once, builds
+   the stack from the Supabase checkout already on the server (same versions as Loadout, none of
+   its data), generates fresh secrets, starts it, appends the Caddy route and prints the public
+   keys. Secrets stay in `/root/<stack>/.env`.
 
-## 2. Create each stack
+   ```sh
+   scp tools/vps/setup-stack.sh root@187.124.30.77:/root/
+   ssh root@187.124.30.77 'bash /root/setup-stack.sh dev-spamset spamset-dev.loadoutlog.com 2'
+   ```
 
-On the VPS, once per environment (`dev-spamset`, then `prod-spamset`):
+3. Apply the migrations in order:
+
+   ```sh
+   scp supabase/migrations/0001_init.sql root@187.124.30.77:/root/dev-spamset/
+   ssh root@187.124.30.77 'docker exec -i dev-spamset-db sh -c "PGPASSWORD=\$POSTGRES_PASSWORD psql -h localhost -U postgres -d postgres -v ON_ERROR_STOP=1" < /root/dev-spamset/0001_init.sql'
+   ```
+
+4. Put the printed `ANON_KEY` in `eas.json` (`EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` of the
+   matching profiles) and, for dev, in `.env.local`. It is public; never put `SERVICE_ROLE_KEY`
+   or `SUPABASE_SECRET_KEY` in the app.
+
+Check: `curl https://<host>/auth/v1/health` returns 401 without a key and 200 with
+`-H "apikey: <ANON_KEY>"`.
+
+Studio is served at `https://<host>/` behind basic auth (`DASHBOARD_USERNAME` /
+`DASHBOARD_PASSWORD` in the stack's `.env`).
+
+## Sign-in providers
+
+Self-hosted Supabase has no providers page. The script wires Google and Apple into the `auth`
+service, switched off. To enable one, set these in `/root/<stack>/.env` and run
+`docker compose up -d auth` in that directory:
+
+```
+GOOGLE_ENABLED=true
+GOOGLE_CLIENT_ID=...
+GOOGLE_SECRET=...
+APPLE_ENABLED=true
+APPLE_CLIENT_ID=<Services ID>,com.cjohnd.spamset
+APPLE_SECRET=<client secret JWT>
+```
+
+Register `https://<host>/auth/v1/callback` as the redirect URL in Google Cloud and Apple
+Developer. Allowed app redirects (`ADDITIONAL_REDIRECT_URLS`): `spamset://**`, `exp://**`,
+`http://localhost:8081/**`.
+
+## Day to day
 
 ```sh
-git clone --depth 1 https://github.com/supabase/supabase /tmp/supabase
-mkdir -p /opt/dev-spamset && cp -r /tmp/supabase/docker/* /opt/dev-spamset/
-cd /opt/dev-spamset && cp .env.example .env
+cd /root/dev-spamset && docker compose ps        # status
+docker compose logs -f auth                      # sign-in logs
+docker compose restart                           # restart the stack
 ```
-
-In `.env`:
-
-- New secrets for this stack: `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY`, `SERVICE_ROLE_KEY`
-  (generate the keys from the JWT secret as the Supabase self-hosting guide describes),
-  `DASHBOARD_PASSWORD`, `SECRET_KEY_BASE`, `VAULT_ENC_KEY`.
-- Ports that no other stack on the VPS uses: `KONG_HTTP_PORT`, `KONG_HTTPS_PORT`,
-  `POSTGRES_PORT`, `POOLER_PROXY_PORT_TRANSACTION`, `STUDIO_PORT`.
-- `API_EXTERNAL_URL` and `SUPABASE_PUBLIC_URL`: the stack's https URL.
-- `SITE_URL`: the web origin. `ADDITIONAL_REDIRECT_URLS=spamset://auth-callback,<web origin>`.
-
-Start it under its own compose project name so containers and volumes stay separate:
-
-```sh
-docker compose -p dev-spamset up -d
-```
-
-## 3. Caddy
-
-Add a site block per stack that proxies to its Kong port, then reload Caddy:
-
-```
-dev-api.spamset.example {
-    reverse_proxy localhost:<KONG_HTTP_PORT>
-}
-```
-
-Check: `curl https://dev-api.spamset.example/auth/v1/health` returns 401 without a key and 200
-with `-H "apikey: <ANON_KEY>"`.
-
-## 4. Sign-in providers
-
-Self-hosted Supabase has no providers page; set them in the stack's `.env` and pass them
-through to the `auth` service in `docker-compose.yml`:
-
-```
-GOTRUE_EXTERNAL_GOOGLE_ENABLED=true
-GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID=...
-GOTRUE_EXTERNAL_GOOGLE_SECRET=...
-GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI=https://<stack host>/auth/v1/callback
-GOTRUE_EXTERNAL_APPLE_ENABLED=true
-GOTRUE_EXTERNAL_APPLE_CLIENT_ID=<Services ID>,com.cjohnd.spamset
-GOTRUE_EXTERNAL_APPLE_SECRET=<client secret JWT>
-GOTRUE_EXTERNAL_APPLE_REDIRECT_URI=https://<stack host>/auth/v1/callback
-```
-
-Register `https://<stack host>/auth/v1/callback` in Google Cloud and Apple Developer. Restart
-with `docker compose -p dev-spamset up -d`.
-
-## 5. Schema
-
-Apply `supabase/migrations/*.sql` in order, from Studio's SQL editor or with `psql` against the
-stack's Postgres port. Apply to `dev-spamset` first; touch `prod-spamset` only deliberately.
-
-## 6. Wire the app
-
-1. Put the real hostnames in `SUPABASE_URL` (`app.config.ts`), `eas.json` and `.env.example`.
-2. Put each stack's `ANON_KEY` in `eas.json` (`EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) and the
-   dev one in `.env.local`. It is public; the `SERVICE_ROLE_KEY` never goes in the app.

@@ -10,8 +10,8 @@
       "autoIncrement": true,
       "env": {
         "SPAMSET_ENV": "dev-spamset",
-        "EXPO_PUBLIC_SUPABASE_URL": "https://dev-api.spamset.example",
-        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "EXPO_PUBLIC_SUPABASE_URL": "https://spamset-dev.loadoutlog.com",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzkxMTA2OTcyLCJleHAiOjE5NDg3ODY5NzJ9.Ac3CtSIe6LHphP9M4lEtSSmM1RqIpPtduvl-dZrqKLk"
       },
       "environment": "development",
       "channel": "development"
@@ -24,8 +24,8 @@
       },
       "env": {
         "SPAMSET_ENV": "dev-spamset",
-        "EXPO_PUBLIC_SUPABASE_URL": "https://dev-api.spamset.example",
-        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "EXPO_PUBLIC_SUPABASE_URL": "https://spamset-dev.loadoutlog.com",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzkxMTA2OTcyLCJleHAiOjE5NDg3ODY5NzJ9.Ac3CtSIe6LHphP9M4lEtSSmM1RqIpPtduvl-dZrqKLk"
       },
       "environment": "preview",
       "channel": "preview"
