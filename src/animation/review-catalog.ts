@@ -332,16 +332,6 @@ export const REVIEW_CATALOG: ReviewEntry[] = [
     "group": "stretching"
   },
   {
-    "id": "triceps-stretch",
-    "name": "Triceps stretch",
-    "group": "stretching"
-  },
-  {
-    "id": "cross-body-shoulder",
-    "name": "Cross-body stretch",
-    "group": "stretching"
-  },
-  {
     "id": "behind-back-clasp",
     "name": "Behind-back clasp",
     "group": "stretching"

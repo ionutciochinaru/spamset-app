@@ -255,56 +255,6 @@ def overhead_reach(name, phase):
     p.view = {'azimuth': 30, 'elevation': 6}
     return p
 
-def triceps_stretch(name, phase):
-    """S19 #8: raise one arm, bend the elbow so the hand drops down the back; the other hand holds above the elbow.
-
-    Both arms move on joint-angle arcs (no straight-line IK path through the shoulder, which
-    flipped the elbow), over the slower into/hold timing of a held stretch.
-    """
-    t = hold_cycle(phase, into=.36, hold=.22)
-    p = relaxed_arms(standing(name, phase))
-    # Raised arm: straight up beside the head, then the elbow folds so the hand drops behind it.
-    lift, fold = stage(t, 0, .55), stage(t, .40, .85)
-    p.arm_fk('l', radians(172)*lift, elbow_flex=.08+radians(138)*fold, outward=.07+.09*lift)
-    elbow = p.j['elbow_l']
-    # Helping hand: up in front, over the top of the head, then onto the raised elbow.
-    shoulder_r = p.j['shoulder_r']
-    front = add(shoulder_r, (.32, .06, .30))
-    over = add(p.j['head'], (-.02, .0, .20))
-    # Hold the front of the raised elbow, so the helping arm crosses in front of the face.
-    grip = add(elbow, (.09, -.04, .0))
-    # At rest the hands hang just clear of the thighs (no automatic arm clearance here).
-    rest = add(shoulder_r, (.02, -.09, -.53))
-    # Even stages: the hand's short last legs flicked at ~3.6 m/s on the release.
-    path = mix_point(rest, front, stage(t, .22, .52))
-    path = mix_point(path, over, stage(t, .52, .76))
-    path = mix_point(path, grip, stage(t, .76, 1.))
-    # Elbow forward and up: the upper arm passes in front of the head, not through it.
-    p.arm('r', path, pole=add(shoulder_r, (.8, -.2, .4)))
-    set_head(p, pitch=radians(10)*fold)
-    p.view = dict(UPPER_VIEW, azimuth=28)
-    return p
-
-def cross_body_shoulder(name, phase):
-    """S18/S19: lift one arm forward, draw it across the chest; the other hand presses just above its elbow."""
-    # Slower release than ease_hold (the elbow jumped 11-19 cm in one sample).
-    t = hold_cycle(phase, into=.30, hold=.30)
-    p = relaxed_arms(standing(name, phase))
-    shoulder = p.j['shoulder_l']
-    lift, sweep, press = stage(t, 0, .40), stage(t, .40, .80), stage(t, .60, 1.)
-    front = add(shoulder, (.545, 0, 0))
-    # Held a little in front of the chest (it sank 2 cm into it).
-    across = add(p.j['chest'], (.29, -.28, -.02))
-    wrist = mix_point(mix_point(rest_wrist(p, 'l'), front, lift), across, sweep)
-    # The pole turns with the sweep (switching it at once made the elbow jump 12-15 cm).
-    p.arm('l', wrist, pole=mix_point(add(shoulder, (-.2, .3, -.4)), add(shoulder, (.4, 0, -.2)), smooth(sweep)))
-    elbow = p.j['elbow_l']
-    # The helping palm presses just above the elbow, from the front.
-    grip = add(mix_point(elbow, shoulder, .12), (.07, 0, .03))
-    p.arm('r', mix_point(rest_wrist(p, 'r'), grip, press), pole=add(p.j['shoulder_r'], (-.1, -.5, -.35)))
-    p.view = dict(UPPER_VIEW, azimuth=25)
-    return p
-
 def behind_back_clasp(name, phase):
     """S18 #14 / S19: hands swing back, fingers interlink, straight arms lift."""
     t = hold_cycle(phase, into=.30, hold=.30)  # slower release (the hands snapped apart)
@@ -569,8 +519,6 @@ STRETCH_MOTIONS = {
     'neck-extension': neck_extension,
     'side-neck': side_neck,
     'overhead-reach': overhead_reach,
-    'triceps-stretch': triceps_stretch,
-    'cross-body-shoulder': cross_body_shoulder,
     'behind-back-clasp': behind_back_clasp,
     'torso-extension': torso_extension,
     'side-bend': side_bend,

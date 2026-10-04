@@ -142,6 +142,9 @@ export class HandModel {
     if (!surface) {
       const near = floor ? 1 : 1 - THREE.MathUtils.smoothstep(wrist.y, 0.06, 0.14);
       drop.y = Math.min(0, PALM.thick / 2 + 0.002 - palmCenter.y) * near;
+    } else if (floor) {
+      // On a wall the exported palm point lies on its face: press the palm flat against it.
+      drop.copy(surface).multiplyScalar(palm.clone().sub(palmCenter).dot(surface) + PALM.thick / 2 + 0.002);
     }
     palmCenter.add(drop);
     this.palm.place(palmCenter, x, y, z, [PALM.width, PALM.length, PALM.thick]);

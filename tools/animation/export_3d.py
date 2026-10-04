@@ -135,7 +135,7 @@ def palm_surfaces(pose):
         for s in ('l', 'r'):
             palm = pose['joints']['palm_' + s]
             if 'palm_' + s in pose['contacts'] and abs(sum((pp - cc) * nn for pp, cc, nn in zip(palm, c[0], n))) < .05:
-                out[s] = [round(x * 1000) for x in to_three(n)]
+                out[s] = to_three(n)  # unit normal in thousandths (to_three scales by 1000)
     return out
 
 

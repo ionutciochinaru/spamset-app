@@ -83,15 +83,13 @@ def sit_stand(name, phase):
 LEAN = set()
 # Body parts the hands rest on by design (pushed onto the surface, not cleared away).
 # Hands placed against the head or the other arm by design: no automatic arm clearance.
-NO_CLEAR = {'triceps-stretch', 'overhead-reach'}
+NO_CLEAR = {'overhead-reach'}
 REST = {'hamstring-stretch': ('thigh_l', 'thigh_r'), 'quad-stretch': ('thigh_l', 'thigh_r')}
 # v2 replacements for legacy motions with a defect of their own.
 REPLACEMENTS = {'punches': punches, 'sit-stand': sit_stand}
 # Slower demonstration tempo where the legacy rhythm is physically too fast for a planted
 # body (climbers: each foot strike decelerated the body faster than gravity).
 TEMPO = {'climbers': 1.6, 'reverse-lunge': 1.4,
-         # Raise, fold, hold and release both arms: 4 s rushed the arm arcs past 5 m/s.
-         'triceps-stretch': 2.,
          # The reaching arm swept 165 deg in under half a second (6 m/s).
          'side-bend': 1.6,
          # Standing up in 1.5 s needed more horizontal push than the feet can give.

@@ -366,18 +366,6 @@
   "unit": "seconds"
  },
  {
-  "id": "triceps-stretch",
-  "name": "Triceps stretch",
-  "group": "stretching",
-  "unit": "seconds"
- },
- {
-  "id": "cross-body-shoulder",
-  "name": "Cross-body stretch",
-  "group": "stretching",
-  "unit": "seconds"
- },
- {
   "id": "behind-back-clasp",
   "name": "Behind-back clasp",
   "group": "stretching",

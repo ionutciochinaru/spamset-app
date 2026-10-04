@@ -68,8 +68,6 @@ export const clips: Record<string, Clip> = {
   'neck-extension': require('@/assets/animations/neck-extension.json'),
   'side-neck': require('@/assets/animations/side-neck.json'),
   'overhead-reach': require('@/assets/animations/overhead-reach.json'),
-  'triceps-stretch': require('@/assets/animations/triceps-stretch.json'),
-  'cross-body-shoulder': require('@/assets/animations/cross-body-shoulder.json'),
   'behind-back-clasp': require('@/assets/animations/behind-back-clasp.json'),
   'torso-extension': require('@/assets/animations/torso-extension.json'),
   'side-bend': require('@/assets/animations/side-bend.json'),
