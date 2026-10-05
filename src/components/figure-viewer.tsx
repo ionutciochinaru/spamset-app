@@ -36,7 +36,7 @@ type SceneProps = {
   focus?: string;
   /** PlayStation-style rendering (low-res pixels, vertex wobble, dithered 15-bit colour). */
   psx: boolean;
-  /** Power-up glow and rising sparks while a set is being done. */
+  /** XP burst (flare, shockwave, arrows) on every completed rep. */
   aura: boolean;
 };
 
@@ -132,7 +132,7 @@ export function FigureViewer({
   focus,
   psx = true,
   scan = true,
-  aura = false,
+  aura = true,
 }: {
   clipId: string;
   style?: ViewStyle;
@@ -149,7 +149,7 @@ export function FigureViewer({
   psx?: boolean;
   /** CRT scanlines over the stage (off for review captures). */
   scan?: boolean;
-  /** Power-up glow and rising sparks around the figure (the spam set screen). */
+  /** XP burst on every completed rep; on everywhere except the animation review. */
   aura?: boolean;
 }) {
   const clip = clips[clipId];

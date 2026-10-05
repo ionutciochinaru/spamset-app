@@ -143,7 +143,7 @@ export default function Spamset() {
         <Label>Spam set</Label>
         <Button label="Skip" kind="ghost" onPress={close} />
       </Row>
-      <FigureViewer clipId={exercise.animation} aura />
+      <FigureViewer clipId={exercise.animation} />
       <Title>{exercise.name}</Title>
       <PixelText size={PixelSize.large} color={left !== undefined ? Psx.hud : Palette.accent}>
         {(left !== undefined ? `${left} s` : targetText(exerciseId, target)).toUpperCase()}

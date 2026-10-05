@@ -81,6 +81,7 @@ function Capture({ initial }: { initial: CaptureState }) {
   return (
     <View style={styles.capture}>
       <FigureViewer
+        aura={false}
         key={state.clip}
         clipId={state.clip}
         controls={false}
@@ -174,6 +175,7 @@ function ReviewPage({ initial }: { initial?: string }) {
 
       <View>
         <FigureViewer
+          aura={false}
           clipId={clip.id}
           controls={false}
           view={view.azimuth === undefined ? undefined : { azimuth: view.azimuth, elevation: view.elevation }}
