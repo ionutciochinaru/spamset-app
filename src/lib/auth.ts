@@ -1,12 +1,13 @@
 import type { Session } from '@supabase/supabase-js';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { makeRedirectUri } from 'expo-auth-session';
+import * as Crypto from 'expo-crypto';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
-import { supabase } from './supabase';
+import { googleWebClientId, supabase } from './supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -39,8 +40,28 @@ async function signInWithBrowser(provider: Provider): Promise<boolean> {
   return true;
 }
 
+/** Native account sheet on Android (Credential Manager); browser OAuth on iOS and web. */
 export async function signInWithGoogle(): Promise<boolean> {
-  return signInWithBrowser('google');
+  if (Platform.OS !== 'android' || !googleWebClientId) return signInWithBrowser('google');
+  const client = requireClient();
+  // Native only: loaded here so web never bundles it.
+  const { GoogleOneTapSignIn, isNoSavedCredentialFoundResponse, isSuccessResponse } = await import(
+    'react-native-nitro-google-signin'
+  );
+  // Google gets the hash, Supabase the raw nonce, so the ID token can't be replayed.
+  const nonce = Crypto.randomUUID();
+  const hashed = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nonce);
+  GoogleOneTapSignIn.configure({ webClientId: googleWebClientId, nonce: hashed });
+  await GoogleOneTapSignIn.checkPlayServices();
+  let response = await GoogleOneTapSignIn.signIn();
+  if (isNoSavedCredentialFoundResponse(response)) response = await GoogleOneTapSignIn.createAccount();
+  if (isNoSavedCredentialFoundResponse(response)) response = await GoogleOneTapSignIn.presentExplicitSignIn();
+  if (!isSuccessResponse(response)) return false; // Cancelled.
+  const { idToken } = response.data;
+  if (!idToken) throw new Error('Google did not return an identity token.');
+  const { error } = await client.auth.signInWithIdToken({ provider: 'google', token: idToken, nonce });
+  if (error) throw error;
+  return true;
 }
 
 /** Native Sign in with Apple on iOS; browser OAuth on Android and web. */

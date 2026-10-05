@@ -8,8 +8,12 @@ const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 /** dev-spamset or prod-spamset, and the stack it must talk to (set by app.config.ts). */
-const extra = Constants.expoConfig?.extra as { spamsetEnv?: string; supabaseUrl?: string } | undefined;
+const extra = Constants.expoConfig?.extra as
+  | { spamsetEnv?: string; supabaseUrl?: string; googleWebClientId?: string }
+  | undefined;
 export const spamsetEnv = extra?.spamsetEnv ?? null;
+/** The stack's Google Web client, for native Google sign-in on Android. */
+export const googleWebClientId = extra?.googleWebClientId ?? null;
 
 /**
  * Null when no Supabase stack is configured, or when the bundled URL is not this build's

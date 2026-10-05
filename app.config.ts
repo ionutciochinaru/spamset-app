@@ -16,6 +16,15 @@ export const SUPABASE_URL: Record<SpamsetEnvironment, string> = {
   'prod-spamset': 'https://spamset-api.loadoutlog.com',
 };
 
+/**
+ * Google OAuth Web client per environment (Google Cloud project `spamset`). Android signs in
+ * natively and asks for an ID token for this client, which is the stack's GOOGLE_CLIENT_ID.
+ */
+export const GOOGLE_WEB_CLIENT_ID: Record<SpamsetEnvironment, string> = {
+  'dev-spamset': '253991811744-g6nn11rs9opglhbbg9115a6kij2n5cqa.apps.googleusercontent.com',
+  'prod-spamset': '253991811744-su6bgf4v4os48h4vs8aukr7mphlh0o6n.apps.googleusercontent.com',
+};
+
 function isSpamsetEnvironment(value: string | undefined): value is SpamsetEnvironment {
   return value === 'dev-spamset' || value === 'prod-spamset';
 }
@@ -52,6 +61,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: config.name,
     slug: config.slug,
-    extra: { ...config.extra, spamsetEnv, supabaseUrl: SUPABASE_URL[spamsetEnv] },
+    extra: {
+      ...config.extra,
+      spamsetEnv,
+      supabaseUrl: SUPABASE_URL[spamsetEnv],
+      googleWebClientId: GOOGLE_WEB_CLIENT_ID[spamsetEnv],
+    },
   };
 };
