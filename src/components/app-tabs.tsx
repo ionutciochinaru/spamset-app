@@ -12,12 +12,16 @@ import { DisplayFont, Palette, Psx } from '@/constants/theme';
 
 import { TABS } from './tabs';
 
+/** The floating bar's height (padding, 48 pt buttons, border) and its gap from the bottom edge. */
+export const TAB_DOCK_HEIGHT = 66;
+export const tabDockBottom = (insetBottom: number) => Math.max(insetBottom, 12);
+
 export default function AppTabs() {
   const insets = useSafeAreaInsets();
   return (
     <Tabs>
       <TabSlot style={{ height: '100%' }} />
-      <TabList style={[styles.dock, { bottom: Math.max(insets.bottom, 12) }]}>
+      <TabList style={[styles.dock, { bottom: tabDockBottom(insets.bottom) }]}>
         {TABS.map((tab) => (
           <TabTrigger key={tab.name} name={tab.name} href={tab.name === 'index' ? '/' : `/${tab.name}`} asChild>
             <TabButton tab={tab}>{tab.label}</TabButton>

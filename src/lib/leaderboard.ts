@@ -78,7 +78,7 @@ export async function findPlayers(query: string): Promise<Profile[]> {
   if (q.length < 2) return [];
   const { data, error } = await client()
     .from('profiles')
-    .select('user_id, display_name, is_public, tz')
+    .select('user_id, display_name, is_public, tz, avatar_path')
     .eq('is_public', true)
     .ilike('display_name', `%${q.replace(/[%_]/g, '\\$&')}%`)
     .limit(20);
