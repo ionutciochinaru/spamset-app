@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Avatar, Blink, Body, Button, Card, Chips, Divider, Field, Heading, HudCard, IconButton, Label, MemeText, Meter, PixelText, Row, Screen, ScreenHeader, Segmented, Stat, StatBar, Stepper, Steps, Tag, Thumb, Title, Toggle, Well } from '@/components/ui';
+import { Avatar, Blink, Body, Button, Card, Chips, Divider, Field, Heading, HudCard, IconButton, Label, MemeText, Meter, PixelText, Podium, Row, Screen, ScreenHeader, Segmented, Stat, StatBar, Stepper, Steps, Tag, Thumb, Title, Toggle, Well } from '@/components/ui';
 import { Palette, PixelSize, Psx } from '@/constants/theme';
 
 /** The visual library on one page (docs/design-system.md). Open from Profile → Visual library. */
