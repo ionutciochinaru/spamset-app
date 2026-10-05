@@ -1,6 +1,7 @@
 /**
- * Tab bar for every platform, drawn with the visual library (a PSX menu strip) rather than
- * the system tab bar, so iOS, Android and web look the same.
+ * Tab bar for every platform, drawn with the visual library rather than the system tab bar, so
+ * iOS, Android and web look the same: a floating rounded bar where inactive tabs are icons and
+ * the active one grows into an orange pill with its label.
  */
 import { TabList, TabSlot, TabTrigger, Tabs, type TabTriggerSlotProps } from 'expo-router/ui';
 import { SymbolView } from 'expo-symbols';
@@ -16,7 +17,7 @@ export default function AppTabs() {
   return (
     <Tabs>
       <TabSlot style={{ height: '100%' }} />
-      <TabList style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+      <TabList style={[styles.dock, { bottom: Math.max(insets.bottom, 12) }]}>
         {TABS.map((tab) => (
           <TabTrigger key={tab.name} name={tab.name} href={tab.name === 'index' ? '/' : `/${tab.name}`} asChild>
             <TabButton tab={tab}>{tab.label}</TabButton>
@@ -28,37 +29,45 @@ export default function AppTabs() {
 }
 
 function TabButton({ children, isFocused, tab, ...props }: TabTriggerSlotProps & { tab: (typeof TABS)[number] }) {
-  const color = isFocused ? Palette.accent : Palette.muted;
   return (
-    <Pressable {...props} accessibilityRole="tab" accessibilityState={{ selected: isFocused }} style={styles.button}>
-      {({ pressed }) => (
-        <>
-          <View style={[styles.icon, isFocused && styles.iconActive, pressed && { transform: [{ translateY: 1 }] }]}>
-            <SymbolView name={{ ios: tab.sf, android: tab.md, web: tab.web }} tintColor={color} size={22} />
-          </View>
-          <Text style={[styles.label, { color: isFocused ? Palette.text : Palette.muted }]}>{children}</Text>
-        </>
-      )}
-    </Pressable>
+    // Fixed shares (1 per icon, 2 for the active pill), not content sizing, so the bar never overflows.
+    <View style={isFocused ? styles.slotActive : styles.slot}>
+      <Pressable
+        {...props}
+        accessibilityRole="tab"
+        accessibilityLabel={String(children)}
+        accessibilityState={{ selected: isFocused }}
+        style={({ pressed }) => [styles.button, isFocused && styles.pill, pressed && { transform: [{ scale: 0.96 }] }]}>
+        <SymbolView name={{ ios: tab.sf, android: tab.md, web: tab.web }} tintColor={isFocused ? '#000' : Palette.muted} size={22} />
+        {isFocused && (
+          <Text style={styles.label} numberOfLines={1}>
+            {children}
+          </Text>
+        )}
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bar: {
+  dock: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    left: 16,
+    right: 16,
     flexDirection: 'row',
-    justifyContent: 'center',
-    backgroundColor: Palette.bg,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    alignItems: 'center',
+    gap: 4,
+    padding: 8,
+    borderRadius: 26,
+    backgroundColor: Palette.panel,
+    borderWidth: 1,
+    borderColor: Psx.edge,
     borderTopColor: Psx.edgeTop,
-    paddingTop: 8,
+    boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
   },
-  button: { flex: 1, maxWidth: 120, minHeight: 52, alignItems: 'center', gap: 5 },
-  // A fixed radius: Android draws a 999 radius on this small pill as square corners.
-  icon: { paddingHorizontal: 16, paddingVertical: 4, borderRadius: 16 },
-  iconActive: { backgroundColor: Palette.tonal },
-  label: { fontFamily: DisplayFont.semibold, fontSize: 11 },
+  slot: { flex: 1 },
+  slotActive: { flex: 2 },
+  button: { height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
+  pill: { backgroundColor: Palette.accent, paddingHorizontal: 12 },
+  label: { color: '#000', fontFamily: DisplayFont.bold, fontSize: 14, flexShrink: 1 },
 });
