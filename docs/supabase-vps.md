@@ -27,11 +27,13 @@ external `loadout-proxy` network.
    ssh root@187.124.30.77 'bash /root/setup-stack.sh dev-spamset spamset-dev.loadoutlog.com 2'
    ```
 
-3. Apply the migrations in order:
+3. Apply the migrations in order (on an existing stack, only the ones it doesn't have yet):
 
    ```sh
-   scp supabase/migrations/0001_init.sql root@187.124.30.77:/root/dev-spamset/
-   ssh root@187.124.30.77 'docker exec -i dev-spamset-db sh -c "PGPASSWORD=\$POSTGRES_PASSWORD psql -h localhost -U postgres -d postgres -v ON_ERROR_STOP=1" < /root/dev-spamset/0001_init.sql'
+   for f in supabase/migrations/*.sql; do
+     scp "$f" root@187.124.30.77:/root/dev-spamset/
+     ssh root@187.124.30.77 "docker exec -i dev-spamset-db sh -c 'PGPASSWORD=\$POSTGRES_PASSWORD psql -h localhost -U postgres -d postgres -v ON_ERROR_STOP=1' < /root/dev-spamset/$(basename "$f")"
+   done
    ```
 
 4. Put the printed `ANON_KEY` in `eas.json` (`EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` of the

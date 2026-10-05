@@ -6,6 +6,8 @@ import { Platform, View } from 'react-native';
 import { FigureViewer } from '@/components/figure-viewer';
 import { Body, Button, Card, Label, PixelText, Row, Screen, Stepper, Steps, Title } from '@/components/ui';
 import type { SessionLog } from '@/core/session';
+import { xpState } from '@/core/xp';
+import { syncNow } from '@/lib/sync';
 import { Palette, PixelSize, Psx } from '@/constants/theme';
 import { getExercise, isStretch, isTimed } from '@/core/exercises';
 import { initialPrescription, type Effort } from '@/core/progression';
@@ -42,9 +44,14 @@ export default function Spamset() {
   const [rating, setRating] = useState<number | undefined>(undefined);
   const [logged, setLogged] = useState<SessionLog | undefined>(undefined);
 
+  const [gained, setGained] = useState(0);
   const log = (amount: number, effort?: Effort) => {
+    const before = xpState(useApp.getState().sessions).today;
     setLogged(logSpamset({ exercise: exerciseId, target, done: amount, startedAt, effort }));
+    setGained(xpState(useApp.getState().sessions).today - before);
     setRating(undefined);
+    // Put it on the boards straight away when signed in (a no-op offline).
+    syncNow().catch(() => null);
   };
   const finish = (amount: number) => (isStretch(exercise) ? log(amount) : setRating(amount));
 
@@ -94,6 +101,10 @@ export default function Spamset() {
         <View style={{ height: 40 }} />
         <Label>Spam set logged</Label>
         <Title>Nice. {exercise.name} done.</Title>
+        <PixelText size={PixelSize.large} color={gained ? Psx.hud : Palette.muted}>
+          {gained ? `+${gained} XP` : '+0 XP'}
+        </PixelText>
+        {!gained && <Body muted style={{ fontSize: 14 }}>Sets less than 3 minutes apart don&apos;t earn XP.</Body>}
         {progress && (
           <Card>
             <Body style={{ color: progress.change === 'hold' ? Palette.text : Palette.accent }}>{progress.reason}</Body>

@@ -7,9 +7,11 @@
  * Browse every component at /debug/ui.
  */
 import { Image as ExpoImage } from 'expo-image';
+import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   Image,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -28,18 +30,40 @@ import { ButtonEdge, DisplayFont, MaxContentWidth, Palette, PixelFont, PixelSize
 
 const scanlines = require('@/assets/images/scanlines.png');
 
+// ---- Depth --------------------------------------------------------------------------
+
+/** A CSS gradient as a style: `backgroundImage` on web, the native equivalent elsewhere. */
+export function gradient(css: string): ViewStyle {
+  return (Platform.OS === 'web' ? { backgroundImage: css } : { experimental_backgroundImage: css }) as ViewStyle;
+}
+
+/** Warm light falling from the top of a screen, behind the content. */
+export function Glow({ height = 360 }: { height?: number }) {
+  return <View pointerEvents="none" style={[styles.glow, { height }, gradient('linear-gradient(180deg, rgba(255,107,43,0.13) 0%, rgba(255,107,43,0.04) 45%, rgba(0,0,0,0) 100%)')]} />;
+}
+
+/** A small symbol: SF Symbols on iOS, Material Symbols on Android and web. */
+export function Icon({ ios, md, color = Palette.muted, size = 16 }: { ios: SymbolViewProps['name'] & string; md: string; color?: string; size?: number }) {
+  return <SymbolView name={{ ios, android: md, web: md } as SymbolViewProps['name']} tintColor={color} size={size} />;
+}
+
 // ---- Layout -------------------------------------------------------------------------
 
 export function Screen({ children, scroll = true, style }: { children: ReactNode; scroll?: boolean; style?: StyleProp<ViewStyle> }) {
   const insets = useSafeAreaInsets();
   const padding = { paddingTop: insets.top + Spacing.three, paddingBottom: insets.bottom + 110 };
   const inner = <View style={[styles.column, style]}>{children}</View>;
-  return scroll ? (
-    <ScrollView style={styles.screen} contentContainerStyle={padding} keyboardShouldPersistTaps="handled">
-      {inner}
-    </ScrollView>
-  ) : (
-    <View style={[styles.screen, padding]}>{inner}</View>
+  return (
+    <View style={styles.screen}>
+      <Glow />
+      {scroll ? (
+        <ScrollView style={styles.fill} contentContainerStyle={padding} keyboardShouldPersistTaps="handled">
+          {inner}
+        </ScrollView>
+      ) : (
+        <View style={[styles.fill, padding]}>{inner}</View>
+      )}
+    </View>
   );
 }
 
@@ -369,14 +393,27 @@ export function Tag({ label, accent }: { label: string; accent?: boolean }) {
   );
 }
 
-/** HUD counter: a pixel number over a plain label. */
-export function Stat({ value, label, color = Psx.hud }: { value: string; label: string; color?: string }) {
+/** HUD counter: a pixel number over a plain label, with an optional icon. */
+export function Stat({
+  value,
+  label,
+  color = Psx.hud,
+  icon,
+}: {
+  value: string;
+  label: string;
+  color?: string;
+  icon?: { ios: SymbolViewProps['name'] & string; md: string };
+}) {
   return (
     <View style={styles.stat}>
       <PixelText size={PixelSize.medium} color={color}>
         {value}
       </PixelText>
-      <Text style={styles.statLabel}>{label}</Text>
+      <View style={styles.statLabelRow}>
+        {icon && <Icon {...icon} size={13} />}
+        <Text style={styles.statLabel}>{label}</Text>
+      </View>
     </View>
   );
 }
@@ -419,8 +456,11 @@ export const styles = StyleSheet.create({
   stepNumber: { width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(255,107,43,0.16)', alignItems: 'center', justifyContent: 'center' },
   stepNumberText: { color: Palette.accent, fontFamily: DisplayFont.bold, fontSize: 13 },
 
+  glow: { position: 'absolute', top: 0, left: 0, right: 0 },
   card: {
     backgroundColor: Palette.panel,
+    ...gradient('linear-gradient(180deg, #1c1c1a 0%, #141413 100%)'),
+    boxShadow: '0 10px 24px rgba(0,0,0,0.45)',
     borderRadius: Radius.card,
     borderWidth: 1,
     borderColor: Psx.edge,
@@ -429,7 +469,7 @@ export const styles = StyleSheet.create({
     gap: Spacing.two + 2,
   },
   cardPressed: { backgroundColor: Palette.pressed, transform: [{ scale: 0.99 }] },
-  well: { backgroundColor: Psx.well, borderTopColor: Psx.edge },
+  well: { backgroundColor: Psx.well, ...gradient('none'), boxShadow: 'none', borderTopColor: Psx.edge },
   stage: { backgroundColor: Palette.stage, borderRadius: Radius.card, overflow: 'hidden', borderWidth: 1, borderColor: Psx.edge },
   thumb: { aspectRatio: 1, borderRadius: Radius.button - 2 },
 
@@ -502,6 +542,7 @@ export const styles = StyleSheet.create({
 
   stat: { flex: 1, gap: 8 },
   statLabel: { color: Palette.muted, fontSize: 12, fontWeight: '600' },
+  statLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   meter: { flexDirection: 'row', gap: 3, height: 10 },
   meterSegment: { flex: 1, borderRadius: 2 },
 });
