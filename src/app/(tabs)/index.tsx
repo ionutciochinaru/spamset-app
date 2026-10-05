@@ -157,9 +157,16 @@ export default function Home() {
             </View>
           </HudCard>
 
-          {!schedule.enabled && (
-            <Button label="Spam sets are off · Turn on" kind="tonal" onPress={() => router.push('/spamset-settings')} />
-          )}
+          {/* The schedule, or a way to turn it on; both open spam set settings. */}
+          <Button
+            label={
+              schedule.enabled
+                ? `Every ${schedule.every < 60 ? `${schedule.every} min` : `${schedule.every / 60} h`} · ${clockText(schedule.start)}–${clockText(schedule.end)}`
+                : 'Spam sets are off · Turn on'
+            }
+            kind="tonal"
+            onPress={() => router.push('/spamset-settings')}
+          />
 
           {/* Next spam set: the game hub moment. */}
           {exercise && featured && (
@@ -194,13 +201,6 @@ export default function Home() {
                 <Button label={`Start spam set · ${target(featured)}`} large onPress={() => openSpamset(featured)} />
               </View>
             </Stage>
-          )}
-          {schedule.enabled && (
-            <Pressable onPress={() => router.push('/spamset-settings')} accessibilityRole="button" style={styles.status}>
-              <Body muted style={{ fontSize: 14 }}>
-                {`Every ${schedule.every < 60 ? `${schedule.every} min` : `${schedule.every / 60} h`}, ${clockText(schedule.start)}–${clockText(schedule.end)} ›`}
-              </Body>
-            </Pressable>
           )}
 
           {/* Today's spam sets. */}
@@ -261,7 +261,6 @@ const styles = StyleSheet.create({
   timerClock: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 16 },
   stageAction: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },
-  status: { alignItems: 'center', paddingVertical: 6, minHeight: 32, justifyContent: 'center' },
   weekRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 },
   thumbs: { flexDirection: 'row', gap: 6 },
 });
