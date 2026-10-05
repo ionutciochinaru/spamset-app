@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Spamset",
-    "slug": "spamset-app",
+    "slug": "spamset",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -53,6 +53,12 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "backgroundColor": "#000000"
+    "backgroundColor": "#000000",
+    "extra": {
+      "eas": {
+        "projectId": "4c95a04e-2640-4279-ba92-a646f09d6d2d"
+      }
+    },
+    "owner": "cjohnd"
   }
 }
