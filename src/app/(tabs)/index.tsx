@@ -146,6 +146,10 @@ export default function Home() {
             </View>
           </HudCard>
 
+          {!schedule.enabled && (
+            <Button label="Spam sets are off · Turn on" kind="tonal" onPress={() => router.push('/spamset-settings')} />
+          )}
+
           {/* Next spam set: the game hub moment. */}
           {exercise && featured && (
             <Stage style={styles.hero}>
@@ -165,13 +169,13 @@ export default function Home() {
             </Stage>
           )}
           {featured && <Button label={`Start spam set · ${target(featured)}`} large onPress={() => openSpamset(featured)} />}
-          <Pressable onPress={() => router.push('/spamset-settings')} accessibilityRole="button" style={styles.status}>
-            <Body muted style={{ fontSize: 14, color: schedule.enabled ? Palette.muted : Psx.hud }}>
-              {schedule.enabled
-                ? `Every ${schedule.every < 60 ? `${schedule.every} min` : `${schedule.every / 60} h`}, ${clockText(schedule.start)}–${clockText(schedule.end)} ›`
-                : 'Spam sets are off. Turn them on ›'}
-            </Body>
-          </Pressable>
+          {schedule.enabled && (
+            <Pressable onPress={() => router.push('/spamset-settings')} accessibilityRole="button" style={styles.status}>
+              <Body muted style={{ fontSize: 14 }}>
+                {`Every ${schedule.every < 60 ? `${schedule.every} min` : `${schedule.every / 60} h`}, ${clockText(schedule.start)}–${clockText(schedule.end)} ›`}
+              </Body>
+            </Pressable>
+          )}
 
           {/* Today's spam sets. */}
           {todays.length > 0 && (
