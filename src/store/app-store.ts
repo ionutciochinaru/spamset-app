@@ -57,6 +57,8 @@ type Actions = {
   mergeRemote: (remote: { sessions: SessionLog[]; state?: RemoteState }) => void;
   markSynced: (ids: string[]) => void;
   rateAnimation: (exercise: string, rating: Omit<AnimationRating, 'updatedAt'>) => void;
+  /** Forget everything on this device, back to a fresh install (after deleting the account). */
+  resetLocal: () => void;
 };
 
 export type RemoteState = Pick<State, 'settings' | 'prescriptions' | 'customWorkouts' | 'stateUpdatedAt'>;
@@ -88,16 +90,20 @@ try {
 const now = () => new Date().toISOString();
 const newId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
+const freshState = (): State => ({
+  settings: DEFAULT_SETTINGS,
+  prescriptions: {},
+  sessions: [],
+  customWorkouts: [],
+  syncedSessionIds: [],
+  stateUpdatedAt: now(),
+  animationReviews: {},
+});
+
 export const useApp = create<State & Actions>()(
   persist(
     (set, get) => ({
-      settings: DEFAULT_SETTINGS,
-      prescriptions: {},
-      sessions: [],
-      customWorkouts: [],
-      syncedSessionIds: [],
-      stateUpdatedAt: now(),
-      animationReviews: {},
+      ...freshState(),
 
       setAuthMode: (authMode) => set({ authMode }),
 
@@ -156,6 +162,8 @@ export const useApp = create<State & Actions>()(
 
       rateAnimation: (exercise, rating) =>
         set((s) => ({ animationReviews: { ...s.animationReviews, [exercise]: { ...rating, updatedAt: now() } } })),
+
+      resetLocal: () => set({ ...freshState(), authMode: undefined, lastSyncedAt: undefined }),
 
       markSynced: (ids) => set((s) => ({ syncedSessionIds: [...new Set([...s.syncedSessionIds, ...ids])], lastSyncedAt: now() })),
     }),

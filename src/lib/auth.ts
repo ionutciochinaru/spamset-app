@@ -64,6 +64,15 @@ export async function signInWithApple(): Promise<boolean> {
   }
 }
 
+/** Delete the signed-in account and everything synced to it (supabase/migrations/0003_delete_account.sql). */
+export async function deleteAccount() {
+  const client = requireClient();
+  const { error } = await client.rpc('delete_account');
+  if (error) throw error;
+  // The user no longer exists on the server, so only drop the session here.
+  await client.auth.signOut({ scope: 'local' });
+}
+
 export async function signOut() {
   await supabase?.auth.signOut();
 }

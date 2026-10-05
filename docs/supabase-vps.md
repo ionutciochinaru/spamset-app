@@ -34,7 +34,11 @@ external `loadout-proxy` network.
      scp "$f" root@187.124.30.77:/root/dev-spamset/
      ssh root@187.124.30.77 "docker exec -i dev-spamset-db sh -c 'PGPASSWORD=\$POSTGRES_PASSWORD psql -h localhost -U postgres -d postgres -v ON_ERROR_STOP=1' < /root/dev-spamset/$(basename "$f")"
    done
+   echo "notify pgrst, 'reload schema';" | ssh root@187.124.30.77 "docker exec -i dev-spamset-db sh -c 'PGPASSWORD=\$POSTGRES_PASSWORD psql -h localhost -U postgres -d postgres'"
    ```
+
+   The last line makes the REST API see new functions (otherwise `rpc/...` returns 404 until a
+   restart).
 
 4. Put the printed `ANON_KEY` in `eas.json` (`EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` of the
    matching profiles) and, for dev, in `.env.local`. It is public; never put `SERVICE_ROLE_KEY`

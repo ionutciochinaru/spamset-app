@@ -2,8 +2,9 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { Body, Button, Card, Chips, Heading, Label, Row, Screen, Segmented, Title, Toggle } from '@/components/ui';
-import { accountsEnabled, signInWithApple, signInWithGoogle, signOut, useSession } from '@/lib/auth';
+import { Body, Button, Card, Chips, Heading, Label, Row, Screen, Segmented, Title, Toggle, Well } from '@/components/ui';
+import { accountsEnabled, deleteAccount, signInWithApple, signInWithGoogle, signOut, useSession } from '@/lib/auth';
+import { scheduleSpamsets } from '@/lib/spamset-notify';
 import { syncNow } from '@/lib/sync';
 import { EQUIPMENT_LABELS, OWNABLE_EQUIPMENT, type Equipment } from '@/core/exercises';
 import { formatLoad, ownedEquipment, useApp, type Units } from '@/store/app-store';
@@ -16,7 +17,10 @@ export default function Profile() {
   const update = useApp((s) => s.updateSettings);
   const setAuthMode = useApp((s) => s.setAuthMode);
   const lastSyncedAt = useApp((s) => s.lastSyncedAt);
+  const resetLocal = useApp((s) => s.resetLocal);
   const [status, setStatus] = useState<string>();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const toggleBell = (kg: number) => {
     const bells = settings.bells.includes(kg) ? settings.bells.filter((b) => b !== kg) : [...settings.bells, kg];
@@ -62,6 +66,35 @@ export default function Profile() {
                 setAuthMode('offline');
               })} />
             </Row>
+            {confirmDelete ? (
+              <Well style={{ gap: 8 }}>
+                <Heading>Delete your account?</Heading>
+                <Body muted style={{ fontSize: 14 }}>
+                  This permanently deletes your account, your synced spam sets, XP and leaderboard profile, and clears
+                  this device. It can&apos;t be undone.
+                </Body>
+                <Row>
+                  <Button
+                    label={deleting ? 'Deleting…' : 'Delete forever'}
+                    kind="danger"
+                    disabled={deleting}
+                    onPress={() => attempt(async () => {
+                      setDeleting(true);
+                      try {
+                        await deleteAccount();
+                        await scheduleSpamsets([], () => ({ title: '', body: '' })).catch(() => null);
+                        resetLocal();
+                      } finally {
+                        setDeleting(false);
+                      }
+                    })}
+                  />
+                  <Button label="Cancel" kind="ghost" disabled={deleting} onPress={() => setConfirmDelete(false)} />
+                </Row>
+              </Well>
+            ) : (
+              <Button label="Delete account" kind="ghost" onPress={() => setConfirmDelete(true)} />
+            )}
           </>
         ) : (
           <>
