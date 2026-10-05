@@ -14,12 +14,14 @@ import {
   Label,
   Divider,
   HudCard,
+  MemeText,
   Meter,
   PixelText,
   Row,
   Screen,
   Segmented,
   Stat,
+  StatBar,
   Steps,
   Stepper,
   Tag,
@@ -90,6 +92,14 @@ export default function VisualLibrary() {
       <Card onPress={() => {}}>
         <Heading>Pressable card</Heading>
       </Card>
+      <HudCard>
+        <Heading>StatBar and MemeText</Heading>
+        <Row style={{ gap: 16 }}>
+          <StatBar label="Strength" value={46} color="#e5483b" icon={{ ios: 'bolt.fill', md: 'bolt' }} />
+          <StatBar label="Stamina" value={14} color="#43c24c" icon={{ ios: 'heart.fill', md: 'favorite' }} />
+        </Row>
+        <MemeText>My moooscles are getting bigger</MemeText>
+      </HudCard>
       <HudCard>
         <Heading>HudCard</Heading>
         <Body muted>The home&apos;s player card: warm corner light, orange edge. One per screen.</Body>

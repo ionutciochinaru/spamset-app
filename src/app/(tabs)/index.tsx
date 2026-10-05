@@ -4,21 +4,13 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Button, Card, Divider, Glow, HudCard, Icon, IconButton, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title, Well } from '@/components/ui';
+import { Body, Button, Card, Glow, HudCard, Icon, IconButton, Label, MemeText, PixelText, Row, Stage, StatBar, Thumb, Title, Well } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
-import { totalReps, volumeKg } from '@/core/session';
-import { xpState } from '@/core/xp';
+import { hudStats, memeCaption, xpState } from '@/core/xp';
 import { clockText, planSpamsets, spamCandidates, swapPick, timeText, upcomingTimes } from '@/core/spamset';
 import { openSpamset, useTargetText } from '@/lib/spamset-scheduler';
 import { ownedEquipment, spamSchedule, SPAMSET_WORKOUT_ID, useApp } from '@/store/app-store';
-
-function startOfWeek(date = new Date()) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-  return d;
-}
 
 /** Re-render every `ms`, for the countdown. */
 function useNow(ms: number) {
@@ -29,6 +21,9 @@ function useNow(ms: number) {
   }, [ms]);
   return now;
 }
+
+/** Bar colours, after the PS2 HUD: red, green, yellow, cyan. */
+const HUD_COLORS = { strength: '#e5483b', stamina: '#43c24c', discipline: Psx.hud, reputation: Psx.cyan } as const;
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -80,17 +75,8 @@ export default function Home() {
   const hour = now.getHours();
   const xp = useMemo(() => xpState(sessions, new Date()), [sessions, hour]); // eslint-disable-line react-hooks/exhaustive-deps
   const streak = xp.streak;
-  const week = useMemo(() => {
-    const since = startOfWeek().toISOString();
-    const recent = sessions.filter((s) => s.startedAt >= since);
-    const today = new Date().toDateString();
-    return {
-      count: recent.length,
-      spam: sessions.filter((s) => s.workoutId === SPAMSET_WORKOUT_ID && new Date(s.startedAt).toDateString() === today).length,
-      volume: recent.reduce((sum, s) => sum + volumeKg(s), 0),
-      reps: recent.reduce((sum, s) => sum + totalReps(s), 0),
-    };
-  }, [sessions]);
+
+  const stats = hudStats(xp, todays.length, slotsToday);
 
   const date = now.toLocaleDateString('en', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase().replace(',', '');
 
@@ -104,9 +90,16 @@ export default function Home() {
             <View style={styles.hud}>
               <View style={{ gap: 6 }}>
                 <Label>{date}</Label>
-                <PixelText size={PixelSize.large} color={Palette.accent}>
-                  SPAMSET
-                </PixelText>
+                <Row style={{ gap: 10 }}>
+                  <PixelText size={PixelSize.large} color={Palette.accent}>
+                    SPAMSET
+                  </PixelText>
+                  <View style={styles.levelBadge}>
+                    <PixelText size={PixelSize.small} color="#000" style={{ textShadowColor: 'transparent' }}>
+                      LV {xp.level}
+                    </PixelText>
+                  </View>
+                </Row>
               </View>
               <View style={[styles.streak, streak > 0 && styles.streakOn]}>
                 <Row style={{ gap: 6 }}>
@@ -119,42 +112,15 @@ export default function Home() {
               </View>
             </View>
 
-            {/* Level: XP from spam sets, the game's progress bar. */}
-            <View style={styles.level}>
-              <View style={styles.levelBadge}>
-                <PixelText size={PixelSize.small} color="#000" style={{ textShadowColor: 'transparent' }}>
-                  LV {xp.level}
-                </PixelText>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Meter value={Math.round((xp.levelXp / xp.levelSize) * 12)} max={12} color={Psx.hud} />
-              </View>
-              <PixelText size={PixelSize.small} color={Palette.muted}>
-                {xp.total} XP
-              </PixelText>
+            {/* PS2-era stat HUD: level, streak, today and the week as four bars. */}
+            <View style={styles.stats}>
+              <StatBar label="Strength" value={stats.strength} color={HUD_COLORS.strength} icon={{ ios: 'bolt.fill', md: 'bolt' }} />
+              <StatBar label="Stamina" value={stats.stamina} color={HUD_COLORS.stamina} icon={{ ios: 'heart.fill', md: 'favorite' }} />
+              <StatBar label="Discipline" value={stats.discipline} color={HUD_COLORS.discipline} icon={{ ios: 'star.fill', md: 'star' }} />
+              <StatBar label="Reputation" value={stats.reputation} color={HUD_COLORS.reputation} icon={{ ios: 'crown.fill', md: 'military_tech' }} />
             </View>
 
-            <Divider />
-
-            {/* This week's sets, reps and XP, and today's spam sets as a charge meter. */}
-            <View style={{ gap: 12 }}>
-              <View style={styles.weekRow}>
-                <Stat inline label="Sets" value={String(week.count)} />
-                <Stat inline label="Reps" value={String(week.reps)} />
-                <Stat inline label="XP" value={String(xp.week)} />
-              </View>
-              {slotsToday + week.spam > 0 && (
-                <View style={{ gap: 8, marginTop: 4 }}>
-                  <View style={styles.hud}>
-                    <Label>Spam sets today</Label>
-                    <PixelText size={PixelSize.small} color={Psx.hud}>
-                      {week.spam}/{Math.max(slotsToday, week.spam)}
-                    </PixelText>
-                  </View>
-                  <Meter value={week.spam} max={Math.min(24, Math.max(slotsToday, week.spam))} />
-                </View>
-              )}
-            </View>
+            <MemeText>{memeCaption(xp, stats, todays.length)}</MemeText>
           </HudCard>
 
           {/* The schedule, or a way to turn it on; both open spam set settings. */}
@@ -254,13 +220,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     gap: 12,
   },
-  level: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 32 },
   levelBadge: { backgroundColor: Palette.accent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
   swap: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(48,49,43,0.9)' },
   timer: { paddingVertical: 12, paddingHorizontal: 14, gap: 8 },
   timerClock: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 16 },
   stageAction: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },
-  weekRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 },
+  stats: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, rowGap: 12 },
   thumbs: { flexDirection: 'row', gap: 6 },
 });

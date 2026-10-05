@@ -477,6 +477,57 @@ export function Meter({ value, max, color = Palette.accent }: { value: number; m
   );
 }
 
+/**
+ * A PS2-era HUD stat: icon, name and percent over a chunky bar with a dark rim and a
+ * glossy fill (the player card's Strength / Stamina / Discipline / Reputation).
+ */
+export function StatBar({
+  label,
+  value,
+  color,
+  icon,
+}: {
+  label: string;
+  /** 0-100. */
+  value: number;
+  color: string;
+  icon: { ios: SymbolViewProps['name'] & string; md: string };
+}) {
+  const v = Math.max(0, Math.min(100, value));
+  return (
+    <View style={styles.statBar} accessibilityRole="progressbar" accessibilityLabel={`${label} ${v}%`} accessibilityValue={{ min: 0, max: 100, now: v }}>
+      <View style={styles.statBarHead}>
+        <Icon {...icon} color={color} size={13} />
+        <Text style={styles.statBarLabel}>
+          {label} <Text style={{ color: Palette.text }}>{v}%</Text>
+        </Text>
+      </View>
+      <View style={styles.statBarTrack}>
+        <View style={[styles.statBarFill, { width: `${v}%`, backgroundColor: color }, gradient(`linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.25) 100%)`)]} />
+      </View>
+    </View>
+  );
+}
+
+const MEME_STROKE = [
+  [-2, 0], [2, 0], [0, -2], [0, 2], [-2, -2], [2, -2], [-2, 2], [2, 2],
+] as const;
+
+/** Meme caption: bold uppercase white with a thick black outline. One per screen, for a laugh. */
+export function MemeText({ children, size = 22 }: { children: string; size?: number }) {
+  const text = [styles.memeText, { fontSize: size, lineHeight: size * 1.15 }];
+  return (
+    <View accessible accessibilityRole="text" accessibilityLabel={children}>
+      {MEME_STROKE.map(([x, y]) => (
+        <Text key={`${x},${y}`} style={[text, styles.memeStroke, { left: x, top: y }]} importantForAccessibility="no">
+          {children}
+        </Text>
+      ))}
+      <Text style={text}>{children}</Text>
+    </View>
+  );
+}
+
 /** On/off blink, the "PRESS START" way. Use once per screen at most. */
 export function Blink({ children, period = 600 }: { children: ReactNode; period?: number }) {
   const [on, setOn] = useState(true);
@@ -602,6 +653,26 @@ export const styles = StyleSheet.create({
   statInline: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statInlineLabel: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 14 },
   statLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  statBar: { flex: 1, minWidth: 130, gap: 5 },
+  statBarHead: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  statBarLabel: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 12 },
+  statBarTrack: {
+    height: 12,
+    borderRadius: 3,
+    borderWidth: 2,
+    borderColor: '#000',
+    backgroundColor: '#26261f',
+    overflow: 'hidden',
+  },
+  statBarFill: { height: '100%', borderRadius: 1 },
+  memeText: {
+    color: '#ffffff',
+    fontFamily: DisplayFont.bold,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  memeStroke: { position: 'absolute', width: '100%', color: '#000' },
   meter: { flexDirection: 'row', gap: 3, height: 10 },
   meterSegment: { flex: 1, borderRadius: 2 },
 });

@@ -1,5 +1,5 @@
 import type { SessionLog, Target } from '../session';
-import { dailyXp, levelOf, setXp, xpState } from '../xp';
+import { dailyXp, hudStats, levelOf, MEME_CAPTIONS, memeCaption, setXp, xpState, type XpState } from '../xp';
 
 let n = 0;
 function log(at: Date, target: Target, done: number, load = 0, workoutId = 'spamset'): SessionLog {
@@ -93,3 +93,25 @@ describe('levelOf', () => {
     expect(levelOf(450)).toMatchObject({ level: 4, levelXp: 0, levelSize: 350 });
   });
 });
+
+describe('player card HUD', () => {
+  const xp: XpState = { total: 23, week: 250, today: 23, streak: 3, bestStreak: 3, levelXp: 23, levelSize: 50, level: 1 };
+
+  it('turns progress into percentages', () => {
+    expect(hudStats(xp, 2, 8)).toEqual({ strength: 46, stamina: 42, discipline: 25, reputation: 25 });
+    // Spam sets off: Discipline counts toward 5; everything caps at 100.
+    expect(hudStats({ ...xp, streak: 30, week: 5000 }, 9, 0)).toEqual({ strength: 46, stamina: 100, discipline: 100, reputation: 100 });
+  });
+
+  it('roasts or hypes you by how today is going, one line all day', () => {
+    const day = new Date(2026, 9, 5, 9);
+    const caption = (x: XpState, sets: number) => memeCaption(x, hudStats(x, sets, 8), sets, day);
+    expect(MEME_CAPTIONS.idle).toContain(caption({ ...xp, streak: 0 }, 0));
+    expect(MEME_CAPTIONS.waiting).toContain(caption(xp, 0));
+    expect(MEME_CAPTIONS.started).toContain(caption(xp, 1));
+    expect(MEME_CAPTIONS.rolling).toContain(caption(xp, 4));
+    expect(MEME_CAPTIONS.done).toContain(caption(xp, 8));
+    expect(memeCaption(xp, hudStats(xp, 4, 8), 4, new Date(2026, 9, 5, 22))).toBe(caption(xp, 4));
+  });
+});
+

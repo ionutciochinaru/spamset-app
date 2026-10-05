@@ -131,3 +131,48 @@ export function xpState(logs: SessionLog[], now = new Date()): XpState {
   }
   return { total, week, today: days.get(todayKey) ?? 0, streak, bestStreak: best, ...levelOf(total) };
 }
+
+/** The player card's HUD stats, each 0-100 (percent). */
+export type HudStats = { strength: number; stamina: number; discipline: number; reputation: number };
+
+/** Weekly XP that fills Reputation; a streak of this many days fills Stamina. */
+export const HUD = { weekXp: 1000, streakDays: 7, offDayGoal: 5 } as const;
+
+const pct = (value: number, max: number) => Math.max(0, Math.min(100, Math.floor((value / Math.max(1, max)) * 100)));
+
+/**
+ * Strength is progress to the next level, Stamina the streak toward a week, Discipline today's
+ * spam sets out of today's scheduled ones (out of 5 with spam sets off), Reputation this
+ * week's XP toward 1000.
+ */
+export function hudStats(xp: XpState, setsToday: number, slotsToday: number): HudStats {
+  return {
+    strength: pct(xp.levelXp, xp.levelSize),
+    stamina: pct(xp.streak, HUD.streakDays),
+    discipline: pct(setsToday, slotsToday > 0 ? slotsToday : HUD.offDayGoal),
+    reputation: pct(xp.week, HUD.weekXp),
+  };
+}
+
+/** Gym-meme captions for the player card, by how today is going (smug about small effort). */
+export const MEME_CAPTIONS = {
+  /** Nothing today, no streak. */
+  idle: ['Me and my chair are one now', 'Built like a loading screen', 'Skeleton mode: on'],
+  /** Nothing yet today, streak alive. */
+  waiting: ["Don't let the streak die", 'The streak is watching', 'One set. Just one. Come on.'],
+  /** One or two sets today. */
+  started: ['Looking around the office after one set', 'Built different (slightly)', 'Light weight, baby'],
+  /** Three or more. */
+  rolling: ['My moooscles are getting bigger', 'Yeah buddy!', 'Ain’t nothin’ but a peanut'],
+  /** Today's schedule done. */
+  done: ['Certified rep enjoyer', 'Main character energy', 'Gigachad behaviour'],
+} as const;
+
+/** One meme caption for the player card: the mood from today, the line from the date (same all day). */
+export function memeCaption(xp: XpState, stats: HudStats, setsToday: number, now = new Date()): string {
+  const mood: keyof typeof MEME_CAPTIONS =
+    stats.discipline >= 100 ? 'done' : setsToday >= 3 ? 'rolling' : setsToday > 0 ? 'started' : xp.streak > 0 ? 'waiting' : 'idle';
+  const lines = MEME_CAPTIONS[mood];
+  const day = Math.floor(new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 86400000);
+  return lines[day % lines.length];
+}
