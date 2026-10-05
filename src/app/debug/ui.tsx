@@ -12,6 +12,8 @@ import {
   Heading,
   IconButton,
   Label,
+  Divider,
+  HudCard,
   Meter,
   PixelText,
   Row,
@@ -88,6 +90,12 @@ export default function VisualLibrary() {
       <Card onPress={() => {}}>
         <Heading>Pressable card</Heading>
       </Card>
+      <HudCard>
+        <Heading>HudCard</Heading>
+        <Body muted>The home&apos;s player card: warm corner light, orange edge. One per screen.</Body>
+        <Divider />
+        <Body muted>Divider: a hairline between sections of a card.</Body>
+      </HudCard>
       <Well>
         <Heading>Well</Heading>
         <Body muted>Sunken: stats, inputs, inset content.</Body>

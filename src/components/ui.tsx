@@ -158,6 +158,28 @@ export function Card({ children, style, onPress }: { children: ReactNode; style?
   );
 }
 
+/**
+ * The home's player card: warm light from the top corner and an orange edge, for the one
+ * summary of who you are in the game (wordmark, streak, level, week). One per screen.
+ */
+export function HudCard({ children, style, onPress, label }: { children: ReactNode; style?: StyleProp<ViewStyle>; onPress?: () => void; label?: string }) {
+  if (!onPress) return <View style={[styles.card, styles.hudCard, style]}>{children}</View>;
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => [styles.card, styles.hudCard, pressed && styles.cardPressed, style]}>
+      {children}
+    </Pressable>
+  );
+}
+
+/** Hairline between sections of a card. */
+export function Divider() {
+  return <View style={styles.divider} />;
+}
+
 /** Recessed surface for stats, inputs and inset content. */
 export function Well({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
   return <View style={[styles.card, styles.well, style]}>{children}</View>;
@@ -468,6 +490,15 @@ export const styles = StyleSheet.create({
     padding: Spacing.three,
     gap: Spacing.two + 2,
   },
+  hudCard: {
+    ...gradient('linear-gradient(155deg, #2b1b12 0%, #1b1714 42%, #141413 100%)'),
+    borderColor: 'rgba(255,107,43,0.18)',
+    borderTopColor: 'rgba(255,107,43,0.38)',
+    boxShadow: '0 12px 32px rgba(0,0,0,0.5), 0 0 28px rgba(255,107,43,0.10)',
+    padding: Spacing.three + 2,
+    gap: Spacing.three,
+  },
+  divider: { height: 1, backgroundColor: Psx.edgeTop, marginHorizontal: -2 },
   cardPressed: { backgroundColor: Palette.pressed, transform: [{ scale: 0.99 }] },
   well: { backgroundColor: Psx.well, ...gradient('none'), boxShadow: 'none', borderTopColor: Psx.edge },
   stage: { backgroundColor: Palette.stage, borderRadius: Radius.card, overflow: 'hidden', borderWidth: 1, borderColor: Psx.edge },

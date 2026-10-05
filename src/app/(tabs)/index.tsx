@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Blink, Body, Button, Card, Glow, gradient, Icon, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title } from '@/components/ui';
+import { Blink, Body, Button, Card, Divider, Glow, gradient, HudCard, Icon, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
 import { totalReps, volumeKg } from '@/core/session';
@@ -88,64 +88,69 @@ export default function Home() {
       <Glow height={420} />
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + Spacing.three, paddingBottom: insets.bottom + 110 }}>
         <View style={styles.column}>
-          {/* Header: wordmark and streak are the HUD moments; the date is plain. */}
-          <View style={styles.hud}>
-            <View style={{ gap: 6 }}>
-              <Label>{date}</Label>
-              <PixelText size={PixelSize.large} color={Palette.accent}>
-                SPAMSET
-              </PixelText>
-            </View>
-            <View style={[styles.streak, streak > 0 && styles.streakOn]} accessibilityLabel={`${streak} day streak`}>
-              <Row style={{ gap: 6 }}>
-                <Icon ios="flame.fill" md="local_fire_department" color={streak ? Psx.hud : Palette.dim} size={18} />
-                <PixelText size={PixelSize.medium} color={streak ? Psx.hud : Palette.dim}>
-                  {streak}
+          {/* Player card: who you are in the game. Tapping it opens the boards. */}
+          <HudCard onPress={() => router.push('/ranks')} label={`Level ${xp.level}, ${xp.total} XP, ${streak} day streak. Open ranks`}>
+            <View style={styles.hud}>
+              <View style={{ gap: 6 }}>
+                <Label>{date}</Label>
+                <PixelText size={PixelSize.large} color={Palette.accent}>
+                  SPAMSET
                 </PixelText>
-              </Row>
-              <Text style={styles.streakLabel}>day streak</Text>
+              </View>
+              <View style={[styles.streak, streak > 0 && styles.streakOn]}>
+                <Row style={{ gap: 6 }}>
+                  <Icon ios="flame.fill" md="local_fire_department" color={streak ? Psx.hud : Palette.dim} size={18} />
+                  <PixelText size={PixelSize.medium} color={streak ? Psx.hud : Palette.dim}>
+                    {streak}
+                  </PixelText>
+                </Row>
+                <Text style={styles.streakLabel}>day streak</Text>
+              </View>
             </View>
-          </View>
 
-          {/* Level: XP from spam sets, the game's progress bar. */}
-          <Pressable
-            onPress={() => router.push('/ranks')}
-            accessibilityRole="button"
-            accessibilityLabel={`Level ${xp.level}, ${xp.total} XP`}
-            style={styles.level}>
-            <View style={styles.levelBadge}>
-              <PixelText size={PixelSize.small} color="#000" style={{ textShadowColor: 'transparent' }}>
-                LV {xp.level}
-              </PixelText>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Meter value={Math.round((xp.levelXp / xp.levelSize) * 12)} max={12} color={Psx.hud} />
-            </View>
-            <PixelText size={PixelSize.small} color={Palette.muted}>
-              {xp.total} XP
-            </PixelText>
-          </Pressable>
-
-          {/* This week, with today's spam sets as a charge meter. */}
-          <Card>
-            <Label>This week</Label>
-            <View style={styles.counters}>
-              <Stat label="Spam sets" value={String(week.count)} icon={{ ios: 'bolt.fill', md: 'bolt' }} />
-              <Stat label="Reps" value={String(week.reps)} icon={{ ios: 'repeat', md: 'repeat' }} />
-              <Stat label="XP" value={String(xp.week)} icon={{ ios: 'star.fill', md: 'star' }} />
-            </View>
-            {slotsToday + week.spam > 0 && (
-              <View style={{ gap: 8, marginTop: 4 }}>
-                <View style={styles.hud}>
-                  <Label>Spam sets today</Label>
-                  <PixelText size={PixelSize.small} color={Psx.hud}>
-                    {week.spam}/{Math.max(slotsToday, week.spam)}
+            {/* Level: XP from spam sets, the game's progress bar. */}
+            <View style={{ gap: 8 }}>
+              <View style={styles.level}>
+                <View style={styles.levelBadge}>
+                  <PixelText size={PixelSize.small} color="#000" style={{ textShadowColor: 'transparent' }}>
+                    LV {xp.level}
                   </PixelText>
                 </View>
-                <Meter value={week.spam} max={Math.min(24, Math.max(slotsToday, week.spam))} />
+                <View style={{ flex: 1 }}>
+                  <Meter value={Math.round((xp.levelXp / xp.levelSize) * 12)} max={12} color={Psx.hud} />
+                </View>
+                <PixelText size={PixelSize.small} color={Palette.muted}>
+                  {xp.total} XP
+                </PixelText>
               </View>
-            )}
-          </Card>
+              <Text style={styles.levelNext}>
+                {xp.levelSize - xp.levelXp} XP to level {xp.level + 1}
+              </Text>
+            </View>
+
+            <Divider />
+
+            {/* This week, with today's spam sets as a charge meter. */}
+            <View style={{ gap: 12 }}>
+              <Label>This week</Label>
+              <View style={styles.counters}>
+                <Stat label="Spam sets" value={String(week.count)} icon={{ ios: 'bolt.fill', md: 'bolt' }} />
+                <Stat label="Reps" value={String(week.reps)} icon={{ ios: 'repeat', md: 'repeat' }} />
+                <Stat label="XP" value={String(xp.week)} icon={{ ios: 'star.fill', md: 'star' }} />
+              </View>
+              {slotsToday + week.spam > 0 && (
+                <View style={{ gap: 8, marginTop: 4 }}>
+                  <View style={styles.hud}>
+                    <Label>Spam sets today</Label>
+                    <PixelText size={PixelSize.small} color={Psx.hud}>
+                      {week.spam}/{Math.max(slotsToday, week.spam)}
+                    </PixelText>
+                  </View>
+                  <Meter value={week.spam} max={Math.min(24, Math.max(slotsToday, week.spam))} />
+                </View>
+              )}
+            </View>
+          </HudCard>
 
           {/* Next spam set: the game hub moment. */}
           {exercise && featured && (
@@ -231,7 +236,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.button,
     backgroundColor: Palette.panel,
   },
-  streakOn: { backgroundColor: 'rgba(255,210,63,0.1)' },
+  streakOn: { backgroundColor: 'rgba(255,210,63,0.12)' },
   streakLabel: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 11 },
   stageTop: {
     position: 'absolute',
@@ -245,6 +250,7 @@ const styles = StyleSheet.create({
   stageBottom: { position: 'absolute', bottom: 16, left: 16, right: 16, gap: 10 },
   stageRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   level: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 32 },
+  levelNext: { color: Palette.muted, fontSize: 12 },
   levelBadge: { backgroundColor: Palette.accent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },
   scrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '42%' },
