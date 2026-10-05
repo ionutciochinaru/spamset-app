@@ -21,8 +21,8 @@ const FLOOR_CLIP_HEIGHT = 0.9;
 const FLOOR_ELEVATION = 26;
 
 const FOV = 30;
-/** In review, a held clip replays after resting this long (s) on its pose. */
-const HOLD_REPLAY = 1.5;
+/** In review, a celebration replays after breathing this long (s) past its first pass. */
+const HOLD_REPLAY = 3;
 const MIN_ELEVATION = -0.05;
 const MAX_ELEVATION = 1.25;
 
@@ -44,7 +44,7 @@ type SceneProps = {
   aura: boolean;
   /** A sustained anime power aura in this palette (celebrations). */
   auraKind?: AuraKind;
-  /** Replay held clips instead of stopping on their pose (review). */
+  /** Replay celebrations from the start instead of breathing on (review). */
   loop: boolean;
 };
 
@@ -76,7 +76,7 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
     else if (!paused) time.current += Math.min(delta, 0.1) * speed;
     if (onPhase && performance.now() - reported.current > 100) {
       reported.current = performance.now();
-      onPhase(clip.hold ? Math.min(time.current / clip.duration, 1) : (((time.current / clip.duration) % 1) + 1) % 1);
+      onPhase(clip.loopFrom !== undefined ? Math.min(time.current / clip.duration, 1) : (((time.current / clip.duration) % 1) + 1) % 1);
     }
     const { azimuth, elevation } = orbit.current;
     const pose = samplePose(clip, time.current);
@@ -97,9 +97,10 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
     figure.update(pose, camera.position);
     aura?.update(pose.joints, camera.position, paused ? 0 : delta);
     // A rep ends at each 1/reps of the loop: burst then.
-    // A held clip plays once and bursts as it strikes its pose; in review it replays.
-    if (clip.hold && phase === undefined && loop && time.current > clip.duration + HOLD_REPLAY) time.current = 0;
-    const done = clip.hold ? Number(time.current >= clip.duration * (clip.strike ?? 0)) : Math.floor((time.current / clip.duration) * reps);
+    // A celebration bursts once, as it strikes its pose, then breathes; in review it replays.
+    const once = clip.loopFrom !== undefined;
+    if (once && phase === undefined && loop && time.current > clip.duration + HOLD_REPLAY) time.current = 0;
+    const done = once ? Number(time.current >= clip.duration * (clip.strike ?? 0)) : Math.floor((time.current / clip.duration) * reps);
     if (aura && done > rep.current && phase === undefined) aura.burst();
     rep.current = done;
   });
@@ -166,7 +167,7 @@ export function FigureViewer({
   aura?: boolean;
   /** A sustained anime power aura in this palette, for celebrations (on even when `aura` is off). */
   auraKind?: AuraKind;
-  /** Replay a held clip (a celebration) after a pause instead of stopping on its pose. */
+  /** Replay a celebration from the start every so often instead of only breathing on its pose. */
   loop?: boolean;
   /** A fixed shot: no dragging to rotate (celebrations keep their reference camera). */
   locked?: boolean;

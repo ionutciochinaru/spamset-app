@@ -1,7 +1,7 @@
 /**
- * Done-state celebrations: hero, anime and movie victory poses the figure strikes once you
- * finish a spam set and while you are caught up (clips from tools/animation/celebrations.py).
- * Each burns with its own anime-style power aura.
+ * Done-state celebrations: anime victory poses the figure strikes once you finish a spam set
+ * and while you are caught up (clips from tools/animation/celebrations.py). Each plays once,
+ * then breathes in the pose, burning with its own anime-style power aura.
  */
 import type { SpamSchedule } from './spamset';
 
@@ -11,20 +11,8 @@ export type AuraKind = 'gold' | 'blue' | 'red' | 'violet' | 'silver' | 'green';
 export type Celebration = { id: string; name: string; aura: AuraKind };
 
 export const CELEBRATIONS: Celebration[] = [
-  { id: 'power-up', name: 'Power-up', aura: 'gold' },
-  { id: 'knee-power', name: 'Knee-up power stance', aura: 'gold' },
-  { id: 'levitate', name: 'Levitate', aura: 'silver' },
-  { id: 'hand-seal', name: 'Hand seal', aura: 'red' },
   { id: 'gear-crouch', name: 'Gear crouch', aura: 'red' },
-  { id: 'fist-up', name: 'One fist up', aura: 'blue' },
-  { id: 'hero-landing', name: 'Hero landing', aura: 'violet' },
-  { id: 'energy-blast', name: 'Energy blast', aura: 'blue' },
-  { id: 'ninja-run', name: 'Ninja run', aura: 'green' },
-  { id: 'sky-punch', name: 'Sky punch', aura: 'silver' },
-  { id: 'menacing', name: 'Menacing pose', aura: 'blue' },
-  { id: 'best-friend', name: 'Best-friend flex', aura: 'violet' },
   { id: 'heart-salute', name: 'Heart salute', aura: 'green' },
-  { id: 'ginyu', name: 'Ginyu pose', aura: 'violet' },
 ];
 
 export const getCelebration = (id: string) => CELEBRATIONS.find((c) => c.id === id);

@@ -19,11 +19,13 @@ function shape(a: ClipShape, b: ClipShape | undefined, t: number): Shape {
  */
 export function samplePose(clip: Clip, seconds: number, speed = 1): Pose {
   const count = clip.frames.length;
-  const loop = (seconds * speed) / clip.duration;
-  // A held clip plays once and stays on its last frame; the rest loop.
-  const position = clip.hold ? Math.min(Math.max(loop, 0), 1) * (count - 1) : (((loop % 1) + 1) % 1) * count;
+  // A celebration plays once, then loops from loopFrom (its breathing); the rest loop whole.
+  const from = clip.loopFrom ?? 0;
+  const loop = Math.max(0, (seconds * speed) / clip.duration);
+  const at = loop < 1 ? loop : from + ((loop - from) % (1 - from));
+  const position = at * count;
   const i0 = Math.floor(position) % count;
-  const i1 = clip.hold ? Math.min(i0 + 1, count - 1) : (i0 + 1) % count;
+  const i1 = i0 + 1 < count ? i0 + 1 : Math.round(from * count);
   const t = position - Math.floor(position);
   const a = clip.frames[i0];
   const b = clip.frames[i1];

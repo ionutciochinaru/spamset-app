@@ -200,8 +200,9 @@ def export(exercise, review=False):
             'view': {'azimuth': view.get('azimuth', 65), 'elevation': view.get('elevation', 8),
                      **({'cropBelow': view['crop_below']} if 'crop_below' in view else {})},
             'contract': CONTRACTS.get(exercise),
-            # Celebrations play once and stop on the finished pose instead of looping.
-            **({'hold': True, 'strike': round(CELEBRATION_MOTIONS[exercise].strike, 3)} if exercise in CELEBRATION_MOTIONS else {}),
+            # Celebrations play their move once, then loop only the breathing from loopFrom.
+            **({'loopFrom': round(CELEBRATION_MOTIONS[exercise].loop_from, 4),
+                'strike': round(CELEBRATION_MOTIONS[exercise].strike, 3)} if exercise in CELEBRATION_MOTIONS else {}),
             **({'validator': {'passed': not failures, 'failures': failures}} if review else {}),
             'frames': frames}
 

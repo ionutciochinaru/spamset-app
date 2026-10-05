@@ -377,73 +377,13 @@ export const REVIEW_CATALOG: ReviewEntry[] = [
     "group": "stretching"
   },
   {
-    "id": "power-up",
-    "name": "Power-up",
-    "group": "celebration"
-  },
-  {
-    "id": "knee-power",
-    "name": "Knee-up power stance",
-    "group": "celebration"
-  },
-  {
-    "id": "levitate",
-    "name": "Levitate",
-    "group": "celebration"
-  },
-  {
-    "id": "hand-seal",
-    "name": "Hand seal",
-    "group": "celebration"
-  },
-  {
     "id": "gear-crouch",
     "name": "Gear crouch",
     "group": "celebration"
   },
   {
-    "id": "fist-up",
-    "name": "One fist up",
-    "group": "celebration"
-  },
-  {
-    "id": "hero-landing",
-    "name": "Hero landing",
-    "group": "celebration"
-  },
-  {
-    "id": "energy-blast",
-    "name": "Energy blast",
-    "group": "celebration"
-  },
-  {
-    "id": "ninja-run",
-    "name": "Ninja run",
-    "group": "celebration"
-  },
-  {
-    "id": "sky-punch",
-    "name": "Sky punch",
-    "group": "celebration"
-  },
-  {
-    "id": "menacing",
-    "name": "Menacing walk",
-    "group": "celebration"
-  },
-  {
-    "id": "best-friend",
-    "name": "Best-friend flex",
-    "group": "celebration"
-  },
-  {
     "id": "heart-salute",
     "name": "Heart salute",
-    "group": "celebration"
-  },
-  {
-    "id": "ginyu",
-    "name": "Ginyu pose",
     "group": "celebration"
   }
 ];
