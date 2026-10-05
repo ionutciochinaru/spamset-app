@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Button, Card, Divider, Glow, gradient, HudCard, Icon, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title } from '@/components/ui';
+import { Body, Button, Card, Divider, Glow, HudCard, Icon, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
 import { totalReps, volumeKg } from '@/core/session';
@@ -80,10 +80,6 @@ export default function Home() {
       reps: recent.reduce((sum, s) => sum + totalReps(s), 0),
     };
   }, [sessions]);
-
-  // "8 reps per side" -> "8" and "reps per side".
-  const [targetNumber = '', ...unitWords] = featured ? target(featured).split(' ') : [];
-  const targetUnit = unitWords.join(' ');
 
   const date = now.toLocaleDateString('en', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase().replace(',', '');
 
@@ -164,24 +160,6 @@ export default function Home() {
                       </PixelText>
                     )}
                   </View>
-                  <View
-                    style={[
-                      styles.scrim,
-                      gradient('linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.9) 100%)'),
-                    ]}
-                    pointerEvents="none"
-                  />
-                  <View style={styles.stageBottom} pointerEvents="none">
-                    {/* The target is the point of the card: the number big, the unit beside it. */}
-                    <View style={styles.targetRow}>
-                      <PixelText size={PixelSize.huge} color={Palette.accent}>
-                        {targetNumber}
-                      </PixelText>
-                      <PixelText size={PixelSize.medium} color={Palette.accent}>
-                        {targetUnit.toUpperCase()}
-                      </PixelText>
-                    </View>
-                  </View>
                 </View>
               </Pressable>
             </Stage>
@@ -246,12 +224,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
-  stageBottom: { position: 'absolute', bottom: 16, left: 16, right: 16, gap: 10 },
-  targetRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', columnGap: 12, rowGap: 8 },
   level: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 32 },
   levelBadge: { backgroundColor: Palette.accent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },
-  scrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '42%' },
   status: { alignItems: 'center', paddingVertical: 6, minHeight: 32, justifyContent: 'center' },
   weekRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 },
   thumbs: { flexDirection: 'row', gap: 6 },
