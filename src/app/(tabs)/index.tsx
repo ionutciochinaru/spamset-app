@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Button, Card, Glow, HudCard, Icon, IconButton, Label, MemeText, PixelText, Row, ScreenHeader, Stage, StatBar, Thumb, Title, Well } from '@/components/ui';
+import { Body, Button, Card, Glow, Icon, IconButton, Label, MemeText, PixelText, Row, ScreenHeader, Stage, StatBar, Thumb, Title, Well } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
 import { hudStats, memeCaption, rankTitle, xpState } from '@/core/xp';
@@ -112,6 +112,47 @@ export default function Home() {
           {/* Next spam set: the game hub moment. */}
           {exercise && featured && (
             <Stage style={styles.hero} scan={false}>
+              {/* Player HUD: who you are in the game. Tapping it opens the boards. */}
+              <Pressable
+                onPress={() => router.push('/ranks')}
+                accessibilityRole="button"
+                accessibilityLabel={`Level ${xp.level}, ${rankTitle(xp.level)}, ${streak} day streak. Open ranks`}
+                style={styles.player}>
+                <View style={styles.hud}>
+                  <View style={{ gap: 4, flex: 1 }}>
+                    <Row style={{ gap: 10 }}>
+                      <View style={styles.levelBadge}>
+                        <PixelText size={PixelSize.small} color="#000" style={{ textShadowColor: 'transparent' }}>
+                          LV {xp.level}
+                        </PixelText>
+                      </View>
+                      <Text style={styles.rank} numberOfLines={1}>
+                        {rankTitle(xp.level)}
+                      </Text>
+                    </Row>
+                    <Text style={styles.rankNext}>
+                      {xp.levelSize - xp.levelXp} XP to {rankTitle(xp.level + 1)}
+                    </Text>
+                  </View>
+                  <View style={[styles.streak, streak > 0 && styles.streakOn]}>
+                    <Row style={{ gap: 6 }}>
+                      <Icon ios="flame.fill" md="local_fire_department" color={streak ? Psx.hud : Palette.dim} size={16} />
+                      <PixelText size={PixelSize.medium} color={streak ? Psx.hud : Palette.dim}>
+                        {streak}
+                      </PixelText>
+                    </Row>
+                    <Text style={styles.streakLabel}>day streak</Text>
+                  </View>
+                </View>
+                {/* PS2-era stat HUD: level, streak, today and the week as four bars. */}
+                <View style={styles.stats}>
+                  <StatBar label="Strength" value={stats.strength} color={HUD_COLORS.strength} icon={{ ios: 'bolt.fill', md: 'bolt' }} />
+                  <StatBar label="Stamina" value={stats.stamina} color={HUD_COLORS.stamina} icon={{ ios: 'heart.fill', md: 'favorite' }} />
+                  <StatBar label="Discipline" value={stats.discipline} color={HUD_COLORS.discipline} icon={{ ios: 'star.fill', md: 'star' }} />
+                  <StatBar label="Reputation" value={stats.reputation} color={HUD_COLORS.reputation} icon={{ ios: 'crown.fill', md: 'military_tech' }} />
+                </View>
+              </Pressable>
+
               <Pressable onPress={() => openSpamset(featured)} accessibilityLabel={`Start ${exercise.name}`}>
                 <View>
                   <FigureViewer clipId={exercise.animation} controls={false} style={styles.stage} />
@@ -119,6 +160,10 @@ export default function Home() {
                     {canSwap && (
                       <IconButton icon={{ ios: 'shuffle', md: 'shuffle' }} hint="Swap exercise" onPress={swap} style={styles.swap} />
                     )}
+                  </View>
+                  {/* The meme caption sits on the figure, like the screenshots it copies. */}
+                  <View style={styles.caption} pointerEvents="none">
+                    <MemeText>{memeCaption(xp, stats, todays.length)}</MemeText>
                   </View>
                 </View>
               </Pressable>
@@ -144,44 +189,6 @@ export default function Home() {
             </Stage>
           )}
 
-          {/* Player card: who you are in the game. Tapping it opens the boards. */}
-          <HudCard onPress={() => router.push('/ranks')} label={`Level ${xp.level}, ${xp.total} XP, ${streak} day streak. Open ranks`}>
-            <View style={styles.hud}>
-              <View style={{ gap: 6 }}>
-                {/* Your rank: a pun title per level, and the next one to chase. */}
-                <Row style={{ gap: 10 }}>
-                  <View style={styles.levelBadge}>
-                    <PixelText size={PixelSize.small} color="#000" style={{ textShadowColor: 'transparent' }}>
-                      LV {xp.level}
-                    </PixelText>
-                  </View>
-                  <Text style={styles.rank}>{rankTitle(xp.level)}</Text>
-                </Row>
-                <Text style={styles.rankNext}>
-                  {xp.levelSize - xp.levelXp} XP to {rankTitle(xp.level + 1)}
-                </Text>
-              </View>
-              <View style={[styles.streak, streak > 0 && styles.streakOn]}>
-                <Row style={{ gap: 6 }}>
-                  <Icon ios="flame.fill" md="local_fire_department" color={streak ? Psx.hud : Palette.dim} size={18} />
-                  <PixelText size={PixelSize.medium} color={streak ? Psx.hud : Palette.dim}>
-                    {streak}
-                  </PixelText>
-                </Row>
-                <Text style={styles.streakLabel}>day streak</Text>
-              </View>
-            </View>
-
-            {/* PS2-era stat HUD: level, streak, today and the week as four bars. */}
-            <View style={styles.stats}>
-              <StatBar label="Strength" value={stats.strength} color={HUD_COLORS.strength} icon={{ ios: 'bolt.fill', md: 'bolt' }} />
-              <StatBar label="Stamina" value={stats.stamina} color={HUD_COLORS.stamina} icon={{ ios: 'heart.fill', md: 'favorite' }} />
-              <StatBar label="Discipline" value={stats.discipline} color={HUD_COLORS.discipline} icon={{ ios: 'star.fill', md: 'star' }} />
-              <StatBar label="Reputation" value={stats.reputation} color={HUD_COLORS.reputation} icon={{ ios: 'crown.fill', md: 'military_tech' }} />
-            </View>
-
-            <MemeText>{memeCaption(xp, stats, todays.length)}</MemeText>
-          </HudCard>
 
           {/* Today's spam sets. */}
           {todays.length > 0 && (
@@ -242,6 +249,8 @@ const styles = StyleSheet.create({
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },
   rank: { color: Psx.hud, fontFamily: DisplayFont.bold, fontSize: 20, flexShrink: 1 },
   rankNext: { color: Palette.muted, fontSize: 12 },
+  player: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 4, gap: 14 },
+  caption: { position: 'absolute', left: 12, right: 12, bottom: 14 },
   stats: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, rowGap: 12 },
   thumbs: { flexDirection: 'row', gap: 6 },
 });

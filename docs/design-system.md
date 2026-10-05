@@ -25,7 +25,7 @@ Every screen builds from `src/components/ui.tsx`, and every token lives in `src/
 3. **Colour has a job.** Orange (`Palette.accent`) marks the main action and targets, green (`Palette.go`) starts a set or rates it Easy, and yellow (`Psx.hud`) is for HUD numbers. Cyan (`Psx.cyan`) is used sparingly for live labels on the home hero; red (`Palette.danger`) means destructive.
 4. **The PSX lives in the 3D.** Scanlines go on 3D stages and the home hero only, never over text. The figure keeps its PSX rendering.
 5. **Buttons are tactile.** A thick darker bottom edge that the button presses into. Cards dip slightly when pressed. There are no bevels and no hard pixel shadows on surfaces.
-6. **One game moment per screen.** The home screen is the game hub: the player card (level, streak, four PS2-style stat bars and a gym-meme caption) and the hero stage with its countdown. Other screens stay calm, with HUD numbers where there are numbers. `Blink` appears at most once per screen.
+6. **One game moment per screen.** The home screen is the game hub: one hero card with the player HUD on top (level, rank, streak, four PS2-style stat bars), the 3D figure with a gym-meme caption over it, the next-set countdown and Start. Other screens stay calm, with HUD numbers where there are numbers. `Blink` appears at most once per screen.
 7. **Phone first.** Touch targets are at least 40 pt (50 for buttons and fields), with a 16 pt side gutter. Every component works on iOS, Android and web, with no platform forks for looks.
 8. **One header row per screen.** Every screen starts with `ScreenHeader`: the back arrow on the left on pushed screens (`back`), the title next to it, and your profile picture on the far right, which opens Profile (hidden on Profile itself with `profile={false}`). Never use the system navigation header or a spacer above the title. Today keeps its own header (date and wordmark) with the picture in the same place.
 
@@ -39,5 +39,5 @@ Every screen builds from `src/components/ui.tsx`, and every token lives in `src/
 | Actions | `Button` (primary, go, tonal, ghost, danger; `large`), `IconButton` (text or `icon`), `Avatar`, `Toggle`, `Field`, `Chips`, `Segmented`, `Stepper` |
 | Data | `Stat` (HUD number + label, or `inline`), `StatBar` (PS2-style stat bar with percent), `Meter`, `Tag` |
 | Motion | `Blink` |
-| Meme | `MemeText` (white caption with a black outline; one per screen, on the player card) |
+| Meme | `MemeText` (white caption with a black outline; one per screen, over the hero figure or the +XP screen) |
 | App chrome | `AppTabs` (one tab bar for every platform), `FigureViewer` (3D stage with scanlines) |
