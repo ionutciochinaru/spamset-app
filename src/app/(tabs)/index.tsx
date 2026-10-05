@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Button, Card, Divider, Glow, HudCard, Icon, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title } from '@/components/ui';
+import { Body, Button, Card, Divider, Glow, HudCard, Icon, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title, Well } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
 import { totalReps, volumeKg } from '@/core/session';
@@ -163,12 +163,18 @@ export default function Home() {
               </Pressable>
               <View style={styles.stageAction}>
                 {next && (
-                  <View style={styles.hud}>
-                    <Label>At {clockText(next.at.getHours() * 60 + next.at.getMinutes())}</Label>
+                  <Well style={styles.timer}>
+                    <Row style={{ gap: 8 }}>
+                      <Icon ios="alarm.fill" md="alarm" color={Palette.muted} size={18} />
+                      <View style={{ gap: 2 }}>
+                        <Label>Next at</Label>
+                        <Text style={styles.timerClock}>{clockText(next.at.getHours() * 60 + next.at.getMinutes())}</Text>
+                      </View>
+                    </Row>
                     <PixelText size={PixelSize.medium} color={Psx.hud}>
                       {countdown(next.at, now)}
                     </PixelText>
-                  </View>
+                  </Well>
                 )}
                 <Button label={`Start spam set · ${target(featured)}`} large onPress={() => openSpamset(featured)} />
               </View>
@@ -235,6 +241,15 @@ const styles = StyleSheet.create({
   },
   level: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 32 },
   levelBadge: { backgroundColor: Palette.accent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
+  timer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    gap: 12,
+  },
+  timerClock: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 18 },
   stageAction: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },
   status: { alignItems: 'center', paddingVertical: 6, minHeight: 32, justifyContent: 'center' },
