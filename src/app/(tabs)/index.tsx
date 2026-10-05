@@ -153,7 +153,7 @@ export default function Home() {
                 <View>
                   <FigureViewer clipId={exercise.animation} controls={false} scan={false} style={styles.stage} />
                   <View style={styles.stageTop} pointerEvents="none">
-                    <Label color={Psx.cyan}>{next ? 'Next spam set' : 'Try a spam set'}</Label>
+                    <Title style={{ flex: 1, fontSize: 28, lineHeight: 32 }}>{exercise.name}</Title>
                     {next && (
                       <PixelText size={PixelSize.medium} color={Psx.hud}>
                         {countdown(next.at, now)}
@@ -168,7 +168,6 @@ export default function Home() {
                     pointerEvents="none"
                   />
                   <View style={styles.stageBottom} pointerEvents="none">
-                    <Title style={{ fontSize: 28, lineHeight: 32 }}>{exercise.name}</Title>
                     <View style={styles.stageRow}>
                       <PixelText size={PixelSize.medium} color={Palette.accent}>
                         {target(featured).toUpperCase()}
@@ -234,9 +233,10 @@ const styles = StyleSheet.create({
     top: 14,
     left: 16,
     right: 16,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 12,
   },
   stageBottom: { position: 'absolute', bottom: 16, left: 16, right: 16, gap: 10 },
   stageRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
