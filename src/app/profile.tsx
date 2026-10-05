@@ -4,7 +4,7 @@ import { View } from 'react-native';
 
 import { Avatar, Body, Button, Card, Chips, Heading, Label, Row, Screen, ScreenHeader, Segmented, Toggle, Well } from '@/components/ui';
 import { accountsEnabled, deleteAccount, signInWithApple, signInWithGoogle, signOut, useSession } from '@/lib/auth';
-import { pickAvatar, removeAvatar, type AvatarSource } from '@/lib/avatar';
+import { pickAvatar, removeAvatar, syncAvatar, type AvatarSource } from '@/lib/avatar';
 import { scheduleSpamsets } from '@/lib/spamset-notify';
 import { syncNow } from '@/lib/sync';
 import { EQUIPMENT_LABELS, OWNABLE_EQUIPMENT, type Equipment } from '@/core/exercises';
@@ -27,7 +27,10 @@ export default function Profile() {
   const choosePicture = (source: AvatarSource) =>
     attempt(async () => {
       const uri = await pickAvatar(source, avatarUri);
-      if (uri) setAvatar(uri);
+      if (!uri) return;
+      setAvatar(uri);
+      // Onto the boards too (when you have a leaderboard profile); a failure here can retry later.
+      await syncAvatar().catch(() => null);
     });
 
   const toggleBell = (kg: number) => {
@@ -66,6 +69,7 @@ export default function Profile() {
                 onPress={() => {
                   removeAvatar(avatarUri);
                   setAvatar(undefined);
+                  syncAvatar().catch(() => null);
                 }}
               />
             )}

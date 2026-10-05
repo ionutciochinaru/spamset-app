@@ -3,11 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Body, Button, Card, Chips, Field, Glow, Heading, Label, Meter, PixelText, Row, ScreenHeader, Segmented, Stat, Toggle } from '@/components/ui';
+import { Avatar, Body, Button, Card, Chips, Field, Glow, Heading, Label, Meter, PixelText, Row, ScreenHeader, Segmented, Stat, Toggle } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { xpState } from '@/core/xp';
 import { accountsEnabled, useSession } from '@/lib/auth';
 import {
+  avatarUrls,
   findPlayers,
   leaderboard,
   myProfile,
@@ -18,6 +19,7 @@ import {
   type Profile,
   type Scope,
 } from '@/lib/leaderboard';
+import { syncAvatar } from '@/lib/avatar';
 import { syncNow } from '@/lib/sync';
 import { useApp } from '@/store/app-store';
 
@@ -36,6 +38,7 @@ export default function Ranks() {
   const [board, setBoard] = useState<Board>('all');
   const [scope, setScope] = useState<Scope>('everyone');
   const [rows, setRows] = useState<BoardRow[]>();
+  const [avatars, setAvatars] = useState<Record<string, string>>({});
   const [error, setError] = useState<string>();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -43,9 +46,14 @@ export default function Ranks() {
     if (!session) return;
     try {
       setError(undefined);
+      await syncAvatar().catch(() => null);
       const p = await myProfile();
       setProfile(p);
-      if (p) setRows(await leaderboard(board, scope));
+      if (p) {
+        const next = await leaderboard(board, scope);
+        setRows(next);
+        setAvatars(await avatarUrls(next.map((r) => r.user_id)).catch(() => ({})));
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load the leaderboard.');
     }
@@ -144,7 +152,7 @@ export default function Ranks() {
               ) : (
                 <Card style={{ paddingVertical: 6, gap: 0 }}>
                   {rows.map((row) => (
-                    <BoardLine key={row.user_id} row={row} board={board} onRival={() => toggleRival(row)} />
+                    <BoardLine key={row.user_id} row={row} board={board} avatar={avatars[row.user_id]} onRival={() => toggleRival(row)} />
                   ))}
                   {scope === 'rivals' && rows.length <= 1 && (
                     <Body muted style={{ paddingVertical: 12 }}>
@@ -159,7 +167,14 @@ export default function Ranks() {
                 </Body>
               )}
               <FindRivals onAdded={load} />
-              <ProfileForm profile={profile} onSaved={(p) => setProfile(p)} />
+              <ProfileForm
+                profile={profile}
+                onSaved={(p) => {
+                  setProfile(p);
+                  // A new profile can carry your picture now; reload to show it.
+                  load();
+                }}
+              />
             </>
           )}
         </View>
@@ -168,13 +183,14 @@ export default function Ranks() {
   );
 }
 
-function BoardLine({ row, board, onRival }: { row: BoardRow; board: Board; onRival: () => void }) {
+function BoardLine({ row, board, avatar, onRival }: { row: BoardRow; board: Board; avatar?: string; onRival: () => void }) {
   const unit = board === 'streak' ? (row.value === 1 ? 'day' : 'days') : 'XP';
   return (
     <View style={[styles.line, row.is_me && styles.lineMe]}>
       <PixelText size={PixelSize.small} color={row.rank <= 3 ? Psx.hud : Palette.muted} style={{ width: 36 }}>
         {row.rank}
       </PixelText>
+      <Avatar uri={avatar} size={32} />
       <Text style={[styles.name, row.is_me && { color: Palette.accent }]} numberOfLines={1}>
         {row.display_name}
         {row.is_me ? ' (you)' : ''}

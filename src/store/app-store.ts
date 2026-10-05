@@ -47,6 +47,8 @@ type State = {
   spamSwaps: SpamSwaps;
   /** Your profile picture, a file on this device. */
   avatarUri?: string;
+  /** The picture last uploaded for the leaderboards (equal to avatarUri when in step). */
+  avatarUploaded?: string;
 };
 
 export type AnimationRating = { score: number; note: string; revision: string; updatedAt: string };
@@ -62,6 +64,7 @@ type Actions = {
   markSynced: (ids: string[]) => void;
   rateAnimation: (exercise: string, rating: Omit<AnimationRating, 'updatedAt'>) => void;
   setAvatar: (uri: string | undefined) => void;
+  setAvatarUploaded: (uri: string | undefined) => void;
   /** Do `exercise` instead at the slot `at` (the swap button); past swaps are dropped. */
   swapSpamset: (at: Date, exercise: string) => void;
   /** Forget everything on this device, back to a fresh install (after deleting the account). */
@@ -172,11 +175,12 @@ export const useApp = create<State & Actions>()(
         set((s) => ({ animationReviews: { ...s.animationReviews, [exercise]: { ...rating, updatedAt: now() } } })),
 
       setAvatar: (avatarUri) => set({ avatarUri }),
+      setAvatarUploaded: (avatarUploaded) => set({ avatarUploaded }),
 
       swapSpamset: (at, exercise) =>
         set((s) => ({ spamSwaps: { ...liveSwaps(s.spamSwaps, new Date()), [at.toISOString()]: exercise } })),
 
-      resetLocal: () => set({ ...freshState(), authMode: undefined, lastSyncedAt: undefined, avatarUri: undefined }),
+      resetLocal: () => set({ ...freshState(), authMode: undefined, lastSyncedAt: undefined, avatarUri: undefined, avatarUploaded: undefined }),
 
       markSynced: (ids) => set((s) => ({ syncedSessionIds: [...new Set([...s.syncedSessionIds, ...ids])], lastSyncedAt: now() })),
     }),

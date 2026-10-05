@@ -7,6 +7,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
+import { removeAllAvatars } from './leaderboard';
 import { googleWebClientId, supabase } from './supabase';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -88,6 +89,8 @@ export async function signInWithApple(): Promise<boolean> {
 /** Delete the signed-in account and everything synced to it (supabase/migrations/0003_delete_account.sql). */
 export async function deleteAccount() {
   const client = requireClient();
+  // Pictures live in Storage, not in tables the account delete cascades to.
+  await removeAllAvatars();
   const { error } = await client.rpc('delete_account');
   if (error) throw error;
   // The user no longer exists on the server, so only drop the session here.
