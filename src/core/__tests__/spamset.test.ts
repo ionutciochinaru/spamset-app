@@ -2,6 +2,7 @@ import { getExercise, exerciseCategory } from '../exercises';
 import {
   DEFAULT_SCHEDULE,
   clockText,
+  setsPerDay,
   liveSwaps,
   pickFor,
   setExerciseOn,
@@ -41,11 +42,17 @@ describe('spam set schedule', () => {
 });
 
 describe('spam set picks', () => {
-  it('draws from the pool and your equipment', () => {
-    const ids = spamCandidates({ ...on, pool: ['stretch'] }, []);
+  it('draws only what your equipment allows', () => {
+    const ids = spamCandidates(on, []);
     expect(ids.length).toBeGreaterThan(0);
-    expect(ids.every((id) => exerciseCategory(getExercise(id)) === 'stretch')).toBe(true);
-    expect(spamCandidates({ ...on, pool: ['kettlebell'] }, [])).toEqual([]);
+    expect(ids.some((id) => exerciseCategory(getExercise(id)) === 'kettlebell')).toBe(false);
+    expect(spamCandidates(on, ['kettlebell']).some((id) => exerciseCategory(getExercise(id)) === 'kettlebell')).toBe(true);
+  });
+
+  it('counts the sets in an active day', () => {
+    expect(setsPerDay({ ...on, every: 60, start: 9 * 60, end: 18 * 60 })).toBe(10);
+    expect(setsPerDay({ ...on, every: 45, start: 9 * 60, end: 10 * 60 })).toBe(2);
+    expect(setsPerDay({ ...on, start: 600, end: 500 })).toBe(0);
   });
 
   it('never draws an exercise you switched off', () => {

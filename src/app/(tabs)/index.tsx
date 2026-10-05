@@ -47,7 +47,7 @@ export default function Home() {
   const swapSpamset = useApp((s) => s.swapSpamset);
   const next = planSpamsets(schedule, owned, now, 1, swaps)[0];
   // With spam sets off, still show one to try, picked once per hour (or swapped).
-  const tryable = spamCandidates({ ...schedule, pool: schedule.pool.length ? schedule.pool : ['bodyweight'] }, owned);
+  const tryable = spamCandidates(schedule, owned);
   const [tryPick, setTryPick] = useState<string>();
   const fallback = tryPick ?? tryable[Math.floor(now.getTime() / 3600000) % Math.max(1, tryable.length)];
   const featured = next?.exercise ?? fallback;

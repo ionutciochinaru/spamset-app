@@ -4,7 +4,7 @@
  * shared by the app (local notifications on iOS/Android, page timers on web) and the
  * Chrome extension, so every surface agrees on what fires when.
  */
-import { canDo, EXERCISES, exerciseCategory, getExercise, isStretch, isTimed, type Category, type Equipment } from './exercises';
+import { canDo, EXERCISES, getExercise, isStretch, isTimed, type Equipment } from './exercises';
 import type { Prescription } from './progression';
 import type { Target } from './session';
 
@@ -17,8 +17,6 @@ export type SpamSchedule = {
   end: number;
   /** Active weekdays, 0 = Sunday. */
   days: number[];
-  /** Categories the exercise is drawn from. */
-  pool: Category[];
   /** Exercises you switched off in the library, never drawn. */
   off?: string[];
 };
@@ -29,17 +27,22 @@ export const DEFAULT_SCHEDULE: SpamSchedule = {
   start: 9 * 60,
   end: 18 * 60,
   days: [1, 2, 3, 4, 5],
-  pool: ['bodyweight', 'core', 'stretch'],
 };
 
 export const INTERVALS = [15, 30, 45, 60, 90, 120];
 
 export type SpamSlot = { at: Date; exercise: string };
 
-/** Exercises a schedule can draw from: in the pool and possible with your equipment. */
+/** Exercises a schedule can draw from: switched on in the library and possible with your equipment. */
 export function spamCandidates(schedule: SpamSchedule, owned: Equipment[]): string[] {
   const off = new Set(schedule.off ?? []);
-  return EXERCISES.filter((e) => schedule.pool.includes(exerciseCategory(e)) && canDo(e, owned) && !off.has(e.id)).map((e) => e.id);
+  return EXERCISES.filter((e) => canDo(e, owned) && !off.has(e.id)).map((e) => e.id);
+}
+
+/** Spam sets on an active day: one at `start`, then every `every` minutes until `end`. */
+export function setsPerDay(schedule: SpamSchedule): number {
+  if (schedule.every <= 0 || schedule.end < schedule.start) return 0;
+  return Math.floor((schedule.end - schedule.start) / schedule.every) + 1;
 }
 
 /** Slot times strictly after `from`, at most `count`, looking up to `horizonDays` ahead. */

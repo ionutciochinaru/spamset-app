@@ -17,7 +17,7 @@ import { ownedEquipment, spamSchedule, useApp } from '@/store/app-store';
 /**
  * One spam set: the exercise from a notification (or "Do one now"), its 3D demo and your
  * current target. Done asks how it felt (Easy / Good / Hard), which moves the target, then
- * logs it to History. Swap draws another from your pool.
+ * logs it to History. Swap draws another of your switched-on exercises.
  */
 export default function Spamset() {
   const params = useLocalSearchParams<{ exercise?: string }>();

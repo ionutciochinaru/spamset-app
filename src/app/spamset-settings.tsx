@@ -1,10 +1,11 @@
+import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { AppState, Platform, View } from 'react-native';
 
 import { Body, Button, Card, Chips, Heading, Label, Row, Screen, ScreenHeader, Stepper, Toggle } from '@/components/ui';
 import { Palette } from '@/constants/theme';
-import { CATEGORY_LABELS, getExercise, type Category } from '@/core/exercises';
-import { DEFAULT_SCHEDULE, INTERVALS, planSpamsets, slotMessage, spamCandidates, timeText, type SpamSchedule } from '@/core/spamset';
+import { getExercise } from '@/core/exercises';
+import { clockText, INTERVALS, planSpamsets, setsPerDay, slotMessage, spamCandidates, timeText, type SpamSchedule } from '@/core/spamset';
 import {
   notificationPermission,
   notifyNow,
@@ -16,7 +17,6 @@ import {
 import { openSpamset, useTargetText } from '@/lib/spamset-scheduler';
 import { ownedEquipment, spamSchedule, useApp } from '@/store/app-store';
 
-const CATEGORIES: Category[] = ['bodyweight', 'core', 'stretch', 'gear', 'kettlebell'];
 const DAYS = [1, 2, 3, 4, 5, 6, 0];
 const dayLabel = (d: number) => new Date(2026, 9, 4 + d).toLocaleDateString(undefined, { weekday: 'short' });
 const intervalLabel = (m: number) => (m < 60 ? `${m} min` : `${m / 60} h`);
@@ -53,7 +53,7 @@ export default function SpamsetSettings() {
   };
 
   const preview = planSpamsets(schedule, owned, new Date(), 4, useApp.getState().spamSwaps);
-  const available = CATEGORIES.filter((c) => spamCandidates({ ...DEFAULT_SCHEDULE, pool: [c] }, owned).length);
+  const perDay = setsPerDay(schedule);
 
   return (
     <Screen>
@@ -119,21 +119,20 @@ export default function SpamsetSettings() {
           selected={schedule.days.map(String)}
           onToggle={(v) => update({ days: toggle(schedule.days, Number(v)) })}
         />
+        <Body muted style={{ fontSize: 14 }}>
+          {perDay === 1 ? '1 spam set' : `${perDay} spam sets`} a day, {clockText(schedule.start)} to{' '}
+          {clockText(schedule.start + (perDay - 1) * schedule.every)}.
+        </Body>
       </Card>
 
       <Card>
-        <Label>Exercises from</Label>
-        <Chips<Category>
-          wrap
-          options={available.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }))}
-          selected={schedule.pool}
-          onToggle={(c) => update({ pool: toggle(schedule.pool, c) })}
-        />
+        <Label>Exercises</Label>
         <Body muted style={{ fontSize: 14 }}>
           {candidates.length
-            ? `${candidates.length} exercises your equipment allows. Targets follow your progression.`
-            : 'Pick at least one group your equipment allows.'}
+            ? `${candidates.length} exercises your equipment allows, switched on in the library. Targets follow your progression.`
+            : 'No exercises on. Switch some on in the library.'}
         </Body>
+        <Button label="Choose exercises" kind="tonal" onPress={() => router.push('/exercises')} />
       </Card>
 
       {preview.length > 0 && (
