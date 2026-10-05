@@ -5,7 +5,7 @@ Spamset runs self-hosted Supabase on the Hostinger VPS (`srv1826492.hstgr.cloud`
 | Environment | Used by | URL (`app.config.ts`) | Directory | Ports (loopback) |
 | --- | --- | --- | --- | --- |
 | `dev-spamset` | local development, `development` and `preview` builds | `https://spamset-dev.loadoutlog.com` | `/root/dev-spamset` | 28000, 28443, 25432, 26543 |
-| `prod-spamset` | `production` builds | TODO | `/root/prod-spamset` | 38000, 38443, 35432, 36543 |
+| `prod-spamset` | `production` builds | `https://spamset-api.loadoutlog.com` | `/root/prod-spamset` | 38000, 38443, 35432, 36543 |
 
 The same server holds Loadout's stacks, shelved (stopped, data kept): `/root/supabase`
 (prod-loadout, `api.loadoutlog.com`) and `/root/dev-loadout`. Never reuse or modify them. The

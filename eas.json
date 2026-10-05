@@ -34,8 +34,8 @@
       "autoIncrement": true,
       "env": {
         "SPAMSET_ENV": "prod-spamset",
-        "EXPO_PUBLIC_SUPABASE_URL": "https://api.spamset.example",
-        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": ""
+        "EXPO_PUBLIC_SUPABASE_URL": "https://spamset-api.loadoutlog.com",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzkxMTgyMDgwLCJleHAiOjE5NDg4NjIwODB9.pDKS0uvwvc0SxxepEIeKQd7LErFNZbGscbYvqQMOy1o"
       },
       "environment": "production",
       "channel": "production"

@@ -10,11 +10,10 @@ const PROFILE_ENVIRONMENT: Record<string, SpamsetEnvironment> = {
 
 /**
  * The self-hosted Supabase stack behind each environment (Hostinger VPS, Caddy in front of Kong).
- * TODO: the prod hostname is a placeholder until prod-spamset exists.
  */
 export const SUPABASE_URL: Record<SpamsetEnvironment, string> = {
   'dev-spamset': 'https://spamset-dev.loadoutlog.com',
-  'prod-spamset': 'https://api.spamset.example',
+  'prod-spamset': 'https://spamset-api.loadoutlog.com',
 };
 
 function isSpamsetEnvironment(value: string | undefined): value is SpamsetEnvironment {

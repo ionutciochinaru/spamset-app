@@ -4,8 +4,8 @@ Competitors have store listings, ratings and years of reviews; Spamset is a deve
 
 ## Tasks
 
-- [ ] Create the prod-spamset stack on the VPS (`tools/vps/setup-stack.sh`, port prefix 3) and pick its hostname. Replace the placeholder `https://api.spamset.example` in `app.config.ts` and the empty production key in `eas.json`.
-- [ ] Apply the migrations to prod-spamset (confirm with the owner first; see AGENTS.md).
+- [x] Create the prod-spamset stack on the VPS (`tools/vps/setup-stack.sh`, port prefix 3) and pick its hostname. Replace the placeholder `https://api.spamset.example` in `app.config.ts` and the empty production key in `eas.json`.
+- [x] Apply the migrations to prod-spamset (confirm with the owner first; see AGENTS.md).
 - [ ] Sign-in for production: rotate the Google client secret that was pasted in chat, fix the Google consent screen branding (it shows loadoutlog.com), and add Apple sign-in.
 - [ ] App Store and Google Play: icons, screenshots, descriptions, privacy policy, and `eas build` / `eas submit` with the production profile.
 - [ ] Host the web app and rebuild the Chrome extension for its origin (`SPAMSET_WEB_ORIGINS=… npm run extension`), then publish the extension on the Chrome Web Store.
