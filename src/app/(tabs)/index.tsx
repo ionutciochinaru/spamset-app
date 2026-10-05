@@ -85,48 +85,6 @@ export default function Home() {
       <Glow height={420} />
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + Spacing.three, paddingBottom: insets.bottom + 110 }}>
         <View style={styles.column}>
-          {/* Player card: who you are in the game. Tapping it opens the boards. */}
-          <HudCard onPress={() => router.push('/ranks')} label={`Level ${xp.level}, ${xp.total} XP, ${streak} day streak. Open ranks`}>
-            <View style={styles.hud}>
-              <View style={{ gap: 6 }}>
-                <Label>{date}</Label>
-                <Row style={{ gap: 10 }}>
-                  <PixelText size={PixelSize.large} color={Palette.accent}>
-                    SPAMSET
-                  </PixelText>
-                  <View style={styles.levelBadge}>
-                    <PixelText size={PixelSize.small} color="#000" style={{ textShadowColor: 'transparent' }}>
-                      LV {xp.level}
-                    </PixelText>
-                  </View>
-                </Row>
-                {/* Your rank: a pun title per level, and the next one to chase. */}
-                <Text style={styles.rank}>{rankTitle(xp.level)}</Text>
-                <Text style={styles.rankNext}>
-                  {xp.levelSize - xp.levelXp} XP to {rankTitle(xp.level + 1)}
-                </Text>
-              </View>
-              <View style={[styles.streak, streak > 0 && styles.streakOn]}>
-                <Row style={{ gap: 6 }}>
-                  <Icon ios="flame.fill" md="local_fire_department" color={streak ? Psx.hud : Palette.dim} size={18} />
-                  <PixelText size={PixelSize.medium} color={streak ? Psx.hud : Palette.dim}>
-                    {streak}
-                  </PixelText>
-                </Row>
-                <Text style={styles.streakLabel}>day streak</Text>
-              </View>
-            </View>
-
-            {/* PS2-era stat HUD: level, streak, today and the week as four bars. */}
-            <View style={styles.stats}>
-              <StatBar label="Strength" value={stats.strength} color={HUD_COLORS.strength} icon={{ ios: 'bolt.fill', md: 'bolt' }} />
-              <StatBar label="Stamina" value={stats.stamina} color={HUD_COLORS.stamina} icon={{ ios: 'heart.fill', md: 'favorite' }} />
-              <StatBar label="Discipline" value={stats.discipline} color={HUD_COLORS.discipline} icon={{ ios: 'star.fill', md: 'star' }} />
-              <StatBar label="Reputation" value={stats.reputation} color={HUD_COLORS.reputation} icon={{ ios: 'crown.fill', md: 'military_tech' }} />
-            </View>
-
-            <MemeText>{memeCaption(xp, stats, todays.length)}</MemeText>
-          </HudCard>
 
           {/* The schedule, or a way to turn it on; both open spam set settings. */}
           <Button
@@ -173,6 +131,49 @@ export default function Home() {
               </View>
             </Stage>
           )}
+
+          {/* Player card: who you are in the game. Tapping it opens the boards. */}
+          <HudCard onPress={() => router.push('/ranks')} label={`Level ${xp.level}, ${xp.total} XP, ${streak} day streak. Open ranks`}>
+            <View style={styles.hud}>
+              <View style={{ gap: 6 }}>
+                <Label>{date}</Label>
+                <Row style={{ gap: 10 }}>
+                  <PixelText size={PixelSize.large} color={Palette.accent}>
+                    SPAMSET
+                  </PixelText>
+                  <View style={styles.levelBadge}>
+                    <PixelText size={PixelSize.small} color="#000" style={{ textShadowColor: 'transparent' }}>
+                      LV {xp.level}
+                    </PixelText>
+                  </View>
+                </Row>
+                {/* Your rank: a pun title per level, and the next one to chase. */}
+                <Text style={styles.rank}>{rankTitle(xp.level)}</Text>
+                <Text style={styles.rankNext}>
+                  {xp.levelSize - xp.levelXp} XP to {rankTitle(xp.level + 1)}
+                </Text>
+              </View>
+              <View style={[styles.streak, streak > 0 && styles.streakOn]}>
+                <Row style={{ gap: 6 }}>
+                  <Icon ios="flame.fill" md="local_fire_department" color={streak ? Psx.hud : Palette.dim} size={18} />
+                  <PixelText size={PixelSize.medium} color={streak ? Psx.hud : Palette.dim}>
+                    {streak}
+                  </PixelText>
+                </Row>
+                <Text style={styles.streakLabel}>day streak</Text>
+              </View>
+            </View>
+
+            {/* PS2-era stat HUD: level, streak, today and the week as four bars. */}
+            <View style={styles.stats}>
+              <StatBar label="Strength" value={stats.strength} color={HUD_COLORS.strength} icon={{ ios: 'bolt.fill', md: 'bolt' }} />
+              <StatBar label="Stamina" value={stats.stamina} color={HUD_COLORS.stamina} icon={{ ios: 'heart.fill', md: 'favorite' }} />
+              <StatBar label="Discipline" value={stats.discipline} color={HUD_COLORS.discipline} icon={{ ios: 'star.fill', md: 'star' }} />
+              <StatBar label="Reputation" value={stats.reputation} color={HUD_COLORS.reputation} icon={{ ios: 'crown.fill', md: 'military_tech' }} />
+            </View>
+
+            <MemeText>{memeCaption(xp, stats, todays.length)}</MemeText>
+          </HudCard>
 
           {/* Today's spam sets. */}
           {todays.length > 0 && (
