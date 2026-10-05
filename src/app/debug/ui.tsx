@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { FigureViewer } from '@/components/figure-viewer';
 import {
+  Avatar,
   Blink,
   Body,
   Button,
@@ -131,6 +132,7 @@ export default function VisualLibrary() {
         <IconButton label="↓" hint="Down" onPress={() => {}} />
         <IconButton label="X" hint="Remove" onPress={() => {}} />
         <IconButton icon={{ ios: 'shuffle', md: 'shuffle' }} hint="Swap" onPress={() => {}} />
+        <Avatar size={40} onPress={() => {}} />
       </Row>
 
       <Label>Inputs</Label>

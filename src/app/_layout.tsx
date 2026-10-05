@@ -65,6 +65,10 @@ export default function RootLayout() {
           />
           <Stack.Screen name="spamset" options={{ presentation: 'fullScreenModal' }} />
           <Stack.Screen
+            name="profile"
+            options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
+          />
+          <Stack.Screen
             name="spamset-settings"
             options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
           />

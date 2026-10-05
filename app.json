@@ -47,6 +47,14 @@
           "icon": "./assets/images/notification-icon.png",
           "color": "#ff6b2b"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Spamset uses the camera to take your profile picture.",
+          "photosPermission": "Spamset uses your photos to pick a profile picture.",
+          "microphonePermission": false
+        }
       ]
     ],
     "experiments": {

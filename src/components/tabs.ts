@@ -4,5 +4,4 @@ export const TABS = [
   { name: 'ranks', label: 'Ranks', sf: 'trophy.fill', md: 'emoji_events', web: 'emoji_events' },
   { name: 'exercises', label: 'Exercises', sf: 'figure.strengthtraining.functional', md: 'sports_gymnastics', web: 'sports_gymnastics' },
   { name: 'history', label: 'History', sf: 'chart.bar.fill', md: 'bar_chart', web: 'bar_chart' },
-  { name: 'profile', label: 'Profile', sf: 'person.crop.circle', md: 'person', web: 'person' },
 ] as const;

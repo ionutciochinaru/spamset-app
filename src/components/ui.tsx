@@ -528,6 +528,22 @@ export function MemeText({ children, size = 22 }: { children: string; size?: num
   );
 }
 
+/** Your profile picture in an orange ring, or a person icon without one. */
+export function Avatar({ uri, size = 40, onPress, label = 'Profile' }: { uri?: string; size?: number; onPress?: () => void; label?: string }) {
+  const face = uri ? (
+    <ExpoImage source={{ uri }} style={{ width: size - 4, height: size - 4, borderRadius: size / 2 }} contentFit="cover" />
+  ) : (
+    <Icon ios="person.fill" md="person" color={Palette.muted} size={size * 0.5} />
+  );
+  const ring = [styles.avatar, { width: size, height: size, borderRadius: size / 2 }];
+  if (!onPress) return <View style={ring}>{face}</View>;
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={6} style={({ pressed }) => [ring, pressed && styles.buttonPressed]}>
+      {face}
+    </Pressable>
+  );
+}
+
 /** On/off blink, the "PRESS START" way. Use once per screen at most. */
 export function Blink({ children, period = 600 }: { children: ReactNode; period?: number }) {
   const [on, setOn] = useState(true);
@@ -653,6 +669,14 @@ export const styles = StyleSheet.create({
   statInline: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statInlineLabel: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 14 },
   statLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  avatar: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Palette.tonal,
+    borderWidth: 2,
+    borderColor: Palette.accent,
+    overflow: 'hidden',
+  },
   statBar: { flex: 1, minWidth: 130, gap: 5 },
   statBarHead: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   statBarLabel: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 12 },

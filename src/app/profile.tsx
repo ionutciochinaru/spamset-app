@@ -2,8 +2,9 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { Body, Button, Card, Chips, Heading, Label, Row, Screen, Segmented, Title, Toggle, Well } from '@/components/ui';
+import { Avatar, Body, Button, Card, Chips, Heading, Label, Row, Screen, Segmented, Title, Toggle, Well } from '@/components/ui';
 import { accountsEnabled, deleteAccount, signInWithApple, signInWithGoogle, signOut, useSession } from '@/lib/auth';
+import { pickAvatar, removeAvatar, type AvatarSource } from '@/lib/avatar';
 import { scheduleSpamsets } from '@/lib/spamset-notify';
 import { syncNow } from '@/lib/sync';
 import { EQUIPMENT_LABELS, OWNABLE_EQUIPMENT, type Equipment } from '@/core/exercises';
@@ -21,6 +22,13 @@ export default function Profile() {
   const [status, setStatus] = useState<string>();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const avatarUri = useApp((s) => s.avatarUri);
+  const setAvatar = useApp((s) => s.setAvatar);
+  const choosePicture = (source: AvatarSource) =>
+    attempt(async () => {
+      const uri = await pickAvatar(source, avatarUri);
+      if (uri) setAvatar(uri);
+    });
 
   const toggleBell = (kg: number) => {
     const bells = settings.bells.includes(kg) ? settings.bells.filter((b) => b !== kg) : [...settings.bells, kg];
@@ -42,7 +50,29 @@ export default function Profile() {
 
   return (
     <Screen>
+      <View style={{ height: 40 }} />
       <Title>Profile</Title>
+
+      <Card>
+        <Label>Profile picture</Label>
+        <Row style={{ gap: 16 }}>
+          <Avatar uri={avatarUri} size={88} />
+          <View style={{ flex: 1, gap: 8 }}>
+            <Button label="Take a photo" kind="tonal" onPress={() => choosePicture('camera')} />
+            <Button label="Choose from photos" kind="ghost" onPress={() => choosePicture('library')} />
+            {avatarUri && (
+              <Button
+                label="Remove"
+                kind="ghost"
+                onPress={() => {
+                  removeAvatar(avatarUri);
+                  setAvatar(undefined);
+                }}
+              />
+            )}
+          </View>
+        </Row>
+      </Card>
 
       <Card>
         <Label>Account</Label>
