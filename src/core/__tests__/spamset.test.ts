@@ -1,6 +1,7 @@
 import { getExercise, exerciseCategory } from '../exercises';
 import {
   DEFAULT_SCHEDULE,
+  clockText,
   liveSwaps,
   pickFor,
   planSpamsets,
@@ -8,6 +9,7 @@ import {
   spamTarget,
   swapPick,
   targetText,
+  timeText,
   upcomingTimes,
   type SpamSchedule,
 } from '../spamset';
@@ -81,5 +83,15 @@ describe('spam set picks', () => {
     expect(spamTarget('plank', { ...p, reps: 35 })).toEqual({ seconds: 35 });
     expect(spamTarget('cat-cow', p)).toEqual({ seconds: 30 });
     expect(targetText('kb-reverse-lunge', { reps: 8 })).toBe('8 reps per side');
+  });
+});
+
+describe('clock text', () => {
+  it('uses 12-hour time with AM and PM', () => {
+    expect(clockText(0)).toBe('12:00 AM');
+    expect(clockText(9 * 60 + 5)).toBe('9:05 AM');
+    expect(clockText(12 * 60)).toBe('12:00 PM');
+    expect(clockText(18 * 60 + 30)).toBe('6:30 PM');
+    expect(timeText(monday(23, 45))).toBe('11:45 PM');
   });
 });

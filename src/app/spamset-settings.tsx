@@ -4,7 +4,7 @@ import { AppState, Platform, View } from 'react-native';
 import { Body, Button, Card, Chips, Heading, Label, Row, Screen, Stepper, Title, Toggle } from '@/components/ui';
 import { Palette } from '@/constants/theme';
 import { CATEGORY_LABELS, getExercise, type Category } from '@/core/exercises';
-import { DEFAULT_SCHEDULE, INTERVALS, planSpamsets, slotMessage, spamCandidates, type SpamSchedule } from '@/core/spamset';
+import { DEFAULT_SCHEDULE, INTERVALS, planSpamsets, slotMessage, spamCandidates, timeText, type SpamSchedule } from '@/core/spamset';
 import {
   notificationPermission,
   notifyNow,
@@ -20,7 +20,9 @@ const CATEGORIES: Category[] = ['bodyweight', 'core', 'stretch', 'gear', 'kettle
 const DAYS = [1, 2, 3, 4, 5, 6, 0];
 const dayLabel = (d: number) => new Date(2026, 9, 4 + d).toLocaleDateString(undefined, { weekday: 'short' });
 const intervalLabel = (m: number) => (m < 60 ? `${m} min` : `${m / 60} h`);
-const timeLabel = (d: Date) => d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+const timeLabel = timeText;
+/** An hour as "9 AM". */
+const hourLabel = (h: number) => `${h % 12 || 12} ${h < 12 ? 'AM' : 'PM'}`;
 
 export default function SpamsetSettings() {
   const settings = useApp((s) => s.settings);
@@ -98,7 +100,7 @@ export default function SpamsetSettings() {
         <Stepper
           label="From"
           value={schedule.start / 60}
-          unit=":00"
+          format={hourLabel}
           min={0}
           max={schedule.end / 60}
           onChange={(h) => update({ start: h * 60 })}
@@ -106,7 +108,7 @@ export default function SpamsetSettings() {
         <Stepper
           label="Until"
           value={schedule.end / 60}
-          unit=":00"
+          format={hourLabel}
           min={schedule.start / 60}
           max={23}
           onChange={(h) => update({ end: h * 60 })}

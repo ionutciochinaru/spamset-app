@@ -11,7 +11,7 @@ import { syncNow } from '@/lib/sync';
 import { Palette, PixelSize, Psx } from '@/constants/theme';
 import { getExercise, isStretch, isTimed } from '@/core/exercises';
 import { initialPrescription, type Effort } from '@/core/progression';
-import { pickFor, planSpamsets, spamCandidates, spamTarget, targetText } from '@/core/spamset';
+import { pickFor, planSpamsets, spamCandidates, spamTarget, targetText, timeText } from '@/core/spamset';
 import { ownedEquipment, spamSchedule, useApp } from '@/store/app-store';
 
 /**
@@ -119,7 +119,7 @@ export default function Spamset() {
         )}
         <Body muted>
           {next
-            ? `Next one at ${next.at.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}${
+            ? `Next one at ${timeText(next.at)}${
                 next.at.toDateString() === new Date().toDateString() ? '' : ` on ${next.at.toLocaleDateString(undefined, { weekday: 'long' })}`
               }.`
             : 'Spam sets are off. Turn them on to get one at your interval.'}

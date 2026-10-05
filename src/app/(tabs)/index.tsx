@@ -9,7 +9,7 @@ import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing 
 import { getExercise } from '@/core/exercises';
 import { totalReps, volumeKg } from '@/core/session';
 import { xpState } from '@/core/xp';
-import { clockText, planSpamsets, spamCandidates, swapPick, upcomingTimes } from '@/core/spamset';
+import { clockText, planSpamsets, spamCandidates, swapPick, timeText, upcomingTimes } from '@/core/spamset';
 import { openSpamset, useTargetText } from '@/lib/spamset-scheduler';
 import { ownedEquipment, spamSchedule, SPAMSET_WORKOUT_ID, useApp } from '@/store/app-store';
 
@@ -36,7 +36,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 function countdown(at: Date, now: Date): string {
   const s = Math.max(0, Math.floor((at.getTime() - now.getTime()) / 1000));
   if (s < 86400) return `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`;
-  return `${at.toLocaleDateString('en', { weekday: 'short' }).toUpperCase()} ${clockText(at.getHours() * 60 + at.getMinutes())}`;
+  return `${at.toLocaleDateString('en', { weekday: 'short' }).toUpperCase()} ${timeText(at)}`;
 }
 
 export default function Home() {
@@ -189,7 +189,7 @@ export default function Home() {
                       <Row style={{ gap: 8 }}>
                         <Label>Next at:</Label>
                         <Text style={styles.timerClock}>
-                          {next.at.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                          {timeText(next.at)}
                         </Text>
                       </Row>
                       <PixelText size={PixelSize.medium} color={Psx.hud}>
@@ -217,7 +217,7 @@ export default function Home() {
                   <Thumb clip={getExercise(s.entries[0].exercise).animation} size={40} />
                   <Body style={{ flex: 1 }}>{getExercise(s.entries[0].exercise).name}</Body>
                   <Body muted style={{ fontSize: 14 }}>
-                    {new Date(s.startedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                    {timeText(new Date(s.startedAt))}
                   </Body>
                 </Row>
               ))}

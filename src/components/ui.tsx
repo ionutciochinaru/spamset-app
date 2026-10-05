@@ -383,6 +383,7 @@ export function Stepper({
   min = 0,
   max = 999,
   unit = '',
+  format,
 }: {
   label: string;
   value: number;
@@ -391,6 +392,8 @@ export function Stepper({
   min?: number;
   max?: number;
   unit?: string;
+  /** Shows the value another way (e.g. an hour as "9 AM"); replaces value and unit. */
+  format?: (value: number) => string;
 }) {
   const set = (next: number) => onChange(Math.min(max, Math.max(min, next)));
   const button = (symbol: string, delta: number, name: string) => (
@@ -408,8 +411,7 @@ export function Stepper({
       <View style={styles.stepperControls}>
         {button('−', -step, 'Decrease')}
         <PixelText size={PixelSize.medium} color={Psx.hud} center style={{ minWidth: 72 }}>
-          {value}
-          {unit}
+          {format ? format(value) : `${value}${unit}`}
         </PixelText>
         {button('+', step, 'Increase')}
       </View>

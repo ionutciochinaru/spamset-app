@@ -1,4 +1,4 @@
-import type { ExtensionConfig } from '../../src/core/spamset';
+import { timeText, type ExtensionConfig } from '../../src/core/spamset';
 
 type Stored = { config?: ExtensionConfig; next?: { at: number; exercise: string } };
 
@@ -16,7 +16,7 @@ chrome.storage.local.get(['config', 'next']).then((value) => {
   else if (!next) status.textContent = 'No spam sets coming up. Check your days, hours and exercises.';
   else {
     const at = new Date(next.at);
-    const when = at.toLocaleString(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+    const when = `${at.toLocaleDateString('en-US', { weekday: 'short' })} ${timeText(at)}`;
     const exercise = config.exercises[next.exercise];
     status.textContent = `Next: ${when} · ${exercise?.name ?? next.exercise}, ${exercise?.target ?? ''}`;
   }

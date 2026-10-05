@@ -133,7 +133,13 @@ export function targetText(exerciseId: string, target: Target): string {
   return getExercise(exerciseId).unilateral ? `${base} per side` : base;
 }
 
-/** "09:00" for minutes after midnight. */
+/** "9:00 AM" for minutes after midnight (the app uses 12-hour time everywhere). */
 export function clockText(minutes: number): string {
-  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+  const h = Math.floor(minutes / 60) % 24;
+  return `${h % 12 || 12}:${String(minutes % 60).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+}
+
+/** "12:15 PM" for a moment, in local time. */
+export function timeText(at: Date): string {
+  return clockText(at.getHours() * 60 + at.getMinutes());
 }

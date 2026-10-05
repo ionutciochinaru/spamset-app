@@ -7,6 +7,7 @@ import { Palette, PixelSize, Psx } from '@/constants/theme';
 import { getExercise, isLoaded } from '@/core/exercises';
 import type { Change } from '@/core/progression';
 import { dayStreak, totalReps, type SessionLog } from '@/core/session';
+import { timeText } from '@/core/spamset';
 import { deleteSession } from '@/lib/sync';
 import { formatLoad, useApp } from '@/store/app-store';
 
@@ -113,7 +114,7 @@ export default function History() {
 function LogRow({ log, open, onToggle }: { log: SessionLog; open: boolean; onToggle: () => void }) {
   const units = useApp((s) => s.settings.units);
   const entry = log.entries[0];
-  const time = new Date(log.startedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  const time = timeText(new Date(log.startedAt));
   // Logs from before the app focused on spam sets were whole workouts.
   if (!entry || log.entries.length > 1) {
     return (
