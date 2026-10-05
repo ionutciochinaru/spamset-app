@@ -164,10 +164,12 @@ export default function Home() {
               <View style={styles.stageAction}>
                 {next && (
                   <Well style={styles.timer}>
-                    <View style={{ gap: 2 }}>
+                    <Row style={{ gap: 8 }}>
                       <Label>Next at</Label>
-                      <Text style={styles.timerClock}>{clockText(next.at.getHours() * 60 + next.at.getMinutes())}</Text>
-                    </View>
+                      <Text style={styles.timerClock}>
+                        {next.at.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                      </Text>
+                    </Row>
                     <PixelText size={PixelSize.medium} color={Psx.hud}>
                       {countdown(next.at, now)}
                     </PixelText>
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     gap: 12,
   },
-  timerClock: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 18 },
+  timerClock: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 16 },
   stageAction: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },
   status: { alignItems: 'center', paddingVertical: 6, minHeight: 32, justifyContent: 'center' },
