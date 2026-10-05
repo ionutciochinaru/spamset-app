@@ -8,7 +8,7 @@ import { Body, Button, Card, Glow, Icon, IconButton, Label, MemeText, PixelText,
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
 import { hudStats, memeCaption, rankTitle, xpState } from '@/core/xp';
-import { clockText, planSpamsets, spamCandidates, swapPick, timeText, upcomingTimes } from '@/core/spamset';
+import { clockText, planSpamsets, setsPerDay, spamCandidates, swapPick, timeText } from '@/core/spamset';
 import { openSpamset, useTargetText } from '@/lib/spamset-scheduler';
 import { ownedEquipment, spamSchedule, SPAMSET_WORKOUT_ID, useApp } from '@/store/app-store';
 
@@ -62,10 +62,7 @@ export default function Home() {
   const exercise = featured ? getExercise(featured) : undefined;
 
   // Today's spam sets as a meter: done out of scheduled (at least what you've done).
-  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const slotsToday = schedule.enabled
-    ? upcomingTimes(schedule, new Date(dayStart.getTime() - 1), 200, 0).filter((t) => t.getDate() === dayStart.getDate()).length
-    : 0;
+  const slotsToday = schedule.enabled && schedule.days.includes(now.getDay()) ? setsPerDay(schedule) : 0;
 
   const todays = sessions.filter(
     (s) => s.workoutId === SPAMSET_WORKOUT_ID && s.entries.length && new Date(s.startedAt).toDateString() === now.toDateString(),
@@ -169,7 +166,18 @@ export default function Home() {
               </Pressable>
               <View style={styles.stageAction}>
                 <Well style={styles.timer}>
-                  <Title style={{ fontSize: 24, lineHeight: 28 }}>{exercise.name}</Title>
+                  <View style={styles.hud}>
+                    <Title style={{ fontSize: 24, lineHeight: 28, flex: 1 }}>{exercise.name}</Title>
+                    {/* Today's counter: done out of what the schedule sends today. */}
+                    <View
+                      style={styles.counter}
+                      accessibilityLabel={slotsToday ? `${todays.length} of ${slotsToday} spam sets today` : `${todays.length} spam sets today`}>
+                      <PixelText size={PixelSize.medium} color={slotsToday && todays.length >= slotsToday ? Psx.cyan : Psx.hud}>
+                        {slotsToday ? `${todays.length}/${slotsToday}` : todays.length}
+                      </PixelText>
+                      <Text style={styles.streakLabel}>sets today</Text>
+                    </View>
+                  </View>
                   {next && (
                     <View style={styles.hud}>
                       <Row style={{ gap: 8 }}>
@@ -243,6 +251,7 @@ const styles = StyleSheet.create({
   },
   levelBadge: { backgroundColor: Palette.accent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
   swap: { backgroundColor: 'rgba(48,49,43,0.9)' },
+  counter: { alignItems: 'flex-end', gap: 4 },
   timer: { paddingVertical: 12, paddingHorizontal: 14, gap: 8 },
   timerClock: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 16 },
   stageAction: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
