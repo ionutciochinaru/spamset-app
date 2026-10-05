@@ -40,7 +40,7 @@ export const MaxContentWidth = 720;
 /**
  * Visual library tokens (docs/design-system.md): a modern app with a game layer.
  * Space Grotesk for titles, buttons and chips; the system font for reading; the pixel font
- * only for HUD moments (numbers, timers, streak, countdown, wordmark, PRESS START).
+ * only for HUD moments (numbers, timers, streak, countdown, wordmark).
  */
 export const DisplayFont = { bold: 'SpaceGrotesk_700Bold', semibold: 'SpaceGrotesk_600SemiBold' } as const;
 

@@ -1,6 +1,6 @@
 # Spamset visual library
 
-Spamset is **a modern app with a game layer**. The base is a clean dark fitness app: rounded cards, a readable type system, and plenty of room. The game layer is a small set of signature moments: the PSX 3D figure, HUD numbers in pixel type, tactile buttons, charge meters, and PRESS START on the home hero.
+Spamset is **a modern app with a game layer**. The base is a clean dark fitness app: rounded cards, a readable type system, and plenty of room. The game layer is a small set of signature moments: the PSX 3D figure, HUD numbers in pixel type, tactile buttons and charge meters.
 
 Every screen builds from `src/components/ui.tsx`, and every token lives in `src/constants/theme.ts`. Browse the whole library in the app at **Profile → Visual library** (`/debug/ui`).
 
@@ -19,13 +19,13 @@ Every screen builds from `src/components/ui.tsx`, and every token lives in `src/
    |---|---|---|
    | Space Grotesk | `DisplayFont` | titles, headings, labels, buttons, chips, tabs |
    | System | (default) | sentences, help, form cues, list detail |
-   | Press Start 2P | `PixelFont` | HUD only: numbers, timers, countdowns, streak, the SPAMSET wordmark, PRESS START |
+   | Press Start 2P | `PixelFont` | HUD only: numbers, timers, countdowns, streak, the SPAMSET wordmark |
 
    Pixel sizes are multiples of 8 (`PixelSize`: 8, 16, 24, 32). Never set a sentence or a name in pixel type.
 3. **Colour has a job.** Orange (`Palette.accent`) marks the main action and targets, green (`Palette.go`) starts a set or rates it Easy, and yellow (`Psx.hud`) is for HUD numbers. Cyan (`Psx.cyan`) is used sparingly for live labels on the home hero; red (`Palette.danger`) means destructive.
 4. **The PSX lives in the 3D.** Scanlines go on 3D stages and the home hero only, never over text. The figure keeps its PSX rendering.
 5. **Buttons are tactile.** A thick darker bottom edge that the button presses into. Cards dip slightly when pressed. There are no bevels and no hard pixel shadows on surfaces.
-6. **One game moment per screen.** The home screen is the game hub: the hero stage, countdown, PRESS START and streak. Other screens stay calm, with HUD numbers where there are numbers. `Blink` appears at most once per screen.
+6. **One game moment per screen.** The home screen is the game hub: the player card (streak, level, week) and the hero stage with its countdown. Other screens stay calm, with HUD numbers where there are numbers. `Blink` appears at most once per screen.
 7. **Phone first.** Touch targets are at least 40 pt (50 for buttons and fields), with a 16 pt side gutter. Every component works on iOS, Android and web, with no platform forks for looks.
 
 ## Components

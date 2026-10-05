@@ -415,18 +415,30 @@ export function Tag({ label, accent }: { label: string; accent?: boolean }) {
   );
 }
 
-/** HUD counter: a pixel number over a plain label, with an optional icon. */
+/** HUD counter: a pixel number over a plain label, with an optional icon. `inline` puts the label after the number. */
 export function Stat({
   value,
   label,
   color = Psx.hud,
   icon,
+  inline,
 }: {
   value: string;
   label: string;
   color?: string;
   icon?: { ios: SymbolViewProps['name'] & string; md: string };
+  inline?: boolean;
 }) {
+  if (inline) {
+    return (
+      <View style={styles.statInline} accessibilityLabel={`${value} ${label}`}>
+        <PixelText size={PixelSize.medium} color={color}>
+          {value}
+        </PixelText>
+        <Text style={styles.statInlineLabel}>{label}</Text>
+      </View>
+    );
+  }
   return (
     <View style={styles.stat}>
       <PixelText size={PixelSize.medium} color={color}>
@@ -573,6 +585,8 @@ export const styles = StyleSheet.create({
 
   stat: { flex: 1, gap: 8 },
   statLabel: { color: Palette.muted, fontSize: 12, fontWeight: '600' },
+  statInline: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  statInlineLabel: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 14 },
   statLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   meter: { flexDirection: 'row', gap: 3, height: 10 },
   meterSegment: { flex: 1, borderRadius: 2 },

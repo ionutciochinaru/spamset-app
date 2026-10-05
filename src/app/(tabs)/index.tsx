@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Blink, Body, Button, Card, Divider, Glow, gradient, HudCard, Icon, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title } from '@/components/ui';
+import { Body, Button, Card, Divider, Glow, gradient, HudCard, Icon, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
 import { totalReps, volumeKg } from '@/core/session';
@@ -109,34 +109,28 @@ export default function Home() {
             </View>
 
             {/* Level: XP from spam sets, the game's progress bar. */}
-            <View style={{ gap: 8 }}>
-              <View style={styles.level}>
-                <View style={styles.levelBadge}>
-                  <PixelText size={PixelSize.small} color="#000" style={{ textShadowColor: 'transparent' }}>
-                    LV {xp.level}
-                  </PixelText>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Meter value={Math.round((xp.levelXp / xp.levelSize) * 12)} max={12} color={Psx.hud} />
-                </View>
-                <PixelText size={PixelSize.small} color={Palette.muted}>
-                  {xp.total} XP
+            <View style={styles.level}>
+              <View style={styles.levelBadge}>
+                <PixelText size={PixelSize.small} color="#000" style={{ textShadowColor: 'transparent' }}>
+                  LV {xp.level}
                 </PixelText>
               </View>
-              <Text style={styles.levelNext}>
-                {xp.levelSize - xp.levelXp} XP to level {xp.level + 1}
-              </Text>
+              <View style={{ flex: 1 }}>
+                <Meter value={Math.round((xp.levelXp / xp.levelSize) * 12)} max={12} color={Psx.hud} />
+              </View>
+              <PixelText size={PixelSize.small} color={Palette.muted}>
+                {xp.total} XP
+              </PixelText>
             </View>
 
             <Divider />
 
-            {/* This week, with today's spam sets as a charge meter. */}
+            {/* This week's sets, reps and XP, and today's spam sets as a charge meter. */}
             <View style={{ gap: 12 }}>
-              <Label>This week</Label>
-              <View style={styles.counters}>
-                <Stat label="Spam sets" value={String(week.count)} icon={{ ios: 'bolt.fill', md: 'bolt' }} />
-                <Stat label="Reps" value={String(week.reps)} icon={{ ios: 'repeat', md: 'repeat' }} />
-                <Stat label="XP" value={String(xp.week)} icon={{ ios: 'star.fill', md: 'star' }} />
+              <View style={styles.weekRow}>
+                <Stat inline label="Sets" value={String(week.count)} />
+                <Stat inline label="Reps" value={String(week.reps)} />
+                <Stat inline label="XP" value={String(xp.week)} />
               </View>
               {slotsToday + week.spam > 0 && (
                 <View style={{ gap: 8, marginTop: 4 }}>
@@ -179,9 +173,6 @@ export default function Home() {
                       <PixelText size={PixelSize.medium} color={Palette.accent}>
                         {target(featured).toUpperCase()}
                       </PixelText>
-                      <Blink>
-                        <PixelText size={PixelSize.small}>PRESS START</PixelText>
-                      </Blink>
                     </View>
                   </View>
                 </View>
@@ -250,11 +241,10 @@ const styles = StyleSheet.create({
   stageBottom: { position: 'absolute', bottom: 16, left: 16, right: 16, gap: 10 },
   stageRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   level: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 32 },
-  levelNext: { color: Palette.muted, fontSize: 12 },
   levelBadge: { backgroundColor: Palette.accent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },
   scrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '42%' },
   status: { alignItems: 'center', paddingVertical: 6, minHeight: 32, justifyContent: 'center' },
-  counters: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  weekRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 },
   thumbs: { flexDirection: 'row', gap: 6 },
 });
