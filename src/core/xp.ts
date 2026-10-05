@@ -176,3 +176,25 @@ export function memeCaption(xp: XpState, stats: HudStats, setsToday: number, now
   const day = Math.floor(new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 86400000);
   return lines[day % lines.length];
 }
+
+/** Pun rank titles by level; the last one holds for every level after it. */
+export const RANK_TITLES = [
+  'Couch Potato',
+  'Desk Goblin',
+  'Rep Gremlin',
+  'Snack Lifter',
+  'Curl Wizard',
+  'Benchjamin',
+  'Flexcalibur',
+  'Sir Lifts-a-Lot',
+  'Dumbbell Sorcerer',
+  'The Rep-tile',
+  'Protein Paladin',
+  'Spam Lord',
+  'Gigachad',
+] as const;
+
+/** The title for a level (1-based). */
+export function rankTitle(level: number): string {
+  return RANK_TITLES[Math.min(RANK_TITLES.length, Math.max(1, Math.floor(level))) - 1];
+}

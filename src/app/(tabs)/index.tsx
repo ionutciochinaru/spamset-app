@@ -7,7 +7,7 @@ import { FigureViewer } from '@/components/figure-viewer';
 import { Body, Button, Card, Glow, HudCard, Icon, IconButton, Label, MemeText, PixelText, Row, Stage, StatBar, Thumb, Title, Well } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
-import { hudStats, memeCaption, xpState } from '@/core/xp';
+import { hudStats, memeCaption, rankTitle, xpState } from '@/core/xp';
 import { clockText, planSpamsets, spamCandidates, swapPick, timeText, upcomingTimes } from '@/core/spamset';
 import { openSpamset, useTargetText } from '@/lib/spamset-scheduler';
 import { ownedEquipment, spamSchedule, SPAMSET_WORKOUT_ID, useApp } from '@/store/app-store';
@@ -100,6 +100,11 @@ export default function Home() {
                     </PixelText>
                   </View>
                 </Row>
+                {/* Your rank: a pun title per level, and the next one to chase. */}
+                <Text style={styles.rank}>{rankTitle(xp.level)}</Text>
+                <Text style={styles.rankNext}>
+                  {xp.levelSize - xp.levelXp} XP to {rankTitle(xp.level + 1)}
+                </Text>
               </View>
               <View style={[styles.streak, streak > 0 && styles.streakOn]}>
                 <Row style={{ gap: 6 }}>
@@ -226,6 +231,8 @@ const styles = StyleSheet.create({
   timerClock: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 16 },
   stageAction: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },
+  rank: { color: Psx.hud, fontFamily: DisplayFont.bold, fontSize: 20, marginTop: 4 },
+  rankNext: { color: Palette.muted, fontSize: 12 },
   stats: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, rowGap: 12 },
   thumbs: { flexDirection: 'row', gap: 6 },
 });

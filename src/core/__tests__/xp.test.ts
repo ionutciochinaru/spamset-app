@@ -1,5 +1,5 @@
 import type { SessionLog, Target } from '../session';
-import { dailyXp, hudStats, levelOf, MEME_CAPTIONS, memeCaption, setXp, xpState, type XpState } from '../xp';
+import { dailyXp, hudStats, levelOf, MEME_CAPTIONS, memeCaption, RANK_TITLES, rankTitle, setXp, xpState, type XpState } from '../xp';
 
 let n = 0;
 function log(at: Date, target: Target, done: number, load = 0, workoutId = 'spamset'): SessionLog {
@@ -112,6 +112,16 @@ describe('player card HUD', () => {
     expect(MEME_CAPTIONS.rolling).toContain(caption(xp, 4));
     expect(MEME_CAPTIONS.done).toContain(caption(xp, 8));
     expect(memeCaption(xp, hudStats(xp, 4, 8), 4, new Date(2026, 9, 5, 22))).toBe(caption(xp, 4));
+  });
+});
+
+describe('rankTitle', () => {
+  it('names each level and keeps the top title after the list ends', () => {
+    expect(rankTitle(1)).toBe('Couch Potato');
+    expect(rankTitle(2)).toBe('Desk Goblin');
+    expect(rankTitle(RANK_TITLES.length)).toBe('Gigachad');
+    expect(rankTitle(99)).toBe('Gigachad');
+    expect(rankTitle(0)).toBe('Couch Potato');
   });
 });
 
