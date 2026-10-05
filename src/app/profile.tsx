@@ -1,9 +1,11 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { Avatar, Body, Button, Card, Chips, Heading, Label, Row, Screen, ScreenHeader, Segmented, Toggle, Well } from '@/components/ui';
 import { accountsEnabled, deleteAccount, signInWithApple, signInWithGoogle, signOut, useSession } from '@/lib/auth';
+import { BoardProfileForm } from '@/components/board-profile';
+import { myProfile, type Profile as BoardProfile } from '@/lib/leaderboard';
 import { pickAvatar, removeAvatar, syncAvatar, type AvatarSource } from '@/lib/avatar';
 import { scheduleSpamsets } from '@/lib/spamset-notify';
 import { syncNow } from '@/lib/sync';
@@ -148,6 +150,8 @@ export default function Profile() {
         {status && <Body muted style={{ fontSize: 14 }}>{status}</Body>}
       </Card>
 
+      {session && <BoardProfileSection />}
+
       <Card>
         <Label>Your equipment</Label>
         <Body muted style={{ fontSize: 14 }}>
@@ -195,3 +199,16 @@ export default function Profile() {
     </Screen>
   );
 }
+
+/** Your leaderboard name and visibility (joining happens on Ranks). */
+function BoardProfileSection() {
+  const [profile, setProfile] = useState<BoardProfile | null | undefined>(undefined);
+  useEffect(() => {
+    myProfile()
+      .then(setProfile)
+      .catch(() => setProfile(null));
+  }, []);
+  if (profile === undefined) return null;
+  return <BoardProfileForm key={profile?.user_id ?? 'new'} profile={profile} onSaved={setProfile} />;
+}
+

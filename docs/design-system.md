@@ -37,7 +37,7 @@ Every screen builds from `src/components/ui.tsx`, and every token lives in `src/
 | Type | `Title`, `Heading`, `Label`, `Body`, `Steps`, `PixelText` (HUD) |
 | Surfaces | `Card`, `HudCard` (the home player card), `Divider`, `Well`, `Stage`, `Thumb` |
 | Actions | `Button` (primary, go, tonal, ghost, danger; `large`), `IconButton` (text or `icon`), `Avatar`, `Toggle`, `Field`, `Chips`, `Segmented`, `Stepper` |
-| Data | `Stat` (HUD number + label, or `inline`), `StatBar` (PS2-style stat bar with percent), `Meter`, `Tag` |
+| Data | `Podium` (top three of a board), `Stat` (HUD number + label, or `inline`), `StatBar` (PS2-style stat bar with percent), `Meter`, `Tag` |
 | Motion | `Blink` |
 | Meme | `MemeText` (white caption with a black outline; one per screen, over the hero figure or the +XP screen) |
 | App chrome | `AppTabs` (one tab bar for every platform), `FigureViewer` (3D stage with scanlines) |

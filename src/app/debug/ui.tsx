@@ -56,6 +56,14 @@ export default function VisualLibrary() {
         ))}
       </Row>
 
+      <Label>Podium</Label>
+      <Podium
+        entries={[
+          { key: 'a', name: 'Rep Gremlin', subtitle: 'LV 3', value: '420 XP' },
+          { key: 'b', name: 'You', subtitle: 'LV 2', value: '230 XP', me: true },
+        ]}
+      />
+
       <Label>ScreenHeader</Label>
       <Card>
         <ScreenHeader title="Pushed screen" back />

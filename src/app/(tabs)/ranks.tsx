@@ -1,18 +1,18 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Avatar, Body, Button, Card, Chips, Field, Glow, Heading, Label, Meter, PixelText, Row, ScreenHeader, Segmented, Stat, Toggle } from '@/components/ui';
+import { BoardProfileForm } from '@/components/board-profile';
+import { Avatar, Body, Button, Card, Chips, Field, Glow, Heading, Label, PixelText, Podium, Row, ScreenHeader, Segmented } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
-import { xpState } from '@/core/xp';
+import { levelOf, rankTitle } from '@/core/xp';
 import { accountsEnabled, useSession } from '@/lib/auth';
 import {
   avatarUrls,
   findPlayers,
   leaderboard,
   myProfile,
-  saveProfile,
   setRival,
   type Board,
   type BoardRow,
@@ -32,8 +32,6 @@ const BOARDS: { value: Board; label: string }[] = [
 export default function Ranks() {
   const insets = useSafeAreaInsets();
   const session = useSession();
-  const sessions = useApp((s) => s.sessions);
-  const me = useMemo(() => xpState(sessions), [sessions]);
   const [profile, setProfile] = useState<Profile | null | undefined>(undefined);
   const [board, setBoard] = useState<Board>('all');
   const [scope, setScope] = useState<Scope>('everyone');
@@ -74,6 +72,11 @@ export default function Ranks() {
     setRefreshing(false);
   };
 
+  const localAvatar = useApp((s) => s.avatarUri);
+  // Your own row shows this phone's picture until the upload lands.
+  const avatarFor = (row: BoardRow) => avatars[row.user_id] ?? (row.is_me ? localAvatar : undefined);
+  const mine = rows?.find((r) => r.is_me);
+
   const toggleRival = async (row: BoardRow) => {
     try {
       await setRival(row.user_id, !row.is_rival);
@@ -95,33 +98,6 @@ export default function Ranks() {
         <View style={styles.column}>
           <ScreenHeader title="Ranks" />
 
-          {/* Your level, from this device's spam sets. */}
-          <Card>
-            <Row style={{ justifyContent: 'space-between' }}>
-              <Label>Level</Label>
-              <PixelText size={PixelSize.small} color={Palette.muted}>
-                {me.levelXp}/{me.levelSize} XP
-              </PixelText>
-            </Row>
-            <Row style={{ alignItems: 'center' }}>
-              <View style={styles.levelBadge}>
-                <PixelText size={PixelSize.large} color="#000" style={{ textShadowColor: 'transparent' }}>
-                  {me.level}
-                </PixelText>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Meter value={Math.round((me.levelXp / me.levelSize) * 10)} max={10} color={Psx.hud} />
-              </View>
-            </Row>
-            <Row>
-              <Stat value={String(me.total)} label="XP" icon={{ ios: 'star.fill', md: 'star' }} />
-              <Stat value={String(me.week)} label="This week" icon={{ ios: 'calendar', md: 'calendar_today' }} />
-              <Stat value={String(me.streak)} label="Day streak" icon={{ ios: 'flame.fill', md: 'local_fire_department' }} />
-            </Row>
-            <Body muted style={{ fontSize: 13 }}>
-              Every spam set earns XP. Each missed day costs 2%, except one free rest day a week.
-            </Body>
-          </Card>
 
           {!accountsEnabled ? (
             <Body muted>This build runs offline only, so there are no leaderboards.</Body>
@@ -134,47 +110,66 @@ export default function Ranks() {
           ) : profile === undefined ? (
             <ActivityIndicator color={Palette.accent} style={{ marginTop: 24 }} />
           ) : !profile ? (
-            <ProfileForm onSaved={(p) => setProfile(p)} />
+            <BoardProfileForm onSaved={(p) => { setProfile(p); load(); }} />
           ) : (
             <>
+              {/* One control row: which board, and everyone or just your rivals. */}
               <Segmented<Board> options={BOARDS} value={board} onChange={setBoard} />
-              <Chips<Scope>
-                options={[
-                  { value: 'everyone', label: 'Everyone' },
-                  { value: 'rivals', label: 'Rivals' },
-                ]}
-                selected={scope}
-                onToggle={setScope}
-              />
+              <Row style={{ justifyContent: 'space-between' }}>
+                <Chips<Scope>
+                  options={[
+                    { value: 'everyone', label: 'Everyone' },
+                    { value: 'rivals', label: 'Rivals' },
+                  ]}
+                  selected={scope}
+                  onToggle={setScope}
+                />
+                {mine && (
+                  <Text style={styles.position}>
+                    You&apos;re <Text style={{ color: Psx.hud }}>#{mine.rank}</Text> of {rows?.length}
+                  </Text>
+                )}
+              </Row>
               {error && <Body style={{ color: Palette.danger }}>{error}</Body>}
               {!rows ? (
                 <ActivityIndicator color={Palette.accent} style={{ marginTop: 24 }} />
               ) : (
-                <Card style={{ paddingVertical: 6, gap: 0 }}>
-                  {rows.map((row) => (
-                    <BoardLine key={row.user_id} row={row} board={board} avatar={avatars[row.user_id]} onRival={() => toggleRival(row)} />
-                  ))}
-                  {scope === 'rivals' && rows.length <= 1 && (
-                    <Body muted style={{ paddingVertical: 12 }}>
-                      No rivals yet. Tap ☆ next to anyone on Everyone, or find them by name below.
+                <>
+                  <Podium
+                    entries={rows.slice(0, 3).map((r) => ({
+                      key: r.user_id,
+                      name: r.is_me ? `${r.display_name} (you)` : r.display_name,
+                      subtitle: rankTitle(levelOf(r.total).level),
+                      value: valueText(r, board),
+                      avatar: avatarFor(r),
+                      me: r.is_me,
+                    }))}
+                  />
+                  {rows.length > 3 && (
+                    <View style={{ gap: 6 }}>
+                      {rows.slice(3).map((row) => (
+                        <BoardLine key={row.user_id} row={row} board={board} avatar={avatarFor(row)} onRival={() => toggleRival(row)} />
+                      ))}
+                    </View>
+                  )}
+                  {rows.length <= 1 && (
+                    <Body muted style={{ textAlign: 'center' }}>
+                      {scope === 'rivals'
+                        ? 'No rivals yet. Find someone by name below and follow them.'
+                        : 'Only you so far. Get a friend on Spamset and race them.'}
                     </Body>
                   )}
-                </Card>
+                </>
               )}
               {!profile.is_public && (
-                <Body muted style={{ fontSize: 13 }}>
-                  Your profile is private: only you see yourself on the boards.
+                <Body muted style={{ fontSize: 13, textAlign: 'center' }}>
+                  Your profile is private: only you see yourself on the boards. Change it in Profile.
                 </Body>
               )}
-              <FindRivals onAdded={load} />
-              <ProfileForm
-                profile={profile}
-                onSaved={(p) => {
-                  setProfile(p);
-                  // A new profile can carry your picture now; reload to show it.
-                  load();
-                }}
-              />
+              {scope === 'rivals' && <FindRivals onAdded={load} />}
+              <Body muted style={{ fontSize: 13, textAlign: 'center' }}>
+                Every spam set earns XP. Each missed day costs 2%, except one free rest day a week.
+              </Body>
             </>
           )}
         </View>
@@ -183,22 +178,30 @@ export default function Ranks() {
   );
 }
 
+/** "1 240 XP" or "6 days". */
+function valueText(row: BoardRow, board: Board): string {
+  return board === 'streak' ? `${row.value} ${row.value === 1 ? 'day' : 'days'}` : `${row.value} XP`;
+}
+
 function BoardLine({ row, board, avatar, onRival }: { row: BoardRow; board: Board; avatar?: string; onRival: () => void }) {
-  const unit = board === 'streak' ? (row.value === 1 ? 'day' : 'days') : 'XP';
   return (
     <View style={[styles.line, row.is_me && styles.lineMe]}>
-      <PixelText size={PixelSize.small} color={row.rank <= 3 ? Psx.hud : Palette.muted} style={{ width: 36 }}>
+      <PixelText size={PixelSize.small} color={Palette.muted} style={{ width: 28 }}>
         {row.rank}
       </PixelText>
-      <Avatar uri={avatar} size={32} />
-      <Text style={[styles.name, row.is_me && { color: Palette.accent }]} numberOfLines={1}>
-        {row.display_name}
-        {row.is_me ? ' (you)' : ''}
-      </Text>
+      <Avatar uri={avatar} size={40} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={[styles.name, row.is_me && { color: Palette.accent }]} numberOfLines={1}>
+          {row.display_name}
+          {row.is_me ? ' (you)' : ''}
+        </Text>
+        <Text style={styles.title} numberOfLines={1}>
+          LV {levelOf(row.total).level} · {rankTitle(levelOf(row.total).level)}
+        </Text>
+      </View>
       <PixelText size={PixelSize.small} color={Psx.hud}>
-        {row.value}
+        {valueText(row, board)}
       </PixelText>
-      <Text style={styles.unit}>{unit}</Text>
       {row.is_me ? (
         <View style={styles.star} />
       ) : (
@@ -251,59 +254,24 @@ function FindRivals({ onAdded }: { onAdded: () => void }) {
   );
 }
 
-function ProfileForm({ profile, onSaved }: { profile?: Profile; onSaved: (p: Profile) => void }) {
-  const [name, setName] = useState(profile?.display_name ?? '');
-  const [isPublic, setPublic] = useState(profile?.is_public ?? true);
-  const [error, setError] = useState<string>();
-  const [saving, setSaving] = useState(false);
-  const save = async () => {
-    setSaving(true);
-    setError(undefined);
-    try {
-      onSaved(await saveProfile({ display_name: name, is_public: isPublic }));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save.');
-    }
-    setSaving(false);
-  };
-  const changed = !profile || profile.display_name !== name.trim() || profile.is_public !== isPublic;
-  return (
-    <Card>
-      <Label>{profile ? 'Your board profile' : 'Join the boards'}</Label>
-      {!profile && <Body muted>Pick a name for the leaderboards. You can change it later.</Body>}
-      <Field value={name} onChangeText={setName} placeholder="Display name" maxLength={24} autoCorrect={false} />
-      <Row style={{ justifyContent: 'space-between' }}>
-        <View style={{ flex: 1, gap: 2 }}>
-          <Body>Public</Body>
-          <Body muted style={{ fontSize: 13 }}>
-            Others see your name, XP and streak, and can follow you.
-          </Body>
-        </View>
-        <Toggle value={isPublic} onChange={setPublic} label="Public profile" />
-      </Row>
-      {error && <Body style={{ color: Palette.danger }}>{error}</Body>}
-      {changed && (
-        <Button label={saving ? 'Saving…' : profile ? 'Save' : 'Join'} disabled={saving || name.trim().length < 2} onPress={save} />
-      )}
-    </Card>
-  );
-}
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Palette.bg },
   column: { width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', paddingHorizontal: Spacing.three, gap: Spacing.three },
-  levelBadge: {
-    minWidth: 56,
-    height: 56,
-    borderRadius: 14,
-    backgroundColor: Palette.accent,
+  line: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 6px 20px rgba(255,107,43,0.35)',
+    gap: 10,
+    minHeight: 60,
+    paddingHorizontal: 12,
+    borderRadius: Radius.card,
+    backgroundColor: Palette.panel,
+    borderWidth: 1,
+    borderColor: Psx.edge,
   },
-  line: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: 4, borderRadius: Radius.button },
-  lineMe: { backgroundColor: 'rgba(255,107,43,0.1)' },
-  name: { flex: 1, color: Palette.text, fontFamily: DisplayFont.semibold, fontSize: 16 },
-  unit: { color: Palette.muted, fontSize: 12, width: 30 },
+  lineMe: { backgroundColor: 'rgba(255,107,43,0.12)', borderColor: 'rgba(255,107,43,0.4)' },
+  name: { color: Palette.text, fontFamily: DisplayFont.semibold, fontSize: 16 },
+  title: { color: Palette.muted, fontSize: 12 },
+  position: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 14 },
   star: { width: 32, alignItems: 'center' },
 });

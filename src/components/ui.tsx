@@ -574,6 +574,68 @@ export function ScreenHeader({
   );
 }
 
+export type PodiumEntry = { key: string; name: string; subtitle?: string; value: string; avatar?: string; me?: boolean };
+
+const MEDALS = ['#ffd23f', '#c9c9c0', '#d08a4a'] as const;
+const PLINTH = [96, 64, 48] as const;
+
+/** The top three of a board: #2, #1 (raised), #3 with medal-coloured plinths; empty places wait dimmed. */
+export function Podium({ entries }: { entries: PodiumEntry[] }) {
+  // Visual order 2-1-3, so first place stands in the middle.
+  return (
+    <View style={styles.podium}>
+      {[1, 0, 2].map((i) => {
+        const e = entries[i];
+        if (!e) {
+          return (
+            <View key={`empty-${i}`} style={styles.podiumSpot} accessible accessibilityLabel={`Number ${i + 1}, open`}>
+              <View style={{ alignItems: 'center', gap: 6 }}>
+                <View style={[styles.podiumRing, styles.podiumEmpty]}>
+                  <View style={[styles.avatar, styles.podiumEmptyFace]}>
+                    <Text style={styles.podiumEmptyMark}>?</Text>
+                  </View>
+                </View>
+                <Text style={styles.podiumSub}>Up for grabs</Text>
+              </View>
+              <View style={[styles.plinth, { height: PLINTH[i], borderTopColor: Psx.edgeTop }]}>
+                <PixelText size={PixelSize.medium} color={Palette.dim}>
+                  {i + 1}
+                </PixelText>
+              </View>
+            </View>
+          );
+        }
+        const medal = MEDALS[i];
+        return (
+          <View key={e.key} style={styles.podiumSpot} accessible accessibilityLabel={`Number ${i + 1}, ${e.name}, ${e.value}`}>
+            <View style={{ alignItems: 'center', gap: 6 }}>
+              <View style={[styles.podiumRing, { borderColor: medal }, i === 0 && styles.podiumRingFirst]}>
+                <Avatar uri={e.avatar} size={i === 0 ? 72 : 56} />
+              </View>
+              <Text style={[styles.podiumName, e.me && { color: Palette.accent }]} numberOfLines={1}>
+                {e.name}
+              </Text>
+              {e.subtitle && (
+                <Text style={styles.podiumSub} numberOfLines={1}>
+                  {e.subtitle}
+                </Text>
+              )}
+            </View>
+            <View style={[styles.plinth, { height: PLINTH[i], borderTopColor: medal }]}>
+              <PixelText size={i === 0 ? PixelSize.large : PixelSize.medium} color={medal}>
+                {i + 1}
+              </PixelText>
+              <PixelText size={PixelSize.small} color={Palette.text}>
+                {e.value}
+              </PixelText>
+            </View>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
 /** On/off blink, the "PRESS START" way. Use once per screen at most. */
 export function Blink({ children, period = 600 }: { children: ReactNode; period?: number }) {
   const [on, setOn] = useState(true);
@@ -703,6 +765,25 @@ export const styles = StyleSheet.create({
   statLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   screenHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 48 },
   headerTitle: { flex: 1, fontSize: 30, lineHeight: 34 },
+  podium: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
+  podiumSpot: { flex: 1, gap: 10 },
+  podiumRing: { borderWidth: 3, borderRadius: 999, padding: 2 },
+  podiumRingFirst: { boxShadow: '0 0 24px rgba(255,210,63,0.45)' },
+  podiumEmpty: { borderColor: Psx.edgeTop, borderStyle: 'dashed' },
+  podiumEmptyFace: { width: 56, height: 56, borderRadius: 28, borderColor: 'transparent' },
+  podiumEmptyMark: { color: Palette.dim, fontFamily: DisplayFont.bold, fontSize: 22 },
+  podiumName: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 14, maxWidth: '100%' },
+  podiumSub: { color: Palette.muted, fontSize: 11, marginTop: -4 },
+  plinth: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 12,
+    borderTopWidth: 3,
+    backgroundColor: Psx.well,
+    borderWidth: 1,
+    borderColor: Psx.edge,
+  },
   avatar: {
     alignItems: 'center',
     justifyContent: 'center',
