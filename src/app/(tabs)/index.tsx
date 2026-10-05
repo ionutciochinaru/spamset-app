@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Button, Card, Glow, Icon, IconButton, Label, MemeText, PixelText, Row, ScreenHeader, Stage, StatBar, Thumb, Title, Well } from '@/components/ui';
+import { Body, Button, Card, Glow, IconButton, Label, MemeText, PixelText, Row, ScreenHeader, Stage, StatBar, Thumb, Title, Well } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
 import { hudStats, memeCaption, rankTitle, xpState } from '@/core/xp';
@@ -71,7 +71,6 @@ export default function Home() {
   // Recomputed hourly (and on every new set), so a day rolling over shows up.
   const hour = now.getHours();
   const xp = useMemo(() => xpState(sessions, new Date()), [sessions, hour]); // eslint-disable-line react-hooks/exhaustive-deps
-  const streak = xp.streak;
 
   const stats = hudStats(xp, todays.length, slotsToday);
 
@@ -113,7 +112,7 @@ export default function Home() {
               <Pressable
                 onPress={() => router.push('/ranks')}
                 accessibilityRole="button"
-                accessibilityLabel={`Level ${xp.level}, ${rankTitle(xp.level)}, ${streak} day streak. Open ranks`}
+                accessibilityLabel={`Level ${xp.level}, ${rankTitle(xp.level)}. Open ranks`}
                 style={styles.player}>
                 <View style={styles.hud}>
                   <View style={{ gap: 4, flex: 1 }}>
@@ -131,14 +130,14 @@ export default function Home() {
                       {xp.levelSize - xp.levelXp} XP to {rankTitle(xp.level + 1)}
                     </Text>
                   </View>
-                  <View style={[styles.streak, streak > 0 && styles.streakOn]}>
-                    <Row style={{ gap: 6 }}>
-                      <Icon ios="flame.fill" md="local_fire_department" color={streak ? Psx.hud : Palette.dim} size={16} />
-                      <PixelText size={PixelSize.medium} color={streak ? Psx.hud : Palette.dim}>
-                        {streak}
-                      </PixelText>
-                    </Row>
-                    <Text style={styles.streakLabel}>day streak</Text>
+                  {/* Today's counter: done out of what the schedule sends today. */}
+                  <View
+                    style={[styles.counter, todays.length > 0 && styles.counterOn]}
+                    accessibilityLabel={slotsToday ? `${todays.length} of ${slotsToday} spam sets today` : `${todays.length} spam sets today`}>
+                    <PixelText size={PixelSize.medium} color={slotsToday > 0 && todays.length >= slotsToday ? Psx.cyan : todays.length ? Psx.hud : Palette.dim}>
+                      {slotsToday ? `${todays.length}/${slotsToday}` : todays.length}
+                    </PixelText>
+                    <Text style={styles.counterLabel}>sets today</Text>
                   </View>
                 </View>
                 {/* PS2-era stat HUD: level, streak, today and the week as four bars. */}
@@ -166,18 +165,7 @@ export default function Home() {
               </Pressable>
               <View style={styles.stageAction}>
                 <Well style={styles.timer}>
-                  <View style={styles.hud}>
-                    <Title style={{ fontSize: 24, lineHeight: 28, flex: 1 }}>{exercise.name}</Title>
-                    {/* Today's counter: done out of what the schedule sends today. */}
-                    <View
-                      style={styles.counter}
-                      accessibilityLabel={slotsToday ? `${todays.length} of ${slotsToday} spam sets today` : `${todays.length} spam sets today`}>
-                      <PixelText size={PixelSize.medium} color={slotsToday && todays.length >= slotsToday ? Psx.cyan : Psx.hud}>
-                        {slotsToday ? `${todays.length}/${slotsToday}` : todays.length}
-                      </PixelText>
-                      <Text style={styles.streakLabel}>sets today</Text>
-                    </View>
-                  </View>
+                  <Title style={{ fontSize: 24, lineHeight: 28 }}>{exercise.name}</Title>
                   {next && (
                     <View style={styles.hud}>
                       <Row style={{ gap: 8 }}>
@@ -229,7 +217,7 @@ const styles = StyleSheet.create({
   column: { width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', paddingHorizontal: Spacing.three, gap: Spacing.three },
   hud: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
   stage: { borderRadius: 0, borderWidth: 0, aspectRatio: 0.95 },
-  streak: {
+  counter: {
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: 14,
@@ -237,8 +225,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.button,
     backgroundColor: Palette.panel,
   },
-  streakOn: { backgroundColor: 'rgba(255,210,63,0.12)' },
-  streakLabel: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 11 },
+  counterOn: { backgroundColor: 'rgba(255,210,63,0.12)' },
+  counterLabel: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 11 },
   stageTop: {
     position: 'absolute',
     top: 14,
@@ -251,7 +239,6 @@ const styles = StyleSheet.create({
   },
   levelBadge: { backgroundColor: Palette.accent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
   swap: { backgroundColor: 'rgba(48,49,43,0.9)' },
-  counter: { alignItems: 'flex-end', gap: 4 },
   timer: { paddingVertical: 12, paddingHorizontal: 14, gap: 8 },
   timerClock: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 16 },
   stageAction: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
