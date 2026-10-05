@@ -159,10 +159,10 @@ def _charge(k, phase):
 
 _GATHER = pose(pelvis=(0, 0, .86), toe_both=(.16, .24, 0.), knee_both=(1., .3, 0.), lean=radians(12),
                head=(radians(22), 0, 0), wrist_both=(.12, .05, -.40), pole_both=(-.3, .3, -.2))
-_SCREAM = pose(pelvis=(0, 0, .92), toe_both=(.16, .24, 0.), knee_both=(1., .3, 0.), lean=radians(-4),
-               head=(radians(-18), 0, 0), wrist_both=(.10, .27, -.13), pole_both=(-.1, .7, -.8))
+_SCREAM = pose(pelvis=(-.02, 0, .92), toe_both=(.16, .24, 0.), knee_both=(1., .3, 0.), lean=radians(-9),
+               head=(radians(-14), 0, 0), wrist_both=(.13, .19, -.07), pole_both=(-.25, .35, -.9))
 power_scream = motion([(0., NEUTRAL), (.12, _GATHER), (.17, _GATHER), (.21, _SCREAM), (.86, _SCREAM), (1., NEUTRAL)],
-                      view={'azimuth': 8, 'elevation': -10}, extra=_charge, strike=0.21, end=0.26, depth=.012)
+                      view={'azimuth': 8, 'elevation': -18}, extra=_charge, strike=0.21, end=0.26, depth=.012)
 
 CELEBRATION_MOTIONS = {
     'gear-crouch': gear_crouch,
