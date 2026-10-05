@@ -65,6 +65,18 @@ Register `https://<host>/auth/v1/callback` as the redirect URL in Google Cloud a
 Developer. Allowed app redirects (`ADDITIONAL_REDIRECT_URLS`): `spamset://**`, `exp://**`,
 `http://localhost:8081/**`.
 
+Both stacks have Google and Apple enabled (2026-10-05). The scripts below write the secrets
+over stdin without printing them, back up `.env` first and restart `auth`:
+
+- **Google**: Google Cloud project `spamset`, Web clients "Spamset Dev" and "Spamset Prod", each
+  with its own stack's callback. Download a client's JSON and run
+  `tools/vps/set-google.sh <stack> <client_secret_....json>`.
+- **Apple**: team `9437W69826`, App ID `com.cjohnd.spamset` (Sign In with Apple, Push), Services
+  ID `com.cjohnd.spamset.signin` (both hosts and callbacks), Sign in with Apple key
+  `WQD7KDA282`. `tools/vps/set-apple.sh WQD7KDA282 <AuthKey_WQD7KDA282.p8>` signs a new client
+  secret for both stacks. **It expires after 180 days (current one: 2027-04-03); rerun before.**
+  Keep the `.p8` outside the repo; Apple lets you download it only once.
+
 ## Day to day
 
 ```sh
