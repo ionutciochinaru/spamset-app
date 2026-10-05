@@ -1,11 +1,27 @@
 import * as THREE from 'three';
 
+import type { AuraKind } from '@/core/celebrations';
+
 import type { Clip, Vec3 } from './types';
 
 /** Power-up colours: HUD yellow at the core, the shirt's orange at the edge. */
 const CORE = new THREE.Color('#ffd23f');
 const EDGE = new THREE.Color('#ff6b2b');
 const WHITE = new THREE.Color('#fff8e0');
+
+/** Sustained anime auras for celebrations: [core, edge]. */
+const PALETTES: Record<AuraKind, [string, string]> = {
+  gold: ['#fff27a', '#ffb300'],
+  blue: ['#c8f6ff', '#2a9dff'],
+  red: ['#ffc2b0', '#ff2d1f'],
+  violet: ['#f2d0ff', '#9d3dff'],
+  silver: ['#ffffff', '#8fa8d8'],
+  green: ['#e6ffb8', '#2ee86a'],
+};
+
+const FLAMES = 40;
+/** Flame tongues born per second while an aura burns. */
+const FLAME_RATE = 55;
 
 const ARROWS = 9;
 const SPARKS = 20;
@@ -104,8 +120,18 @@ export class Aura {
   private center = new THREE.Vector3();
   private floor = 0;
   private innerColor = new THREE.Color();
+  private core: THREE.Color;
+  private edge: THREE.Color;
+  /** Celebrations burn continuously: flame tongues licking up the silhouette and a steady halo. */
+  private sustained: boolean;
+  private flames: Particle[] = [];
+  private flameDebt = 0;
+  private nextFlame = 0;
 
-  constructor() {
+  constructor(kind?: AuraKind) {
+    this.sustained = kind !== undefined;
+    this.core = kind ? new THREE.Color(PALETTES[kind][0]) : CORE;
+    this.edge = kind ? new THREE.Color(PALETTES[kind][1]) : EDGE;
     const pool = (count: number, material: () => THREE.SpriteMaterial) =>
       Array.from({ length: count }, () => {
         const sprite = new THREE.Sprite(material());
@@ -115,11 +141,12 @@ export class Aura {
       });
     // Arrows are solid pixel art (normal blending keeps the dark outline); the rest is light.
     this.arrows = pool(ARROWS, () => new THREE.SpriteMaterial({ map: this.arrow, transparent: true, depthWrite: false, opacity: 0 }));
-    this.sparks = pool(SPARKS, () => additive(this.glow, CORE));
-    this.streaks = pool(STREAKS, () => additive(this.glow, CORE));
+    this.sparks = pool(SPARKS, () => additive(this.glow, this.core));
+    this.streaks = pool(STREAKS, () => additive(this.glow, this.core));
+    if (this.sustained) this.flames = pool(FLAMES, () => additive(this.glow, this.edge));
     this.ring = new THREE.Mesh(
       new THREE.PlaneGeometry(1, 1),
-      new THREE.MeshBasicMaterial({ map: this.ringMap, color: CORE, transparent: true, depthWrite: false, opacity: 0, blending: THREE.AdditiveBlending }),
+      new THREE.MeshBasicMaterial({ map: this.ringMap, color: this.core, transparent: true, depthWrite: false, opacity: 0, blending: THREE.AdditiveBlending }),
     );
     this.ring.rotation.x = -Math.PI / 2;
     this.ring.visible = false;
@@ -145,7 +172,8 @@ export class Aura {
       );
       p.sprite.visible = true;
     };
-    this.arrows.forEach((p, i) => {
+    // Celebrations burn without the XP arrows: the flames are the show.
+    if (!this.sustained) this.arrows.forEach((p, i) => {
       around(p, 0.35);
       p.velocity.set(0, 1.5 + Math.random() * 0.5, 0);
       p.age = -i * 0.035; // A quick ripple rather than one sheet.
@@ -173,6 +201,8 @@ export class Aura {
     this.time += dt;
     this.joints = joints;
     this.energy *= Math.exp(-DECAY * dt);
+    // A sustained aura never drops below a pulsing simmer.
+    const level = this.sustained ? Math.max(this.energy, 0.5 + 0.12 * Math.sin(this.time * 7)) : this.energy;
 
     const names = Object.keys(joints);
     this.center.set(0, 0, 0);
@@ -187,15 +217,15 @@ export class Aura {
     this.floor = Math.max(0, Math.min(this.floor, 0.05));
 
     // Halo: two layers per joint, pushed back from the camera, white-hot then orange.
-    this.innerColor.copy(CORE).lerp(WHITE, this.energy ** 2);
+    this.innerColor.copy(this.core).lerp(WHITE, this.energy ** 2);
     for (const [k, name] of names.entries()) {
       let glow = this.halo.get(name);
       if (!glow) {
-        glow = { outer: new THREE.Sprite(additive(this.glow, EDGE)), inner: new THREE.Sprite(additive(this.glow, CORE)), seed: k * 1.7 };
+        glow = { outer: new THREE.Sprite(additive(this.glow, this.edge)), inner: new THREE.Sprite(additive(this.glow, this.core)), seed: k * 1.7 };
         this.group.add(glow.outer, glow.inner);
         this.halo.set(name, glow);
       }
-      const visible = this.energy > 0.01;
+      const visible = level > 0.01;
       glow.outer.visible = glow.inner.visible = visible;
       if (!visible) continue;
       const [x, y, z] = joints[name];
@@ -203,15 +233,17 @@ export class Aura {
       this.toCamera.copy(camera).sub(this.point).normalize();
       this.point.addScaledVector(this.toCamera, -BEHIND);
       const flicker = 1 + 0.12 * Math.sin(this.time * 11 + glow.seed);
-      const grow = 1 + 0.4 * (1 - this.energy); // Swells outward as it fades.
+      const grow = 1 + 0.4 * (1 - level); // Swells outward as it fades.
       glow.outer.position.copy(this.point);
       glow.outer.scale.setScalar(0.52 * flicker * grow);
       glow.inner.position.copy(this.point);
       glow.inner.scale.setScalar(0.27 * flicker * grow);
       (glow.inner.material as THREE.SpriteMaterial).color.copy(this.innerColor);
-      (glow.outer.material as THREE.SpriteMaterial).opacity = 0.45 * this.energy;
-      (glow.inner.material as THREE.SpriteMaterial).opacity = 0.6 * this.energy;
+      (glow.outer.material as THREE.SpriteMaterial).opacity = 0.45 * level;
+      (glow.inner.material as THREE.SpriteMaterial).opacity = 0.6 * level;
     }
+
+    if (this.sustained) this.burn(names, camera, dt);
 
     // Shockwave: rolls out across the floor and fades.
     if (this.ring.visible) {
@@ -247,6 +279,49 @@ export class Aura {
       p.sprite.position.addScaledVector(p.velocity, dt);
       p.sprite.scale.set(0.035, p.size * (0.6 + 0.4 * t), 1);
       p.sprite.material.opacity = 0.7 * Math.sin(Math.PI * t);
+    }
+  }
+
+  /**
+   * Flame tongues: born around the silhouette just behind the body, they lick upward, narrow
+   * and fade, so the figure stands in a rising, flickering envelope. Sparks drift up too.
+   */
+  private burn(names: string[], camera: THREE.Vector3, dt: number) {
+    this.flameDebt += FLAME_RATE * dt;
+    while (this.flameDebt >= 1 && names.length) {
+      this.flameDebt -= 1;
+      const p = this.flames[this.nextFlame];
+      this.nextFlame = (this.nextFlame + 1) % this.flames.length;
+      const [x, y, z] = this.joints[names[Math.floor(Math.random() * names.length)]];
+      this.point.set(x + (x - this.center.x) * 0.3 + (Math.random() - 0.5) * 0.16, y - 0.05, z + (z - this.center.z) * 0.3 + (Math.random() - 0.5) * 0.16);
+      this.toCamera.copy(camera).sub(this.point).normalize();
+      p.sprite.position.copy(this.point).addScaledVector(this.toCamera, -0.08);
+      p.sprite.visible = true;
+      p.velocity.set((x - this.center.x) * 0.4, 1 + Math.random() * 0.7, (z - this.center.z) * 0.4);
+      p.age = 0;
+      p.life = 0.4 + Math.random() * 0.3;
+      p.size = 0.1 + Math.random() * 0.07;
+      (p.sprite.material as THREE.SpriteMaterial).color.copy(Math.random() < 0.3 ? this.core : this.edge);
+    }
+    for (const p of this.flames) {
+      if (!this.live(p, dt)) continue;
+      const t = p.age / p.life;
+      p.sprite.position.addScaledVector(p.velocity, dt);
+      p.sprite.scale.set(p.size * (1 - t * 0.7), p.size * (2.6 + 1.6 * t), 1);
+      p.sprite.material.opacity = 0.55 * Math.sin(Math.PI * Math.min(1, t * 1.4));
+    }
+    // A few sparks always drifting up.
+    if (Math.random() < dt * 14) {
+      const p = this.sparks.find((s) => !s.sprite.visible);
+      if (p) {
+        const [x, y, z] = this.joints[names[Math.floor(Math.random() * names.length)]];
+        p.sprite.position.set(x + (Math.random() - 0.5) * 0.4, y, z + (Math.random() - 0.5) * 0.4);
+        p.sprite.visible = true;
+        p.velocity.set((Math.random() - 0.5) * 0.2, 0.5 + Math.random() * 0.6, (Math.random() - 0.5) * 0.2);
+        p.age = 0;
+        p.life = 0.6 + Math.random() * 0.5;
+        p.size = 0.03 + Math.random() * 0.03;
+      }
     }
   }
 

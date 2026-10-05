@@ -19,6 +19,10 @@ export type HandState = 0 | 1 | 2 | 3;
 export type Clip = {
   id: string;
   duration: number;
+  /** Plays once and holds the last frame (celebrations) instead of looping. */
+  hold?: boolean;
+  /** Held clips: where (0..1) the pose is struck, for the aura burst. */
+  strike?: number;
   joints: string[];
   /** Default camera; cropBelow (m) frames only the body above that height (upper-body drills). */
   view: { azimuth: number; elevation: number; cropBelow?: number };

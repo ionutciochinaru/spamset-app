@@ -9,6 +9,7 @@ import type { SessionLog } from '@/core/session';
 import { rankTitle, setCaption, xpState } from '@/core/xp';
 import { syncNow } from '@/lib/sync';
 import { Palette, PixelSize, Psx } from '@/constants/theme';
+import { pickCelebration } from '@/core/celebrations';
 import { getExercise, isStretch, isTimed } from '@/core/exercises';
 import { initialPrescription, type Effort } from '@/core/progression';
 import { pickFor, planSpamsets, spamCandidates, spamTarget, targetText, timeText } from '@/core/spamset';
@@ -101,9 +102,11 @@ export default function Spamset() {
 
   if (logged) {
     const progress = logged.progress[exerciseId];
+    const celebration = pickCelebration(logged.id);
     return (
       <Screen>
-        <View style={{ height: 40 }} />
+        <View style={{ height: 24 }} />
+        <FigureViewer key={celebration.id} clipId={celebration.id} auraKind={celebration.aura} locked controls={false} />
         <Label>Spam set logged</Label>
         <Title>Nice. {exercise.name} done.</Title>
         <PixelText size={PixelSize.large} color={gained ? Psx.hud : Palette.muted}>

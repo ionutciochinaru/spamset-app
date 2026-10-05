@@ -12,6 +12,7 @@ import { clipBounds, clipFootprint, samplePose } from '@/animation/sample';
 import { Canvas, useFrame, useThree } from '@/animation/three-canvas';
 import { Scanlines } from '@/components/ui';
 import { DisplayFont, Palette, Psx, Radius } from '@/constants/theme';
+import type { AuraKind } from '@/core/celebrations';
 
 type Orbit = { azimuth: number; elevation: number };
 
@@ -20,6 +21,8 @@ const FLOOR_CLIP_HEIGHT = 0.9;
 const FLOOR_ELEVATION = 26;
 
 const FOV = 30;
+/** In review, a held clip replays after resting this long (s) on its pose. */
+const HOLD_REPLAY = 1.5;
 const MIN_ELEVATION = -0.05;
 const MAX_ELEVATION = 1.25;
 
@@ -39,13 +42,17 @@ type SceneProps = {
   psx: boolean;
   /** XP burst (flare, shockwave, arrows) on every completed rep. */
   aura: boolean;
+  /** A sustained anime power aura in this palette (celebrations). */
+  auraKind?: AuraKind;
+  /** Replay held clips instead of stopping on their pose (review). */
+  loop: boolean;
 };
 
-function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, psx, aura: auraOn }: SceneProps) {
+function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, psx, aura: auraOn, auraKind, loop }: SceneProps) {
   const clip = clips[clipId];
   const figure = useMemo(() => new Figure(), []);
   const pass = useMemo(() => new PSXPass(), []);
-  const aura = useMemo(() => (auraOn ? new Aura() : null), [auraOn]);
+  const aura = useMemo(() => (auraOn || auraKind ? new Aura(auraKind) : null), [auraOn, auraKind]);
   useEffect(() => () => aura?.dispose(), [aura]);
   const reps = useMemo(() => repsPerLoop(clip), [clip]);
   const rep = useRef(0);
@@ -69,7 +76,7 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
     else if (!paused) time.current += Math.min(delta, 0.1) * speed;
     if (onPhase && performance.now() - reported.current > 100) {
       reported.current = performance.now();
-      onPhase((((time.current / clip.duration) % 1) + 1) % 1);
+      onPhase(clip.hold ? Math.min(time.current / clip.duration, 1) : (((time.current / clip.duration) % 1) + 1) % 1);
     }
     const { azimuth, elevation } = orbit.current;
     const pose = samplePose(clip, time.current);
@@ -90,7 +97,9 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
     figure.update(pose, camera.position);
     aura?.update(pose.joints, camera.position, paused ? 0 : delta);
     // A rep ends at each 1/reps of the loop: burst then.
-    const done = Math.floor((time.current / clip.duration) * reps);
+    // A held clip plays once and bursts as it strikes its pose; in review it replays.
+    if (clip.hold && phase === undefined && loop && time.current > clip.duration + HOLD_REPLAY) time.current = 0;
+    const done = clip.hold ? Number(time.current >= clip.duration * (clip.strike ?? 0)) : Math.floor((time.current / clip.duration) * reps);
     if (aura && done > rep.current && phase === undefined) aura.burst();
     rep.current = done;
   });
@@ -134,6 +143,9 @@ export function FigureViewer({
   psx = true,
   scan = true,
   aura = true,
+  auraKind,
+  loop = false,
+  locked = false,
 }: {
   clipId: string;
   style?: ViewStyle;
@@ -152,6 +164,12 @@ export function FigureViewer({
   scan?: boolean;
   /** XP burst on every completed rep; on everywhere except the animation review. */
   aura?: boolean;
+  /** A sustained anime power aura in this palette, for celebrations (on even when `aura` is off). */
+  auraKind?: AuraKind;
+  /** Replay a held clip (a celebration) after a pause instead of stopping on its pose. */
+  loop?: boolean;
+  /** A fixed shot: no dragging to rotate (celebrations keep their reference camera). */
+  locked?: boolean;
 }) {
   const clip = clips[clipId];
   // Start from the watch camera, so the side it draws near (and single-arm work) faces you.
@@ -193,13 +211,13 @@ export function FigureViewer({
     <View style={[styles.frame, style]}>
       <View
         style={StyleSheet.absoluteFill}
-        onStartShouldSetResponder={() => true}
-        onMoveShouldSetResponder={() => true}
+        onStartShouldSetResponder={() => !locked}
+        onMoveShouldSetResponder={() => !locked}
         onResponderTerminationRequest={() => false}
         onResponderGrant={onGrant}
         onResponderMove={onMove}>
         <Canvas camera={{ fov: FOV, near: 0.05, far: 20 }} style={{ flex: 1 }}>
-          <Scene clipId={clipId} orbit={orbit} speed={speed} paused={paused} phase={phase} onPhase={onPhase} zoom={zoom} focus={focus} psx={psx} aura={aura} />
+          <Scene clipId={clipId} orbit={orbit} speed={speed} paused={paused} phase={phase} onPhase={onPhase} zoom={zoom} focus={focus} psx={psx} aura={aura} auraKind={auraKind} loop={loop} />
         </Canvas>
       </View>
       {scan && <Scanlines />}

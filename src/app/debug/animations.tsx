@@ -17,11 +17,12 @@ import { clips } from '@/animation/clips';
 import type { ReviewBundle } from '@/animation/review-types';
 import { ROLE_LABELS } from '@/animation/review-types';
 import reviewsJson from '@/animation/reviews.json';
-import { ANIMATION_REVISION } from '@/animation/revision';
+import { ANIMATION_REVISION, CELEBRATION_REVISION } from '@/animation/revision';
 import { REVIEW_CATALOG } from '@/animation/review-catalog';
 import { FigureViewer } from '@/components/figure-viewer';
 import { Body, Button, Card, Heading, Label, Row, Screen, ScreenHeader } from '@/components/ui';
 import { Palette, Radius } from '@/constants/theme';
+import { getCelebration } from '@/core/celebrations';
 import { useApp } from '@/store/app-store';
 
 const reviews = reviewsJson as ReviewBundle;
@@ -45,8 +46,11 @@ const GROUPS = ['all', 'failing', ...Array.from(new Set(ENTRIES.map((e) => e.gro
 const GROUP_LABELS: Record<string, string> = {
   all: 'All', failing: 'Failing check', bodyweight: 'Bodyweight', stretching: 'Stretching', chair: 'Chair',
   kettlebell: 'Kettlebell', dumbbells: 'Dumbbells', band: 'Band', 'pullup-bar': 'Pull-up bar', doorframe: 'Doorframe',
+  celebration: 'Celebrations',
 };
 const passed = (id: string) => clips[id]?.validator?.passed !== false;
+/** Celebrations are revised apart from the exercises, so new poses never make exercise ratings stale. */
+const revisionOf = (id: string) => (getCelebration(id) ? CELEBRATION_REVISION : ANIMATION_REVISION);
 
 export default function AnimationReview() {
   const params = useLocalSearchParams<{ capture?: string; clip?: string; phase?: string; az?: string; el?: string }>();
@@ -117,7 +121,8 @@ function ReviewPage({ initial }: { initial?: string }) {
   const view = VIEWS[viewIndex];
   const shown = paused ? phase : live;
   const rating = ratings[clipId];
-  const staleRating = rating && rating.revision !== ANIMATION_REVISION;
+  const revision = revisionOf(clipId);
+  const staleRating = rating && rating.revision !== revision;
 
   const step = (delta: number) => {
     setPaused(true);
@@ -125,7 +130,7 @@ function ReviewPage({ initial }: { initial?: string }) {
   };
 
   const exportRatings = async () => {
-    const payload = JSON.stringify({ revision: ANIMATION_REVISION, exportedAt: new Date().toISOString(), ratings }, null, 2);
+    const payload = JSON.stringify({ revision: ANIMATION_REVISION, celebrationRevision: CELEBRATION_REVISION, exportedAt: new Date().toISOString(), ratings }, null, 2);
     if (Platform.OS === 'web') {
       const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
       const a = document.createElement('a');
@@ -174,7 +179,10 @@ function ReviewPage({ initial }: { initial?: string }) {
 
       <View>
         <FigureViewer
+          key={clip.id}
           aura={false}
+          auraKind={getCelebration(clip.id)?.aura}
+          loop
           clipId={clip.id}
           controls={false}
           view={view.azimuth === undefined ? undefined : { azimuth: view.azimuth, elevation: view.elevation }}
@@ -222,7 +230,7 @@ function ReviewPage({ initial }: { initial?: string }) {
             <Pressable
               key={n}
               accessibilityLabel={`Score ${n}`}
-              onPress={() => rate(clipId, { score: n, note: rating?.note ?? '', revision: ANIMATION_REVISION })}
+              onPress={() => rate(clipId, { score: n, note: rating?.note ?? '', revision })}
               style={[styles.score, rating?.score === n && styles.scoreActive]}>
               <Text style={[styles.scoreText, rating?.score === n && styles.scoreTextActive]}>{n}</Text>
             </Pressable>
@@ -230,7 +238,7 @@ function ReviewPage({ initial }: { initial?: string }) {
         </Row>
         <TextInput
           value={rating?.note ?? ''}
-          onChangeText={(note) => rate(clipId, { score: rating?.score ?? 0, note, revision: ANIMATION_REVISION })}
+          onChangeText={(note) => rate(clipId, { score: rating?.score ?? 0, note, revision })}
           placeholder="What looks wrong? Mention the view and phase (use the readout above)."
           placeholderTextColor={Palette.dim}
           multiline

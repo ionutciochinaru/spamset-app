@@ -369,6 +369,13 @@ MOTIONS.update(SPAMSET_V2)
 V2_MOTIONS = {'kb-swing', *V2_LIFTS}
 # Loop length in seconds for motions whose timing comes from simulation or v2 authoring.
 DURATIONS = {'kb-swing': swing_duration, **{name: (lambda d=lift.duration: d) for name, lift in V2_LIFTS.items()}}
+# Done-state celebrations: posed, not exercises, so they stay out of IDS and the exercise checks.
+try:
+    from .celebrations import CELEBRATION_MOTIONS
+except ImportError:
+    from celebrations import CELEBRATION_MOTIONS
+MOTIONS.update(CELEBRATION_MOTIONS)
+DURATIONS.update({name: (lambda f=f: f.duration) for name, f in CELEBRATION_MOTIONS.items()})
 # Intended contacts per motion: (pair substring, tolerance m).
 _GOBLET = {'bell0|forearm': .02, 'bell0|hand': .02}
 ALLOWED_CONTACT = {

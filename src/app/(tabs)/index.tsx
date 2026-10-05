@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FigureViewer } from '@/components/figure-viewer';
 import { Body, Button, Card, Glow, IconButton, Label, MemeText, PixelText, Row, ScreenHeader, Stage, StatBar, Thumb, Title, Well } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
+import { caughtUp, pickCelebration } from '@/core/celebrations';
 import { getExercise } from '@/core/exercises';
 import { hudStats, memeCaption, rankTitle, xpState } from '@/core/xp';
 import { clockText, planSpamsets, setsPerDay, spamCandidates, swapPick, timeText } from '@/core/spamset';
@@ -67,6 +68,10 @@ export default function Home() {
   const todays = sessions.filter(
     (s) => s.workoutId === SPAMSET_WORKOUT_ID && s.entries.length && new Date(s.startedAt).toDateString() === now.toDateString(),
   );
+
+  // Caught up (your latest set answers the latest due slot): the figure celebrates instead.
+  const lastSet = todays.reduce<(typeof todays)[number] | undefined>((a, s) => (!a || s.startedAt > a.startedAt ? s : a), undefined);
+  const celebration = lastSet && caughtUp(schedule, new Date(lastSet.startedAt), now) ? pickCelebration(lastSet.id) : undefined;
 
   // Recomputed hourly (and on every new set), so a day rolling over shows up.
   const hour = now.getHours();
@@ -151,7 +156,14 @@ export default function Home() {
 
               <Pressable onPress={() => openSpamset(featured)} accessibilityLabel={`Start ${exercise.name}`}>
                 <View>
-                  <FigureViewer clipId={exercise.animation} controls={false} style={styles.stage} />
+                  <FigureViewer
+                    key={celebration?.id ?? exercise.animation}
+                    clipId={celebration?.id ?? exercise.animation}
+                    auraKind={celebration?.aura}
+                    locked={!!celebration}
+                    controls={false}
+                    style={styles.stage}
+                  />
                   <View style={styles.stageTop} pointerEvents="box-none">
                     {canSwap && (
                       <IconButton icon={{ ios: 'shuffle', md: 'shuffle' }} hint="Swap exercise" onPress={swap} style={styles.swap} />
