@@ -157,16 +157,19 @@ export default function Home() {
                 <View>
                   <FigureViewer clipId={exercise.animation} controls={false} style={styles.stage} />
                   <View style={styles.stageTop} pointerEvents="none">
-                    <Title style={{ flex: 1, fontSize: 28, lineHeight: 32 }}>{exercise.name}</Title>
-                    {next && (
-                      <PixelText size={PixelSize.medium} color={Psx.hud}>
-                        {countdown(next.at, now)}
-                      </PixelText>
-                    )}
+                    <Title style={{ flex: 1, fontSize: 28, lineHeight: 32 }}>{next ? `Next: ${exercise.name}` : exercise.name}</Title>
                   </View>
                 </View>
               </Pressable>
               <View style={styles.stageAction}>
+                {next && (
+                  <View style={styles.hud}>
+                    <Label>At {clockText(next.at.getHours() * 60 + next.at.getMinutes())}</Label>
+                    <PixelText size={PixelSize.medium} color={Psx.hud}>
+                      {countdown(next.at, now)}
+                    </PixelText>
+                  </View>
+                )}
                 <Button label={`Start spam set · ${target(featured)}`} large onPress={() => openSpamset(featured)} />
               </View>
             </Stage>
@@ -232,7 +235,7 @@ const styles = StyleSheet.create({
   },
   level: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 32 },
   levelBadge: { backgroundColor: Palette.accent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
-  stageAction: { paddingHorizontal: 16, paddingBottom: 16 },
+  stageAction: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },
   status: { alignItems: 'center', paddingVertical: 6, minHeight: 32, justifyContent: 'center' },
   weekRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 },
