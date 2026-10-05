@@ -180,7 +180,7 @@ export default function Home() {
                     </View>
                   )}
                 </Well>
-                <Button label={`Start spam set · ${target(featured)}`} large onPress={() => openSpamset(featured)} />
+                <Button label={`${target(featured)} · Start`} large onPress={() => openSpamset(featured)} />
               </View>
             </Stage>
           )}
