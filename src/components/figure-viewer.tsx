@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
 import * as THREE from 'three';
 
+import { Aura } from '@/animation/aura';
 import { clips } from '@/animation/clips';
 import { Figure } from '@/animation/figure';
 import { PSXPass, snapVertices } from '@/animation/psx';
@@ -35,12 +36,16 @@ type SceneProps = {
   focus?: string;
   /** PlayStation-style rendering (low-res pixels, vertex wobble, dithered 15-bit colour). */
   psx: boolean;
+  /** Power-up glow and rising sparks while a set is being done. */
+  aura: boolean;
 };
 
-function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, psx }: SceneProps) {
+function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, psx, aura: auraOn }: SceneProps) {
   const clip = clips[clipId];
   const figure = useMemo(() => new Figure(), []);
   const pass = useMemo(() => new PSXPass(), []);
+  const aura = useMemo(() => (auraOn ? new Aura() : null), [auraOn]);
+  useEffect(() => () => aura?.dispose(), [aura]);
   useEffect(() => () => pass.dispose(), [pass]);
   useEffect(() => {
     if (psx) snapVertices(figure.group);
@@ -80,6 +85,7 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
     );
     camera.lookAt(target);
     figure.update(pose, camera.position);
+    aura?.update(pose.joints, camera.position, paused ? 0 : delta);
   });
 
   // With PSX on, draw the frame ourselves through the low-res pass (a positive priority
@@ -98,6 +104,7 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
       {/* Rim light from behind, so the dark iron bell keeps an edge on the black stage. */}
       <directionalLight position={[0, 3, -4]} intensity={1.4} />
       <primitive object={figure.group} />
+      {aura && <primitive object={aura.group} />}
     </>
   );
 }
@@ -119,6 +126,7 @@ export function FigureViewer({
   focus,
   psx = true,
   scan = true,
+  aura = false,
 }: {
   clipId: string;
   style?: ViewStyle;
@@ -135,6 +143,8 @@ export function FigureViewer({
   psx?: boolean;
   /** CRT scanlines over the stage (off for review captures). */
   scan?: boolean;
+  /** Power-up glow and rising sparks around the figure (the spam set screen). */
+  aura?: boolean;
 }) {
   const clip = clips[clipId];
   // Start from the watch camera, so the side it draws near (and single-arm work) faces you.
@@ -182,7 +192,7 @@ export function FigureViewer({
         onResponderGrant={onGrant}
         onResponderMove={onMove}>
         <Canvas camera={{ fov: FOV, near: 0.05, far: 20 }} style={{ flex: 1 }}>
-          <Scene clipId={clipId} orbit={orbit} speed={speed} paused={paused} phase={phase} onPhase={onPhase} zoom={zoom} focus={focus} psx={psx} />
+          <Scene clipId={clipId} orbit={orbit} speed={speed} paused={paused} phase={phase} onPhase={onPhase} zoom={zoom} focus={focus} psx={psx} aura={aura} />
         </Canvas>
       </View>
       {scan && <Scanlines />}
