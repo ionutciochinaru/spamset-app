@@ -33,6 +33,7 @@ export function useSpamsetScheduler() {
   const schedule = spamSchedule(settings);
   const owned = useMemo(() => ownedEquipment(settings), [settings]);
   const target = useTargetText();
+  const swaps = useApp((s) => s.spamSwaps);
   const [tick, setTick] = useState(0);
   const refresh = useCallback(() => setTick((t) => t + 1), []);
 
@@ -43,14 +44,14 @@ export function useSpamsetScheduler() {
 
   useEffect(() => {
     const message = (slot: SpamSlot) => slotMessage(getExercise(slot.exercise).name, target(slot.exercise));
-    const slots = planSpamsets(schedule, owned, new Date(), MAX_PENDING);
+    const slots = planSpamsets(schedule, owned, new Date(), MAX_PENDING, swaps);
     scheduleSpamsets(slots, message).catch((e) => console.warn('Scheduling spam sets failed', e));
     if (Platform.OS === 'web') {
       const exercises: ExtensionConfig['exercises'] = {};
       for (const id of spamCandidates(schedule, owned)) exercises[id] = { name: getExercise(id).name, target: target(id) };
       shareWithExtension({ schedule, exercises, appUrl: window.location.origin });
     }
-  }, [schedule, owned, target, tick]);
+  }, [schedule, owned, target, swaps, tick]);
 
   useSpamsetTaps(openSpamset, refresh);
 }

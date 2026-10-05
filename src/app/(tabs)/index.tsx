@@ -4,12 +4,12 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Button, Card, Divider, Glow, HudCard, Icon, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title, Well } from '@/components/ui';
+import { Body, Button, Card, Divider, Glow, HudCard, Icon, IconButton, Label, Meter, PixelText, Row, Stage, Stat, Thumb, Title, Well } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
 import { totalReps, volumeKg } from '@/core/session';
 import { xpState } from '@/core/xp';
-import { clockText, planSpamsets, spamCandidates, upcomingTimes } from '@/core/spamset';
+import { clockText, planSpamsets, spamCandidates, swapPick, upcomingTimes } from '@/core/spamset';
 import { openSpamset, useTargetText } from '@/lib/spamset-scheduler';
 import { ownedEquipment, spamSchedule, SPAMSET_WORKOUT_ID, useApp } from '@/store/app-store';
 
@@ -48,11 +48,22 @@ export default function Home() {
   const target = useTargetText();
   const now = useNow(1000);
 
-  const next = planSpamsets(schedule, owned, now, 1)[0];
-  // With spam sets off, still show one to try, picked once per hour.
+  const swaps = useApp((s) => s.spamSwaps);
+  const swapSpamset = useApp((s) => s.swapSpamset);
+  const next = planSpamsets(schedule, owned, now, 1, swaps)[0];
+  // With spam sets off, still show one to try, picked once per hour (or swapped).
   const tryable = spamCandidates({ ...schedule, pool: schedule.pool.length ? schedule.pool : ['bodyweight'] }, owned);
-  const fallback = tryable[Math.floor(now.getTime() / 3600000) % Math.max(1, tryable.length)];
+  const [tryPick, setTryPick] = useState<string>();
+  const fallback = tryPick ?? tryable[Math.floor(now.getTime() / 3600000) % Math.max(1, tryable.length)];
   const featured = next?.exercise ?? fallback;
+  // Swap: the next scheduled set (its notification follows), or the one to try.
+  const swap = () => {
+    if (next) {
+      const pick = swapPick(spamCandidates(schedule, owned), next.exercise);
+      if (pick) swapSpamset(next.at, pick);
+    } else setTryPick(swapPick(tryable, featured) ?? featured);
+  };
+  const canSwap = (next ? spamCandidates(schedule, owned) : tryable).length > 1;
   const exercise = featured ? getExercise(featured) : undefined;
 
   // Today's spam sets as a meter: done out of scheduled (at least what you've done).
@@ -156,25 +167,30 @@ export default function Home() {
               <Pressable onPress={() => openSpamset(featured)} accessibilityLabel={`Start ${exercise.name}`}>
                 <View>
                   <FigureViewer clipId={exercise.animation} controls={false} style={styles.stage} />
-                  <View style={styles.stageTop} pointerEvents="none">
-                    <Title style={{ flex: 1, fontSize: 28, lineHeight: 32 }}>{next ? `Next: ${exercise.name}` : exercise.name}</Title>
+                  <View style={styles.stageTop} pointerEvents="box-none">
+                    {canSwap && (
+                      <IconButton icon={{ ios: 'shuffle', md: 'shuffle' }} hint="Swap exercise" onPress={swap} style={styles.swap} />
+                    )}
                   </View>
                 </View>
               </Pressable>
               <View style={styles.stageAction}>
-                {next && (
-                  <Well style={styles.timer}>
-                    <Row style={{ gap: 8 }}>
-                      <Label>Next at</Label>
-                      <Text style={styles.timerClock}>
-                        {next.at.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                      </Text>
-                    </Row>
-                    <PixelText size={PixelSize.medium} color={Psx.hud}>
-                      {countdown(next.at, now)}
-                    </PixelText>
-                  </Well>
-                )}
+                <Well style={styles.timer}>
+                  <Title style={{ fontSize: 24, lineHeight: 28 }}>{exercise.name}</Title>
+                  {next && (
+                    <View style={styles.hud}>
+                      <Row style={{ gap: 8 }}>
+                        <Label>Next at:</Label>
+                        <Text style={styles.timerClock}>
+                          {next.at.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                        </Text>
+                      </Row>
+                      <PixelText size={PixelSize.medium} color={Psx.hud}>
+                        {countdown(next.at, now)}
+                      </PixelText>
+                    </View>
+                  )}
+                </Well>
                 <Button label={`Start spam set · ${target(featured)}`} large onPress={() => openSpamset(featured)} />
               </View>
             </Stage>
@@ -235,19 +251,13 @@ const styles = StyleSheet.create({
     right: 16,
     alignItems: 'flex-start',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     gap: 12,
   },
   level: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 32 },
   levelBadge: { backgroundColor: Palette.accent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
-  timer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    gap: 12,
-  },
+  swap: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(48,49,43,0.9)' },
+  timer: { paddingVertical: 12, paddingHorizontal: 14, gap: 8 },
   timerClock: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 16 },
   stageAction: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },

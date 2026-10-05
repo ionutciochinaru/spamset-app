@@ -70,20 +70,38 @@ export function pickFor(at: Date, candidates: string[], previous?: string): stri
   return candidates[(hash(minute) + 1) % candidates.length];
 }
 
-/** The next `count` spam sets after `from`. Empty when the schedule is off or nothing fits your equipment. */
-export function planSpamsets(schedule: SpamSchedule, owned: Equipment[], from: Date, count: number): SpamSlot[] {
-  return planFrom(schedule, spamCandidates(schedule, owned), from, count);
+/** Exercises you swapped in for upcoming slots, keyed by the slot's ISO time. */
+export type SpamSwaps = Record<string, string>;
+
+/**
+ * The next `count` spam sets after `from`. Empty when the schedule is off or nothing fits your
+ * equipment. A swap replaces a slot's pick while it is still a candidate.
+ */
+export function planSpamsets(schedule: SpamSchedule, owned: Equipment[], from: Date, count: number, swaps: SpamSwaps = {}): SpamSlot[] {
+  return planFrom(schedule, spamCandidates(schedule, owned), from, count, swaps);
 }
 
 /** Plan over a fixed candidate list (the Chrome extension gets the list from the web app). */
-export function planFrom(schedule: SpamSchedule, candidates: string[], from: Date, count: number): SpamSlot[] {
+export function planFrom(schedule: SpamSchedule, candidates: string[], from: Date, count: number, swaps: SpamSwaps = {}): SpamSlot[] {
   if (!schedule.enabled) return [];
   const slots: SpamSlot[] = [];
   for (const at of upcomingTimes(schedule, from, count)) {
-    const exercise = pickFor(at, candidates, slots.at(-1)?.exercise);
+    const swapped = swaps[at.toISOString()];
+    const exercise = swapped && candidates.includes(swapped) ? swapped : pickFor(at, candidates, slots.at(-1)?.exercise);
     if (exercise) slots.push({ at, exercise });
   }
   return slots;
+}
+
+/** A different candidate than `current`, at random (the swap button); undefined when there is none. */
+export function swapPick(candidates: string[], current: string | undefined, random = Math.random): string | undefined {
+  const others = candidates.filter((id) => id !== current);
+  return others.length ? others[Math.floor(random() * others.length)] : undefined;
+}
+
+/** Swaps for slots still ahead of `now` (older ones are dropped). */
+export function liveSwaps(swaps: SpamSwaps, now: Date): SpamSwaps {
+  return Object.fromEntries(Object.entries(swaps).filter(([at]) => new Date(at) > now));
 }
 
 /** Notification text for a slot. */

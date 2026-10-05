@@ -11,7 +11,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { isLoaded, getExercise, type Equipment } from '@/core/exercises';
 import { initialPrescription, progressSpamset, type Effort, type Prescription } from '@/core/progression';
 import type { SessionLog, Target } from '@/core/session';
-import { DEFAULT_SCHEDULE, type SpamSchedule } from '@/core/spamset';
+import { DEFAULT_SCHEDULE, liveSwaps, type SpamSchedule, type SpamSwaps } from '@/core/spamset';
 
 export type AuthMode = 'offline' | 'account';
 export type Units = 'kg' | 'lb';
@@ -43,6 +43,8 @@ type State = {
   lastSyncedAt?: string;
   /** Your animation ratings from the review page, keyed by exercise id. */
   animationReviews: Record<string, AnimationRating>;
+  /** Exercises swapped in for upcoming spam set slots (this device only). */
+  spamSwaps: SpamSwaps;
 };
 
 export type AnimationRating = { score: number; note: string; revision: string; updatedAt: string };
@@ -57,6 +59,8 @@ type Actions = {
   mergeRemote: (remote: { sessions: SessionLog[]; state?: RemoteState }) => void;
   markSynced: (ids: string[]) => void;
   rateAnimation: (exercise: string, rating: Omit<AnimationRating, 'updatedAt'>) => void;
+  /** Do `exercise` instead at the slot `at` (the swap button); past swaps are dropped. */
+  swapSpamset: (at: Date, exercise: string) => void;
   /** Forget everything on this device, back to a fresh install (after deleting the account). */
   resetLocal: () => void;
 };
@@ -98,6 +102,7 @@ const freshState = (): State => ({
   syncedSessionIds: [],
   stateUpdatedAt: now(),
   animationReviews: {},
+  spamSwaps: {},
 });
 
 export const useApp = create<State & Actions>()(
@@ -162,6 +167,9 @@ export const useApp = create<State & Actions>()(
 
       rateAnimation: (exercise, rating) =>
         set((s) => ({ animationReviews: { ...s.animationReviews, [exercise]: { ...rating, updatedAt: now() } } })),
+
+      swapSpamset: (at, exercise) =>
+        set((s) => ({ spamSwaps: { ...liveSwaps(s.spamSwaps, new Date()), [at.toISOString()]: exercise } })),
 
       resetLocal: () => set({ ...freshState(), authMode: undefined, lastSyncedAt: undefined }),
 

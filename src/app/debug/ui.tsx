@@ -120,6 +120,7 @@ export default function VisualLibrary() {
         <IconButton label="↑" hint="Up" onPress={() => {}} />
         <IconButton label="↓" hint="Down" onPress={() => {}} />
         <IconButton label="X" hint="Remove" onPress={() => {}} />
+        <IconButton icon={{ ios: 'shuffle', md: 'shuffle' }} hint="Swap" onPress={() => {}} />
       </Row>
 
       <Label>Inputs</Label>

@@ -77,7 +77,7 @@ export default function Spamset() {
     setLeft(undefined);
   };
 
-  const next = planSpamsets(schedule, owned, new Date(), 1)[0];
+  const next = planSpamsets(schedule, owned, new Date(), 1, useApp.getState().spamSwaps)[0];
   const close = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
   if (rating !== undefined) {

@@ -1,5 +1,16 @@
 import { getExercise, exerciseCategory } from '../exercises';
-import { DEFAULT_SCHEDULE, pickFor, planSpamsets, spamCandidates, spamTarget, targetText, upcomingTimes, type SpamSchedule } from '../spamset';
+import {
+  DEFAULT_SCHEDULE,
+  liveSwaps,
+  pickFor,
+  planSpamsets,
+  spamCandidates,
+  spamTarget,
+  swapPick,
+  targetText,
+  upcomingTimes,
+  type SpamSchedule,
+} from '../spamset';
 
 const on: SpamSchedule = { ...DEFAULT_SCHEDULE, enabled: true };
 // Monday 5 October 2026, local time.
@@ -44,6 +55,24 @@ describe('spam set picks', () => {
 
   it('plans nothing when off', () => {
     expect(planSpamsets(DEFAULT_SCHEDULE, [], monday(8), 5)).toEqual([]);
+  });
+
+  it('uses a swapped exercise for its slot only, while it is still a candidate', () => {
+    const candidates = spamCandidates(on, []);
+    const [first, second] = planSpamsets(on, [], monday(8), 2);
+    const other = candidates.find((id) => id !== first.exercise && id !== second.exercise)!;
+    const swapped = planSpamsets(on, [], monday(8), 2, { [first.at.toISOString()]: other });
+    expect(swapped[0]).toEqual({ at: first.at, exercise: other });
+    expect(swapped[1].at).toEqual(second.at);
+    expect(planSpamsets(on, [], monday(8), 1, { [first.at.toISOString()]: 'kb-swing' })[0].exercise).toBe(first.exercise);
+  });
+
+  it('swaps to a different candidate and forgets past swaps', () => {
+    expect(swapPick(['a', 'b', 'c'], 'a', () => 0)).toBe('b');
+    expect(swapPick(['a', 'b', 'c'], 'a', () => 0.99)).toBe('c');
+    expect(swapPick(['a'], 'a')).toBeUndefined();
+    const swaps = { [monday(9).toISOString()]: 'a', [monday(11).toISOString()]: 'b' };
+    expect(liveSwaps(swaps, monday(10))).toEqual({ [monday(11).toISOString()]: 'b' });
   });
 
   it('asks for your current target', () => {

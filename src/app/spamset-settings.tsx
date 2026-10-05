@@ -50,7 +50,7 @@ export default function SpamsetSettings() {
     update({ enabled: true });
   };
 
-  const preview = planSpamsets(schedule, owned, new Date(), 4);
+  const preview = planSpamsets(schedule, owned, new Date(), 4, useApp.getState().spamSwaps);
   const available = CATEGORIES.filter((c) => spamCandidates({ ...DEFAULT_SCHEDULE, pool: [c] }, owned).length);
 
   return (

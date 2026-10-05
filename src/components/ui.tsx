@@ -255,15 +255,27 @@ export function Button({
 }
 
 /** Small round action for rows (remove, move). */
-export function IconButton({ label, hint, onPress }: { label: string; hint: string; onPress: () => void }) {
+export function IconButton({
+  label,
+  icon,
+  hint,
+  onPress,
+  style,
+}: {
+  label?: string;
+  icon?: { ios: SymbolViewProps['name'] & string; md: string };
+  hint: string;
+  onPress: () => void;
+  style?: StyleProp<ViewStyle>;
+}) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={hint}
       onPress={onPress}
       hitSlop={6}
-      style={({ pressed }) => [styles.iconButton, pressed && styles.buttonPressed]}>
-      <Text style={styles.iconText}>{label}</Text>
+      style={({ pressed }) => [styles.iconButton, style, pressed && styles.buttonPressed]}>
+      {icon ? <Icon {...icon} color={Palette.text} size={18} /> : <Text style={styles.iconText}>{label}</Text>}
     </Pressable>
   );
 }
