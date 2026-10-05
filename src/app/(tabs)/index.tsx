@@ -164,13 +164,10 @@ export default function Home() {
               <View style={styles.stageAction}>
                 {next && (
                   <Well style={styles.timer}>
-                    <Row style={{ gap: 8 }}>
-                      <Icon ios="alarm.fill" md="alarm" color={Palette.muted} size={18} />
-                      <View style={{ gap: 2 }}>
-                        <Label>Next at</Label>
-                        <Text style={styles.timerClock}>{clockText(next.at.getHours() * 60 + next.at.getMinutes())}</Text>
-                      </View>
-                    </Row>
+                    <View style={{ gap: 2 }}>
+                      <Label>Next at</Label>
+                      <Text style={styles.timerClock}>{clockText(next.at.getHours() * 60 + next.at.getMinutes())}</Text>
+                    </View>
                     <PixelText size={PixelSize.medium} color={Psx.hud}>
                       {countdown(next.at, now)}
                     </PixelText>
