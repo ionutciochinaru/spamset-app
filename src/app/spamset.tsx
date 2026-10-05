@@ -106,7 +106,7 @@ export default function Spamset() {
     return (
       <Screen>
         <View style={{ height: 24 }} />
-        <FigureViewer key={celebration.id} clipId={celebration.id} auraKind={celebration.aura} locked controls={false} />
+        <FigureViewer key={celebration.id} clipId={celebration.id} auraKind={celebration.aura} auraFx={celebration.fx} locked controls={false} />
         <Label>Spam set logged</Label>
         <Title>Nice. {exercise.name} done.</Title>
         <PixelText size={PixelSize.large} color={gained ? Psx.hud : Palette.muted}>

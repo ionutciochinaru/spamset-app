@@ -182,6 +182,7 @@ function ReviewPage({ initial }: { initial?: string }) {
           key={clip.id}
           aura={false}
           auraKind={getCelebration(clip.id)?.aura}
+          auraFx={getCelebration(clip.id)?.fx}
           loop
           clipId={clip.id}
           controls={false}

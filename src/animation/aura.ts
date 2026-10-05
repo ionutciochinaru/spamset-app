@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import type { AuraKind } from '@/core/celebrations';
+import type { AuraFx, AuraKind } from '@/core/celebrations';
 
 import type { Clip, Vec3 } from './types';
 
@@ -20,6 +20,13 @@ const PALETTES: Record<AuraKind, [string, string]> = {
 };
 
 const FLAMES = 40;
+const DUST = 30;
+const ROCKS = 16;
+const BOLTS = 4;
+/** Joints per lightning bolt path (start, jagged middle, end). */
+const BOLT_POINTS = 9;
+const DUST_COLOURS = ['#d8bb8c', '#c9a57a', '#b08d63', '#e6cfa6'].map((c) => new THREE.Color(c));
+const BOLT_COLOUR = new THREE.Color('#d8f4ff');
 /** Flame tongues born per second while an aura burns. */
 const FLAME_RATE = 55;
 
@@ -55,6 +62,18 @@ function texture(size: number, pixel: (u: number, v: number) => [number, number,
 
 /** Soft round falloff, white. */
 const glowTexture = () => texture(64, (u, v) => [255, 255, 255, Math.max(0, 1 - Math.hypot(u - 0.5, v - 0.5) * 2) ** 2]);
+
+/** A billowing dust puff: a soft disc with a lumpy edge, white (tinted per puff). */
+const puffTexture = () =>
+  texture(64, (u, v) => {
+    const a = Math.atan2(v - 0.5, u - 0.5);
+    const edge = 0.42 + 0.05 * Math.sin(a * 5) + 0.03 * Math.sin(a * 11 + 1.3);
+    const d = Math.hypot(u - 0.5, v - 0.5);
+    return [255, 255, 255, Math.min(1, Math.max(0, (edge - d) / 0.08)) * (0.75 + 0.25 * (1 - d / edge))];
+  });
+
+/** A chunk of rock: a solid pixel square, white (tinted). */
+const rockTexture = () => texture(4, (u, v) => [255, 255, 255, u > 0.25 || v > 0.25 ? 1 : 0], true);
 
 /** Thin ring for the floor shockwave, white. */
 const ringTexture = () =>
@@ -127,8 +146,19 @@ export class Aura {
   private flames: Particle[] = [];
   private flameDebt = 0;
   private nextFlame = 0;
+  private fx: AuraFx;
+  /** The pose has been struck (first burst): dust, rocks and lightning run from then on. */
+  private fired = false;
+  private puffMap?: THREE.Texture;
+  private rockMap?: THREE.Texture;
+  private dust: Particle[] = [];
+  private rocks: Particle[] = [];
+  private bolts: { line: THREE.Line<THREE.BufferGeometry, THREE.LineBasicMaterial>; age: number; life: number }[] = [];
+  private dustDebt = 0;
+  private rockDebt = 0;
 
-  constructor(kind?: AuraKind) {
+  constructor(kind?: AuraKind, fx: AuraFx = {}) {
+    this.fx = fx;
     this.sustained = kind !== undefined;
     this.core = kind ? new THREE.Color(PALETTES[kind][0]) : CORE;
     this.edge = kind ? new THREE.Color(PALETTES[kind][1]) : EDGE;
@@ -144,6 +174,27 @@ export class Aura {
     this.sparks = pool(SPARKS, () => additive(this.glow, this.core));
     this.streaks = pool(STREAKS, () => additive(this.glow, this.core));
     if (this.sustained) this.flames = pool(FLAMES, () => additive(this.glow, this.edge));
+    // Dust and rocks are solid (normal blending); they sit in front of the feet like the cels.
+    if (fx.dust) {
+      const puff = (this.puffMap = puffTexture());
+      const rock = (this.rockMap = rockTexture());
+      this.dust = pool(DUST, () => new THREE.SpriteMaterial({ map: puff, transparent: true, depthWrite: false, opacity: 0 }));
+      this.rocks = pool(ROCKS, () => new THREE.SpriteMaterial({ map: rock, color: '#4a3f33', transparent: true, depthWrite: false, opacity: 0 }));
+    }
+    if (fx.lightning) {
+      for (let i = 0; i < BOLTS; i++) {
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(BOLT_POINTS * 3), 3));
+        const line = new THREE.Line(
+          geometry,
+          new THREE.LineBasicMaterial({ color: BOLT_COLOUR, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }),
+        );
+        line.visible = false;
+        line.frustumCulled = false;
+        this.group.add(line);
+        this.bolts.push({ line, age: 1, life: 1 });
+      }
+    }
     this.ring = new THREE.Mesh(
       new THREE.PlaneGeometry(1, 1),
       new THREE.MeshBasicMaterial({ map: this.ringMap, color: this.core, transparent: true, depthWrite: false, opacity: 0, blending: THREE.AdditiveBlending }),
@@ -158,6 +209,12 @@ export class Aura {
     const names = Object.keys(this.joints);
     if (!names.length) return;
     this.energy = 1;
+    // The first burst of a celebration kicks up a cloud of dust and a spray of rocks.
+    if (!this.fired && this.fx.dust) {
+      for (let i = 0; i < 22; i++) this.puff(1.6);
+      for (let i = 0; i < 10; i++) this.rock();
+    }
+    this.fired = true;
     this.ringAge = 0;
     this.ring.visible = true;
     this.ring.position.set(this.center.x, this.floor + 0.005, this.center.z);
@@ -244,6 +301,7 @@ export class Aura {
     }
 
     if (this.sustained) this.burn(names, camera, dt);
+    if (this.fired) this.storm(names, dt);
 
     // Shockwave: rolls out across the floor and fades.
     if (this.ring.visible) {
@@ -287,7 +345,7 @@ export class Aura {
    * and fade, so the figure stands in a rising, flickering envelope. Sparks drift up too.
    */
   private burn(names: string[], camera: THREE.Vector3, dt: number) {
-    this.flameDebt += FLAME_RATE * dt;
+    this.flameDebt += FLAME_RATE * (this.fx.rays ? 1.4 : 1) * dt;
     while (this.flameDebt >= 1 && names.length) {
       this.flameDebt -= 1;
       const p = this.flames[this.nextFlame];
@@ -307,7 +365,8 @@ export class Aura {
       if (!this.live(p, dt)) continue;
       const t = p.age / p.life;
       p.sprite.position.addScaledVector(p.velocity, dt);
-      p.sprite.scale.set(p.size * (1 - t * 0.7), p.size * (2.6 + 1.6 * t), 1);
+      // Rays (the super-saiyan look) stretch into tall spikes.
+      p.sprite.scale.set(p.size * (1 - t * 0.7) * (this.fx.rays ? 0.7 : 1), p.size * (2.6 + 1.6 * t) * (this.fx.rays ? 2.4 : 1), 1);
       p.sprite.material.opacity = 0.55 * Math.sin(Math.PI * Math.min(1, t * 1.4));
     }
     // A few sparks always drifting up.
@@ -323,6 +382,110 @@ export class Aura {
         p.size = 0.03 + Math.random() * 0.03;
       }
     }
+  }
+
+  /** A dust puff on the floor around the feet, rolling outward (`force` > 1 for the blast). */
+  private puff(force = 1) {
+    const p = this.dust.find((d) => !d.sprite.visible) ?? this.dust[Math.floor(Math.random() * this.dust.length)];
+    const a = Math.random() * Math.PI * 2;
+    const r = 0.2 + Math.random() * 0.25;
+    p.sprite.position.set(this.center.x + Math.cos(a) * r, this.floor + 0.06 + Math.random() * 0.1, this.center.z + Math.sin(a) * r);
+    p.sprite.visible = true;
+    const speed = (0.25 + Math.random() * 0.35) * force;
+    p.velocity.set(Math.cos(a) * speed, 0.05 + Math.random() * 0.12, Math.sin(a) * speed);
+    p.age = 0;
+    p.life = 1.2 + Math.random() * 0.8;
+    p.size = (0.22 + Math.random() * 0.16) * (force > 1 ? 1.3 : 1);
+    p.sprite.material.color.copy(DUST_COLOURS[Math.floor(Math.random() * DUST_COLOURS.length)]);
+    p.sprite.material.rotation = Math.random() * Math.PI * 2;
+  }
+
+  /** A rock lifted off the floor by the power, drifting up and tumbling. */
+  private rock() {
+    const p = this.rocks.find((d) => !d.sprite.visible) ?? this.rocks[Math.floor(Math.random() * this.rocks.length)];
+    const a = Math.random() * Math.PI * 2;
+    const r = 0.15 + Math.random() * 0.45;
+    p.sprite.position.set(this.center.x + Math.cos(a) * r, this.floor + 0.03, this.center.z + Math.sin(a) * r);
+    p.sprite.visible = true;
+    p.velocity.set((Math.random() - 0.5) * 0.08, 0.3 + Math.random() * 0.45, (Math.random() - 0.5) * 0.08);
+    p.age = 0;
+    p.life = 1.6 + Math.random() * 1.2;
+    p.size = 0.02 + Math.random() * 0.03;
+  }
+
+  /**
+   * After the pose is struck: dust keeps billowing at the feet, rocks float up, and
+   * SSJ2-style lightning crackles over the body in short jagged bolts.
+   */
+  private storm(names: string[], dt: number) {
+    if (this.fx.dust) {
+      this.dustDebt += 7 * dt;
+      while (this.dustDebt >= 1) {
+        this.dustDebt -= 1;
+        this.puff();
+      }
+      this.rockDebt += 5 * dt;
+      while (this.rockDebt >= 1) {
+        this.rockDebt -= 1;
+        this.rock();
+      }
+      for (const p of this.dust) {
+        if (!this.live(p, dt)) continue;
+        const t = p.age / p.life;
+        p.velocity.multiplyScalar(Math.exp(-1.6 * dt));
+        p.sprite.position.addScaledVector(p.velocity, dt);
+        p.sprite.scale.setScalar(p.size * (0.7 + 1.1 * (1 - (1 - t) ** 2)));
+        p.sprite.material.opacity = 0.9 * Math.min(1, t * 6) * (1 - t) ** 0.8;
+      }
+      for (const p of this.rocks) {
+        if (!this.live(p, dt)) continue;
+        const t = p.age / p.life;
+        p.sprite.position.addScaledVector(p.velocity, dt);
+        p.sprite.material.rotation += dt * 3;
+        p.sprite.scale.setScalar(p.size);
+        p.sprite.material.opacity = Math.min(1, t * 8) * (t > 0.75 ? (1 - t) / 0.25 : 1);
+      }
+    }
+    if (this.fx.lightning && names.length) {
+      for (const bolt of this.bolts) {
+        if (bolt.line.visible) {
+          bolt.age += dt;
+          if (bolt.age >= bolt.life) bolt.line.visible = false;
+          // Flickers while it lives.
+          else bolt.line.material.opacity = Math.random() < 0.25 ? 0.25 : 1;
+        } else if (Math.random() < dt * 5) {
+          this.strike(bolt, names);
+        }
+      }
+    }
+  }
+
+  /** A jagged bolt between two points just outside the body. */
+  private strike(bolt: (typeof this.bolts)[number], names: string[]) {
+    const pick = () => {
+      const [x, y, z] = this.joints[names[Math.floor(Math.random() * names.length)]];
+      return new THREE.Vector3(x + (x - this.center.x) * 0.25, y + (Math.random() - 0.5) * 0.1, z + (z - this.center.z) * 0.25);
+    };
+    const a = pick();
+    const b = pick();
+    if (a.distanceTo(b) < 0.25) b.y += 0.3;
+    const positions = bolt.line.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const jag = a.distanceTo(b) * 0.18;
+    for (let i = 0; i < BOLT_POINTS; i++) {
+      const t = i / (BOLT_POINTS - 1);
+      const kink = i === 0 || i === BOLT_POINTS - 1 ? 0 : jag;
+      positions.setXYZ(
+        i,
+        a.x + (b.x - a.x) * t + (Math.random() - 0.5) * kink,
+        a.y + (b.y - a.y) * t + (Math.random() - 0.5) * kink,
+        a.z + (b.z - a.z) * t + (Math.random() - 0.5) * kink,
+      );
+    }
+    positions.needsUpdate = true;
+    bolt.line.visible = true;
+    bolt.line.material.opacity = 1;
+    bolt.age = 0;
+    bolt.life = 0.08 + Math.random() * 0.1;
   }
 
   /** Advance a particle; false while waiting to start or once it has ended. */
@@ -346,6 +509,9 @@ export class Aura {
       if (mesh.material) (mesh.material as THREE.Material).dispose();
     });
     this.ring.geometry.dispose();
+    for (const bolt of this.bolts) bolt.line.geometry.dispose();
+    this.puffMap?.dispose();
+    this.rockMap?.dispose();
     this.glow.dispose();
     this.arrow.dispose();
     this.ringMap.dispose();

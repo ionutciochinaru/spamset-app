@@ -8,11 +8,15 @@ import type { SpamSchedule } from './spamset';
 /** Aura palettes: golden power-up, blue god form, red overdrive, violet cursed energy, silver instinct, green berserk. */
 export type AuraKind = 'gold' | 'blue' | 'red' | 'violet' | 'silver' | 'green';
 
-export type Celebration = { id: string; name: string; aura: AuraKind };
+/** Extra power-up effects: tall super-saiyan rays, dust and rocks kicked up at the feet, SSJ2 lightning. */
+export type AuraFx = { rays?: boolean; dust?: boolean; lightning?: boolean };
+
+export type Celebration = { id: string; name: string; aura: AuraKind; fx?: AuraFx };
 
 export const CELEBRATIONS: Celebration[] = [
   { id: 'gear-crouch', name: 'Gear crouch', aura: 'red' },
   { id: 'heart-salute', name: 'Heart salute', aura: 'green' },
+  { id: 'power-scream', name: 'Power scream', aura: 'gold', fx: { rays: true, dust: true, lightning: true } },
 ];
 
 export const getCelebration = (id: string) => CELEBRATIONS.find((c) => c.id === id);

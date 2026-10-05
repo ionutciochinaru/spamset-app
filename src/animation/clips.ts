@@ -79,4 +79,5 @@ export const clips: Record<string, Clip> = {
   'reclined-twist': require('@/assets/animations/reclined-twist.json'),
   'gear-crouch': require('@/assets/animations/gear-crouch.json'),
   'heart-salute': require('@/assets/animations/heart-salute.json'),
+  'power-scream': require('@/assets/animations/power-scream.json'),
 };

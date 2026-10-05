@@ -160,6 +160,7 @@ export default function Home() {
                     key={celebration?.id ?? exercise.animation}
                     clipId={celebration?.id ?? exercise.animation}
                     auraKind={celebration?.aura}
+                    auraFx={celebration?.fx}
                     locked={!!celebration}
                     controls={false}
                     style={styles.stage}

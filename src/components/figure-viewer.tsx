@@ -12,7 +12,7 @@ import { clipBounds, clipFootprint, samplePose } from '@/animation/sample';
 import { Canvas, useFrame, useThree } from '@/animation/three-canvas';
 import { Scanlines } from '@/components/ui';
 import { DisplayFont, Palette, Psx, Radius } from '@/constants/theme';
-import type { AuraKind } from '@/core/celebrations';
+import type { AuraFx, AuraKind } from '@/core/celebrations';
 
 type Orbit = { azimuth: number; elevation: number };
 
@@ -44,15 +44,16 @@ type SceneProps = {
   aura: boolean;
   /** A sustained anime power aura in this palette (celebrations). */
   auraKind?: AuraKind;
+  auraFx?: AuraFx;
   /** Replay celebrations from the start instead of breathing on (review). */
   loop: boolean;
 };
 
-function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, psx, aura: auraOn, auraKind, loop }: SceneProps) {
+function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, psx, aura: auraOn, auraKind, auraFx, loop }: SceneProps) {
   const clip = clips[clipId];
   const figure = useMemo(() => new Figure(), []);
   const pass = useMemo(() => new PSXPass(), []);
-  const aura = useMemo(() => (auraOn || auraKind ? new Aura(auraKind) : null), [auraOn, auraKind]);
+  const aura = useMemo(() => (auraOn || auraKind ? new Aura(auraKind, auraFx) : null), [auraOn, auraKind, auraFx]);
   useEffect(() => () => aura?.dispose(), [aura]);
   const reps = useMemo(() => repsPerLoop(clip), [clip]);
   const rep = useRef(0);
@@ -145,6 +146,7 @@ export function FigureViewer({
   scan = true,
   aura = true,
   auraKind,
+  auraFx,
   loop = false,
   locked = false,
 }: {
@@ -167,6 +169,8 @@ export function FigureViewer({
   aura?: boolean;
   /** A sustained anime power aura in this palette, for celebrations (on even when `aura` is off). */
   auraKind?: AuraKind;
+  /** Dust, rays and lightning on top of the sustained aura. */
+  auraFx?: AuraFx;
   /** Replay a celebration from the start every so often instead of only breathing on its pose. */
   loop?: boolean;
   /** A fixed shot: no dragging to rotate (celebrations keep their reference camera). */
@@ -218,7 +222,7 @@ export function FigureViewer({
         onResponderGrant={onGrant}
         onResponderMove={onMove}>
         <Canvas camera={{ fov: FOV, near: 0.05, far: 20 }} style={{ flex: 1 }}>
-          <Scene clipId={clipId} orbit={orbit} speed={speed} paused={paused} phase={phase} onPhase={onPhase} zoom={zoom} focus={focus} psx={psx} aura={aura} auraKind={auraKind} loop={loop} />
+          <Scene clipId={clipId} orbit={orbit} speed={speed} paused={paused} phase={phase} onPhase={onPhase} zoom={zoom} focus={focus} psx={psx} aura={aura} auraKind={auraKind} auraFx={auraFx} loop={loop} />
         </Canvas>
       </View>
       {scan && <Scanlines />}

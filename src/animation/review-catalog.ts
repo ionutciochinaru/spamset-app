@@ -385,5 +385,10 @@ export const REVIEW_CATALOG: ReviewEntry[] = [
     "id": "heart-salute",
     "name": "Heart salute",
     "group": "celebration"
+  },
+  {
+    "id": "power-scream",
+    "name": "Power scream",
+    "group": "celebration"
   }
 ];

@@ -150,11 +150,26 @@ _HEART = pose(toe_both=(.16, .10, 0.), head=(radians(-10), 0, 0),
 heart_salute = motion([(0., NEUTRAL), (.18, _HEART), (.86, _HEART), (1., NEUTRAL)],
                       view={'azimuth': 0, 'elevation': 2}, extra=_strike, strike=0.22, end=0.30)
 
+# 3. Power scream: a crouched, trembling charge, then the explosion into the scream: feet
+# planted, elbows bent out, fists clenched at shoulder height, chin up. Seen from low in front.
+def _charge(k, phase):
+    w = stage(phase, .02, .08)*(1-stage(phase, .17, .20))
+    k['pelvis'] = add(k['pelvis'], (.004*w*sin(phase*900), .006*w*sin(phase*760), 0))
+
+
+_GATHER = pose(pelvis=(0, 0, .86), toe_both=(.16, .24, 0.), knee_both=(1., .3, 0.), lean=radians(12),
+               head=(radians(22), 0, 0), wrist_both=(.12, .05, -.40), pole_both=(-.3, .3, -.2))
+_SCREAM = pose(pelvis=(0, 0, .92), toe_both=(.16, .24, 0.), knee_both=(1., .3, 0.), lean=radians(-4),
+               head=(radians(-18), 0, 0), wrist_both=(.10, .27, -.13), pole_both=(-.1, .7, -.8))
+power_scream = motion([(0., NEUTRAL), (.12, _GATHER), (.17, _GATHER), (.21, _SCREAM), (.86, _SCREAM), (1., NEUTRAL)],
+                      view={'azimuth': 8, 'elevation': -10}, extra=_charge, strike=0.21, end=0.26, depth=.012)
+
 CELEBRATION_MOTIONS = {
     'gear-crouch': gear_crouch,
     'heart-salute': heart_salute,
+    'power-scream': power_scream,
 }
 # Names for the review page.
-CELEBRATION_NAMES = {'gear-crouch': 'Gear crouch', 'heart-salute': 'Heart salute'}
+CELEBRATION_NAMES = {'gear-crouch': 'Gear crouch', 'heart-salute': 'Heart salute', 'power-scream': 'Power scream'}
 # Closed fists (hand state 3) for the whole clip.
-CELEBRATION_FISTS = {'gear-crouch', 'heart-salute'}
+CELEBRATION_FISTS = {'gear-crouch', 'heart-salute', 'power-scream'}
