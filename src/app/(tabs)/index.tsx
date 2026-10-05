@@ -186,7 +186,7 @@ export default function Home() {
               </Pressable>
             </Stage>
           )}
-          {featured && <Button label="Start spam set" large onPress={() => openSpamset(featured)} />}
+          {featured && <Button label={`Start spam set · ${target(featured)}`} large onPress={() => openSpamset(featured)} />}
           <Pressable onPress={() => router.push('/spamset-settings')} accessibilityRole="button" style={styles.status}>
             <Body muted style={{ fontSize: 14, color: schedule.enabled ? Palette.muted : Psx.hud }}>
               {schedule.enabled
