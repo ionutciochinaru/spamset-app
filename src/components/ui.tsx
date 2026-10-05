@@ -7,6 +7,7 @@
  * Browse every component at /debug/ui.
  */
 import { Image as ExpoImage } from 'expo-image';
+import { router } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -26,6 +27,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { thumbnails } from '@/animation/thumbnails';
+import { useApp } from '@/store/app-store';
 import { ButtonEdge, DisplayFont, MaxContentWidth, Palette, PixelFont, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 
 const scanlines = require('@/assets/images/scanlines.png');
@@ -274,7 +276,7 @@ export function IconButton({
       accessibilityLabel={hint}
       onPress={onPress}
       hitSlop={6}
-      style={({ pressed }) => [styles.iconButton, style, pressed && styles.buttonPressed]}>
+      style={({ pressed }) => [styles.iconButton, icon && styles.iconRound, style, pressed && styles.buttonPressed]}>
       {icon ? <Icon {...icon} color={Palette.text} size={18} /> : <Text style={styles.iconText}>{label}</Text>}
     </Pressable>
   );
@@ -544,6 +546,34 @@ export function Avatar({ uri, size = 40, onPress, label = 'Profile' }: { uri?: s
   );
 }
 
+/**
+ * The one header row every screen starts with (docs/design-system.md, rule 8): back arrow on
+ * pushed screens, the title, and your picture on the far right opening Profile. `right`
+ * replaces the picture where a screen needs its own action.
+ */
+export function ScreenHeader({
+  title,
+  back = false,
+  profile = true,
+  right,
+}: {
+  /** A title, or your own content in its place (Today's date and wordmark). */
+  title: ReactNode;
+  back?: boolean;
+  profile?: boolean;
+  right?: ReactNode;
+}) {
+  const avatarUri = useApp((s) => s.avatarUri);
+  const goBack = () => (router.canGoBack() ? router.back() : router.replace('/'));
+  return (
+    <View style={styles.screenHeader}>
+      {back && <IconButton icon={{ ios: 'chevron.left', md: 'arrow_back' }} hint="Back" onPress={goBack} />}
+      {typeof title === 'string' ? <Title style={styles.headerTitle}>{title}</Title> : <View style={{ flex: 1 }}>{title}</View>}
+      {right ?? (profile && <Avatar uri={avatarUri} size={40} onPress={() => router.push('/profile')} label="Profile and settings" />)}
+    </View>
+  );
+}
+
 /** On/off blink, the "PRESS START" way. Use once per screen at most. */
 export function Blink({ children, period = 600 }: { children: ReactNode; period?: number }) {
   const [on, setOn] = useState(true);
@@ -620,6 +650,8 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconText: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 18 },
+  // Icon buttons (back, swap) are flat 40 pt circles: a pressed-in edge reads as a cut-off circle.
+  iconRound: { width: 40, height: 40, borderRadius: 20, borderBottomWidth: 0 },
 
   toggle: { width: 52, height: 32, borderRadius: 16, backgroundColor: Palette.track, padding: 3, justifyContent: 'center' },
   toggleOn: { backgroundColor: Palette.accent },
@@ -669,6 +701,8 @@ export const styles = StyleSheet.create({
   statInline: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statInlineLabel: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 14 },
   statLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  screenHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 48 },
+  headerTitle: { flex: 1, fontSize: 30, lineHeight: 34 },
   avatar: {
     alignItems: 'center',
     justifyContent: 'center',

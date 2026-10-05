@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { Avatar, Body, Button, Card, Chips, Heading, Label, Row, Screen, Segmented, Title, Toggle, Well } from '@/components/ui';
+import { Avatar, Body, Button, Card, Chips, Heading, Label, Row, Screen, ScreenHeader, Segmented, Toggle, Well } from '@/components/ui';
 import { accountsEnabled, deleteAccount, signInWithApple, signInWithGoogle, signOut, useSession } from '@/lib/auth';
 import { pickAvatar, removeAvatar, type AvatarSource } from '@/lib/avatar';
 import { scheduleSpamsets } from '@/lib/spamset-notify';
@@ -50,8 +50,7 @@ export default function Profile() {
 
   return (
     <Screen>
-      <View style={{ height: 40 }} />
-      <Title>Profile</Title>
+      <ScreenHeader title="Profile" back profile={false} />
 
       <Card>
         <Label>Profile picture</Label>

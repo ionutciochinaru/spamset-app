@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AppState, Platform, View } from 'react-native';
 
-import { Body, Button, Card, Chips, Heading, Label, Row, Screen, Stepper, Title, Toggle } from '@/components/ui';
+import { Body, Button, Card, Chips, Heading, Label, Row, Screen, ScreenHeader, Stepper, Toggle } from '@/components/ui';
 import { Palette } from '@/constants/theme';
 import { CATEGORY_LABELS, getExercise, type Category } from '@/core/exercises';
 import { DEFAULT_SCHEDULE, INTERVALS, planSpamsets, slotMessage, spamCandidates, timeText, type SpamSchedule } from '@/core/spamset';
@@ -57,8 +57,7 @@ export default function SpamsetSettings() {
 
   return (
     <Screen>
-      <View style={{ height: 40 }} />
-      <Title>Spam sets</Title>
+      <ScreenHeader title="Spam sets" back />
       <Body muted>
         One short exercise at your interval, all day. Tap the notification, do the set, log it. Small sets add up.
       </Body>

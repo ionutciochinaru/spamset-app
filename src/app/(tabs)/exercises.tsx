@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { SectionList, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Body, Card, Chips, Field, Heading, Label, Row, Scanlines, Tag, Thumb, Title, Toggle } from '@/components/ui';
+import { Body, Card, Chips, Field, Heading, Label, Row, Scanlines, ScreenHeader, Tag, Thumb, Toggle } from '@/components/ui';
 import { MaxContentWidth, Palette, Spacing } from '@/constants/theme';
 import {
   canDo,
@@ -56,7 +56,7 @@ export default function Exercises() {
       initialNumToRender={8}
       ListHeaderComponent={
         <View style={[styles.column, { gap: Spacing.three, paddingBottom: Spacing.two }]}>
-          <Title>Exercises</Title>
+          <ScreenHeader title="Exercises" />
           <Field
             value={query}
             onChangeText={setQuery}

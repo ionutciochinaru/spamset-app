@@ -27,15 +27,16 @@ Every screen builds from `src/components/ui.tsx`, and every token lives in `src/
 5. **Buttons are tactile.** A thick darker bottom edge that the button presses into. Cards dip slightly when pressed. There are no bevels and no hard pixel shadows on surfaces.
 6. **One game moment per screen.** The home screen is the game hub: the player card (level, streak, four PS2-style stat bars and a gym-meme caption) and the hero stage with its countdown. Other screens stay calm, with HUD numbers where there are numbers. `Blink` appears at most once per screen.
 7. **Phone first.** Touch targets are at least 40 pt (50 for buttons and fields), with a 16 pt side gutter. Every component works on iOS, Android and web, with no platform forks for looks.
+8. **One header row per screen.** Every screen starts with `ScreenHeader`: the back arrow on the left on pushed screens (`back`), the title next to it, and your profile picture on the far right, which opens Profile (hidden on Profile itself with `profile={false}`). Never use the system navigation header or a spacer above the title. Today keeps its own header (date and wordmark) with the picture in the same place.
 
 ## Components
 
 | Group | Components |
 |---|---|
-| Layout | `Screen`, `Row`, `Scanlines` |
+| Layout | `Screen`, `ScreenHeader` (back, title, profile picture), `Row`, `Scanlines` |
 | Type | `Title`, `Heading`, `Label`, `Body`, `Steps`, `PixelText` (HUD) |
 | Surfaces | `Card`, `HudCard` (the home player card), `Divider`, `Well`, `Stage`, `Thumb` |
-| Actions | `Button` (primary, go, tonal, ghost, danger; `large`), `IconButton`, `Toggle`, `Field`, `Chips`, `Segmented`, `Stepper` |
+| Actions | `Button` (primary, go, tonal, ghost, danger; `large`), `IconButton` (text or `icon`), `Avatar`, `Toggle`, `Field`, `Chips`, `Segmented`, `Stepper` |
 | Data | `Stat` (HUD number + label, or `inline`), `StatBar` (PS2-style stat bar with percent), `Meter`, `Tag` |
 | Motion | `Blink` |
 | Meme | `MemeText` (white caption with a black outline; one per screen, on the player card) |

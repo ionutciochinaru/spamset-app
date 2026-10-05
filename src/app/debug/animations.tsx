@@ -20,7 +20,7 @@ import reviewsJson from '@/animation/reviews.json';
 import { ANIMATION_REVISION } from '@/animation/revision';
 import { REVIEW_CATALOG } from '@/animation/review-catalog';
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Button, Card, Heading, Label, Row, Screen, Title } from '@/components/ui';
+import { Body, Button, Card, Heading, Label, Row, Screen, ScreenHeader } from '@/components/ui';
 import { Palette, Radius } from '@/constants/theme';
 import { useApp } from '@/store/app-store';
 
@@ -140,8 +140,7 @@ function ReviewPage({ initial }: { initial?: string }) {
 
   return (
     <Screen>
-      <View style={{ height: 40 }} />
-      <Title>Animation review {ANIMATION_REVISION}</Title>
+      <ScreenHeader title={`Animation review ${ANIMATION_REVISION}`} back />
       {reviews.revision && reviews.revision !== ANIMATION_REVISION ? (
         <Body muted style={{ fontSize: 13 }}>Agent reviews are for revision {reviews.revision}</Body>
       ) : null}

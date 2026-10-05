@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Avatar, Body, Button, Card, Glow, HudCard, Icon, IconButton, Label, MemeText, PixelText, Row, Stage, StatBar, Thumb, Title, Well } from '@/components/ui';
+import { Body, Button, Card, Glow, HudCard, Icon, IconButton, Label, MemeText, PixelText, Row, ScreenHeader, Stage, StatBar, Thumb, Title, Well } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { getExercise } from '@/core/exercises';
 import { hudStats, memeCaption, rankTitle, xpState } from '@/core/xp';
@@ -43,7 +43,6 @@ export default function Home() {
   const target = useTargetText();
   const now = useNow(1000);
 
-  const avatarUri = useApp((s) => s.avatarUri);
   const swaps = useApp((s) => s.spamSwaps);
   const swapSpamset = useApp((s) => s.swapSpamset);
   const next = planSpamsets(schedule, owned, now, 1, swaps)[0];
@@ -88,15 +87,16 @@ export default function Home() {
         <View style={styles.column}>
 
           {/* Header: date and wordmark; your picture opens Profile. */}
-          <View style={styles.hud}>
-            <View style={{ gap: 6 }}>
-              <Label>{date}</Label>
-              <PixelText size={PixelSize.large} color={Palette.accent}>
-                SPAMSET
-              </PixelText>
-            </View>
-            <Avatar uri={avatarUri} size={48} onPress={() => router.push('/profile')} label="Profile and settings" />
-          </View>
+          <ScreenHeader
+            title={
+              <View style={{ gap: 6 }}>
+                <Label>{date}</Label>
+                <PixelText size={PixelSize.large} color={Palette.accent}>
+                  SPAMSET
+                </PixelText>
+              </View>
+            }
+          />
 
           {/* The schedule, or a way to turn it on; both open spam set settings. */}
           <Button
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   levelBadge: { backgroundColor: Palette.accent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
-  swap: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(48,49,43,0.9)' },
+  swap: { backgroundColor: 'rgba(48,49,43,0.9)' },
   timer: { paddingVertical: 12, paddingHorizontal: 14, gap: 8 },
   timerClock: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 16 },
   stageAction: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },

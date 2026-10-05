@@ -1,11 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
-import { View } from 'react-native';
 
 import { clips } from '@/animation/clips';
 import { BellPicker } from '@/components/bell-picker';
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Card, Heading, Label, Row, Screen, Steps, Tag, Title } from '@/components/ui';
+import { Body, Card, Heading, Label, Row, Screen, ScreenHeader, Steps, Tag } from '@/components/ui';
 import { Palette } from '@/constants/theme';
 import { canDo, EQUIPMENT_LABELS, getExercise, isLoaded, isStretch, isTimed } from '@/core/exercises';
 import { initialPrescription } from '@/core/progression';
@@ -31,9 +30,8 @@ export default function ExerciseDetail() {
 
   return (
     <Screen>
-      <View style={{ height: 40 }} />
+      <ScreenHeader title={exercise.name} back />
       <FigureViewer clipId={exercise.animation} />
-      <Title>{exercise.name}</Title>
       <Row style={{ flexWrap: 'wrap' }}>
         {exercise.primary.map((m) => (
           <Tag key={m} label={m} accent />

@@ -51,27 +51,12 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Palette.bg } }}>
         <Stack.Protected guard={authMode !== undefined}>
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="exercise/[id]"
-            options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
-          />
-          <Stack.Screen
-            name="debug/ui"
-            options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
-          />
-          <Stack.Screen
-            name="debug/animations"
-            options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
-          />
+          <Stack.Screen name="exercise/[id]" />
+          <Stack.Screen name="debug/ui" />
+          <Stack.Screen name="debug/animations" />
           <Stack.Screen name="spamset" options={{ presentation: 'fullScreenModal' }} />
-          <Stack.Screen
-            name="profile"
-            options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
-          />
-          <Stack.Screen
-            name="spamset-settings"
-            options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: Palette.text }}
-          />
+          <Stack.Screen name="profile" />
+          <Stack.Screen name="spamset-settings" />
         </Stack.Protected>
         <Stack.Protected guard={authMode === undefined}>
           <Stack.Screen name="sign-in" />

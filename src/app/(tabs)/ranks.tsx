@@ -3,23 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  Body,
-  Button,
-  Card,
-  Chips,
-  Field,
-  Glow,
-  Heading,
-  Label,
-  Meter,
-  PixelText,
-  Row,
-  Segmented,
-  Stat,
-  Title,
-  Toggle,
-} from '@/components/ui';
+import { Body, Button, Card, Chips, Field, Glow, Heading, Label, Meter, PixelText, Row, ScreenHeader, Segmented, Stat, Toggle } from '@/components/ui';
 import { DisplayFont, MaxContentWidth, Palette, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 import { xpState } from '@/core/xp';
 import { accountsEnabled, useSession } from '@/lib/auth';
@@ -101,7 +85,7 @@ export default function Ranks() {
           session && profile ? <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={Palette.accent} /> : undefined
         }>
         <View style={styles.column}>
-          <Title>Ranks</Title>
+          <ScreenHeader title="Ranks" />
 
           {/* Your level, from this device's spam sets. */}
           <Card>

@@ -2,35 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import {
-  Avatar,
-  Blink,
-  Body,
-  Button,
-  Card,
-  Chips,
-  Field,
-  Heading,
-  IconButton,
-  Label,
-  Divider,
-  HudCard,
-  MemeText,
-  Meter,
-  PixelText,
-  Row,
-  Screen,
-  Segmented,
-  Stat,
-  StatBar,
-  Steps,
-  Stepper,
-  Tag,
-  Thumb,
-  Title,
-  Toggle,
-  Well,
-} from '@/components/ui';
+import { Avatar, Blink, Body, Button, Card, Chips, Divider, Field, Heading, HudCard, IconButton, Label, MemeText, Meter, PixelText, Row, Screen, ScreenHeader, Segmented, Stat, StatBar, Stepper, Steps, Tag, Thumb, Title, Toggle, Well } from '@/components/ui';
 import { Palette, PixelSize, Psx } from '@/constants/theme';
 
 /** The visual library on one page (docs/design-system.md). Open from Profile → Visual library. */
@@ -43,8 +15,7 @@ export default function VisualLibrary() {
 
   return (
     <Screen>
-      <View style={{ height: 40 }} />
-      <Title>Visual library</Title>
+      <ScreenHeader title="Visual library" back />
       <Body muted>A modern app with a game layer: tactile buttons, HUD numbers in pixel type, and the PSX 3D stage.</Body>
 
       <Label>Type</Label>
@@ -84,6 +55,12 @@ export default function VisualLibrary() {
           </View>
         ))}
       </Row>
+
+      <Label>ScreenHeader</Label>
+      <Card>
+        <ScreenHeader title="Pushed screen" back />
+        <ScreenHeader title="Tab screen" />
+      </Card>
 
       <Label>Surfaces</Label>
       <Card>

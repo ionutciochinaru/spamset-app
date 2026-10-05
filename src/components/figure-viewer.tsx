@@ -1,4 +1,5 @@
 /* eslint-disable react/no-unknown-property -- react-three-fiber JSX props */
+// @refresh reset -- remount the 3D scene on Fast Refresh: kept Three.js objects break after a hot reload ("WeakMap key must be an Object").
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
 import * as THREE from 'three';

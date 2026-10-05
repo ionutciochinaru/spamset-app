@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Body, Button, Card, Label, PixelText, Row, Screen, Stat, Tag, Thumb, Title } from '@/components/ui';
+import { Body, Button, Card, Label, PixelText, Row, Screen, ScreenHeader, Stat, Tag, Thumb } from '@/components/ui';
 import { Palette, PixelSize, Psx } from '@/constants/theme';
 import { getExercise, isLoaded } from '@/core/exercises';
 import type { Change } from '@/core/progression';
@@ -62,7 +62,7 @@ export default function History() {
 
   return (
     <Screen>
-      <Title>History</Title>
+      <ScreenHeader title="History" />
       {!sessions.length && <Body muted>No spam sets yet. Do one from Today and it shows up here.</Body>}
 
       {sessions.length > 0 && (
