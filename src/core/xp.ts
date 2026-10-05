@@ -198,3 +198,25 @@ export const RANK_TITLES = [
 export function rankTitle(level: number): string {
   return RANK_TITLES[Math.min(RANK_TITLES.length, Math.max(1, Math.floor(level))) - 1];
 }
+
+/** Meme captions for the "+XP" screen after a spam set. */
+export const SET_CAPTIONS = {
+  levelUp: ['Evolution complete', 'Moooscles detected', 'Yeah buddy!'],
+  /** Too soon after the last set to earn XP. */
+  cooldown: ['XP on cooldown. Gains are not.', 'Spamming the spam set. Respect.', 'Patience, young lifter'],
+  easy: ['Light weight, baby', 'Ain’t nothin’ but a peanut', 'Too easy. Next.'],
+  hard: ['Pain is weakness leaving the body', 'That one hurt. Respect.', 'Legs are shaking. Worth it.'],
+  good: ['My moooscles are getting bigger', 'Looking around the office after one set', 'Built different (slightly)', 'Yeah buddy!'],
+} as const;
+
+/** The caption for a finished set; `seed` (the log id) keeps it stable for that set. */
+export function setCaption(input: { gained: number; effort?: 'easy' | 'good' | 'hard'; leveledUp: boolean; seed: string }): string {
+  const pool = input.leveledUp
+    ? SET_CAPTIONS.levelUp
+    : input.gained <= 0
+      ? SET_CAPTIONS.cooldown
+      : SET_CAPTIONS[input.effort ?? 'good'];
+  let h = 0;
+  for (const c of input.seed) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0;
+  return pool[h % pool.length];
+}

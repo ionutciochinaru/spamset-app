@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Platform, View } from 'react-native';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Button, Card, Label, PixelText, Row, Screen, Stepper, Steps, Title } from '@/components/ui';
+import { Body, Button, Card, Label, MemeText, PixelText, Row, Screen, Stepper, Steps, Title } from '@/components/ui';
 import type { SessionLog } from '@/core/session';
-import { xpState } from '@/core/xp';
+import { rankTitle, setCaption, xpState } from '@/core/xp';
 import { syncNow } from '@/lib/sync';
 import { Palette, PixelSize, Psx } from '@/constants/theme';
 import { getExercise, isStretch, isTimed } from '@/core/exercises';
@@ -45,10 +45,15 @@ export default function Spamset() {
   const [logged, setLogged] = useState<SessionLog | undefined>(undefined);
 
   const [gained, setGained] = useState(0);
+  const [effortRated, setEffortRated] = useState<Effort>();
+  const [newLevel, setNewLevel] = useState<number>();
   const log = (amount: number, effort?: Effort) => {
-    const before = xpState(useApp.getState().sessions).today;
+    const before = xpState(useApp.getState().sessions);
     setLogged(logSpamset({ exercise: exerciseId, target, done: amount, startedAt, effort }));
-    setGained(xpState(useApp.getState().sessions).today - before);
+    const after = xpState(useApp.getState().sessions);
+    setGained(after.today - before.today);
+    setEffortRated(effort);
+    setNewLevel(after.level > before.level ? after.level : undefined);
     setRating(undefined);
     // Put it on the boards straight away when signed in (a no-op offline).
     syncNow().catch(() => null);
@@ -104,6 +109,12 @@ export default function Spamset() {
         <PixelText size={PixelSize.large} color={gained ? Psx.hud : Palette.muted}>
           {gained ? `+${gained} XP` : '+0 XP'}
         </PixelText>
+        {newLevel && (
+          <PixelText size={PixelSize.medium} color={Palette.accent}>
+            NEW RANK: {rankTitle(newLevel).toUpperCase()}
+          </PixelText>
+        )}
+        <MemeText size={26}>{setCaption({ gained, effort: effortRated, leveledUp: newLevel !== undefined, seed: logged.id })}</MemeText>
         {!gained && <Body muted style={{ fontSize: 14 }}>Sets less than 3 minutes apart don&apos;t earn XP.</Body>}
         {progress && (
           <Card>

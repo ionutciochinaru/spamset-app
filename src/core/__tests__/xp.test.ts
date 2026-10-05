@@ -1,5 +1,5 @@
 import type { SessionLog, Target } from '../session';
-import { dailyXp, hudStats, levelOf, MEME_CAPTIONS, memeCaption, RANK_TITLES, rankTitle, setXp, xpState, type XpState } from '../xp';
+import { dailyXp, hudStats, levelOf, MEME_CAPTIONS, memeCaption, RANK_TITLES, rankTitle, SET_CAPTIONS, setCaption, setXp, xpState, type XpState } from '../xp';
 
 let n = 0;
 function log(at: Date, target: Target, done: number, load = 0, workoutId = 'spamset'): SessionLog {
@@ -122,6 +122,21 @@ describe('rankTitle', () => {
     expect(rankTitle(RANK_TITLES.length)).toBe('Gigachad');
     expect(rankTitle(99)).toBe('Gigachad');
     expect(rankTitle(0)).toBe('Couch Potato');
+  });
+});
+
+describe('setCaption', () => {
+  it('celebrates level-ups, jokes about cooldowns and matches the rating', () => {
+    expect(SET_CAPTIONS.levelUp).toContain(setCaption({ gained: 20, effort: 'hard', leveledUp: true, seed: 'a' }));
+    expect(SET_CAPTIONS.cooldown).toContain(setCaption({ gained: 0, effort: 'easy', leveledUp: false, seed: 'a' }));
+    expect(SET_CAPTIONS.easy).toContain(setCaption({ gained: 20, effort: 'easy', leveledUp: false, seed: 'a' }));
+    expect(SET_CAPTIONS.hard).toContain(setCaption({ gained: 20, effort: 'hard', leveledUp: false, seed: 'a' }));
+    expect(SET_CAPTIONS.good).toContain(setCaption({ gained: 20, leveledUp: false, seed: 'a' }));
+  });
+
+  it('is stable for a set', () => {
+    const input = { gained: 20, effort: 'good' as const, leveledUp: false, seed: 'mf3k-abc' };
+    expect(setCaption(input)).toBe(setCaption(input));
   });
 });
 
