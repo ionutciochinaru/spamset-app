@@ -597,7 +597,7 @@ export function Podium({ entries }: { entries: PodiumEntry[] }) {
                 </View>
                 <Text style={styles.podiumSub}>Up for grabs</Text>
               </View>
-              <View style={[styles.plinth, { height: PLINTH[i], borderTopColor: Psx.edgeTop }]}>
+              <View style={[styles.plinth, { height: PLINTH[i] }]}>
                 <PixelText size={PixelSize.medium} color={Palette.dim}>
                   {i + 1}
                 </PixelText>
@@ -621,7 +621,7 @@ export function Podium({ entries }: { entries: PodiumEntry[] }) {
                 </Text>
               )}
             </View>
-            <View style={[styles.plinth, { height: PLINTH[i], borderTopColor: medal }]}>
+            <View style={[styles.plinth, { height: PLINTH[i] }]}>
               <PixelText size={i === 0 ? PixelSize.large : PixelSize.medium} color={medal}>
                 {i + 1}
               </PixelText>
@@ -779,7 +779,6 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     borderRadius: 12,
-    borderTopWidth: 3,
     backgroundColor: Psx.well,
     borderWidth: 1,
     borderColor: Psx.edge,
