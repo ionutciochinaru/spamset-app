@@ -4,6 +4,7 @@ import {
   clockText,
   liveSwaps,
   pickFor,
+  setExerciseOn,
   planSpamsets,
   spamCandidates,
   spamTarget,
@@ -45,6 +46,14 @@ describe('spam set picks', () => {
     expect(ids.length).toBeGreaterThan(0);
     expect(ids.every((id) => exerciseCategory(getExercise(id)) === 'stretch')).toBe(true);
     expect(spamCandidates({ ...on, pool: ['kettlebell'] }, [])).toEqual([]);
+  });
+
+  it('never draws an exercise you switched off', () => {
+    const all = spamCandidates(on, []);
+    const curated = setExerciseOn(on, all[0], false);
+    expect(spamCandidates(curated, [])).toEqual(all.slice(1));
+    expect(planSpamsets(curated, [], monday(8), 30).some((s) => s.exercise === all[0])).toBe(false);
+    expect(spamCandidates(setExerciseOn(curated, all[0], true), [])).toEqual(all);
   });
 
   it('is stable per slot and never repeats back to back', () => {

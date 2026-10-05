@@ -19,6 +19,8 @@ export type SpamSchedule = {
   days: number[];
   /** Categories the exercise is drawn from. */
   pool: Category[];
+  /** Exercises you switched off in the library, never drawn. */
+  off?: string[];
 };
 
 export const DEFAULT_SCHEDULE: SpamSchedule = {
@@ -36,7 +38,8 @@ export type SpamSlot = { at: Date; exercise: string };
 
 /** Exercises a schedule can draw from: in the pool and possible with your equipment. */
 export function spamCandidates(schedule: SpamSchedule, owned: Equipment[]): string[] {
-  return EXERCISES.filter((e) => schedule.pool.includes(exerciseCategory(e)) && canDo(e, owned)).map((e) => e.id);
+  const off = new Set(schedule.off ?? []);
+  return EXERCISES.filter((e) => schedule.pool.includes(exerciseCategory(e)) && canDo(e, owned) && !off.has(e.id)).map((e) => e.id);
 }
 
 /** Slot times strictly after `from`, at most `count`, looking up to `horizonDays` ahead. */
@@ -68,6 +71,12 @@ export function pickFor(at: Date, candidates: string[], previous?: string): stri
   const pick = candidates[hash(minute) % candidates.length];
   if (pick !== previous || candidates.length === 1) return pick;
   return candidates[(hash(minute) + 1) % candidates.length];
+}
+
+/** Switch one exercise on or off for spam sets. */
+export function setExerciseOn(schedule: SpamSchedule, id: string, on: boolean): SpamSchedule {
+  const off = (schedule.off ?? []).filter((x) => x !== id);
+  return { ...schedule, off: on ? off : [...off, id] };
 }
 
 /** Exercises you swapped in for upcoming slots, keyed by the slot's ISO time. */

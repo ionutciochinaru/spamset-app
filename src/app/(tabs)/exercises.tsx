@@ -17,7 +17,8 @@ import {
   type Exercise,
 } from '@/core/exercises';
 import { initialPrescription } from '@/core/progression';
-import { formatLoad, ownedEquipment, useApp } from '@/store/app-store';
+import { setExerciseOn } from '@/core/spamset';
+import { formatLoad, ownedEquipment, spamSchedule, useApp } from '@/store/app-store';
 
 const CATEGORIES: Category[] = ['kettlebell', 'bodyweight', 'core', 'gear', 'stretch'];
 type Filter = Category | 'all';
@@ -66,6 +67,9 @@ export default function Exercises() {
             clearButtonMode="while-editing"
             accessibilityLabel="Search exercises"
           />
+          <Body muted style={{ fontSize: 14 }}>
+            Switch an exercise off to keep it out of your spam sets.
+          </Body>
           <Chips<Filter>
             options={[{ value: 'all', label: 'All' }, ...CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }))]}
             selected={filter}
@@ -107,7 +111,10 @@ export default function Exercises() {
 function ExerciseRow({ exercise: e, owned }: { exercise: Exercise; owned: boolean }) {
   const settings = useApp((s) => s.settings);
   const prescription = useApp((s) => s.prescriptions[e.id]);
+  const update = useApp((s) => s.updateSettings);
   const load = isLoaded(e) ? (prescription ?? initialPrescription(e.id, settings.bells)).load : 0;
+  const schedule = spamSchedule(settings);
+  const on = !(schedule.off ?? []).includes(e.id);
   return (
     <Card onPress={() => router.push({ pathname: '/exercise/[id]', params: { id: e.id } })} style={styles.card}>
       <Thumb clip={e.animation} size={88} dim={!owned} />
@@ -123,6 +130,14 @@ function ExerciseRow({ exercise: e, owned }: { exercise: Exercise; owned: boolea
           {e.unilateral && <Tag label="per side" />}
         </View>
       </View>
+      {/* In your spam sets or not; only for exercises your equipment allows. */}
+      {owned && (
+        <Toggle
+          value={on}
+          onChange={(next) => update({ spamset: setExerciseOn(schedule, e.id, next) })}
+          label={`${e.name} in spam sets`}
+        />
+      )}
     </Card>
   );
 }
