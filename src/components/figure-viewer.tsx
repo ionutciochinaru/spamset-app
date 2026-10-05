@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
 import * as THREE from 'three';
 
-import { Aura } from '@/animation/aura';
+import { Aura, repsPerLoop } from '@/animation/aura';
 import { clips } from '@/animation/clips';
 import { Figure } from '@/animation/figure';
 import { PSXPass, snapVertices } from '@/animation/psx';
@@ -46,6 +46,8 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
   const pass = useMemo(() => new PSXPass(), []);
   const aura = useMemo(() => (auraOn ? new Aura() : null), [auraOn]);
   useEffect(() => () => aura?.dispose(), [aura]);
+  const reps = useMemo(() => repsPerLoop(clip), [clip]);
+  const rep = useRef(0);
   useEffect(() => () => pass.dispose(), [pass]);
   useEffect(() => {
     if (psx) snapVertices(figure.group);
@@ -86,6 +88,10 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
     camera.lookAt(target);
     figure.update(pose, camera.position);
     aura?.update(pose.joints, camera.position, paused ? 0 : delta);
+    // A rep ends at each 1/reps of the loop: burst then.
+    const done = Math.floor((time.current / clip.duration) * reps);
+    if (aura && done > rep.current && phase === undefined) aura.burst();
+    rep.current = done;
   });
 
   // With PSX on, draw the frame ourselves through the low-res pass (a positive priority
