@@ -81,6 +81,10 @@ export default function Home() {
     };
   }, [sessions]);
 
+  // "8 reps per side" -> "8" and "reps per side".
+  const [targetNumber = '', ...unitWords] = featured ? target(featured).split(' ') : [];
+  const targetUnit = unitWords.join(' ');
+
   const date = now.toLocaleDateString('en', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase().replace(',', '');
 
   return (
@@ -168,9 +172,13 @@ export default function Home() {
                     pointerEvents="none"
                   />
                   <View style={styles.stageBottom} pointerEvents="none">
-                    <View style={styles.stageRow}>
+                    {/* The target is the point of the card: the number big, the unit beside it. */}
+                    <View style={styles.targetRow}>
+                      <PixelText size={PixelSize.huge} color={Palette.accent}>
+                        {targetNumber}
+                      </PixelText>
                       <PixelText size={PixelSize.medium} color={Palette.accent}>
-                        {target(featured).toUpperCase()}
+                        {targetUnit.toUpperCase()}
                       </PixelText>
                     </View>
                   </View>
@@ -239,7 +247,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   stageBottom: { position: 'absolute', bottom: 16, left: 16, right: 16, gap: 10 },
-  stageRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  targetRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', columnGap: 12, rowGap: 8 },
   level: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 32 },
   levelBadge: { backgroundColor: Palette.accent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
   hero: { boxShadow: '0 0 0 1px rgba(255,107,43,0.25), 0 12px 40px rgba(255,107,43,0.18)' },
