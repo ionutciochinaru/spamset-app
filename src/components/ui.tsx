@@ -7,7 +7,7 @@
  * Browse every component at /debug/ui.
  */
 import { Image as ExpoImage } from 'expo-image';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -27,6 +27,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { thumbnails } from '@/animation/thumbnails';
+import { TrainingTrackingOverlay } from '@/components/training-tracking-overlay';
+import { createTrainingTracking, TrainingTrackingContext } from '@/components/training-tracking';
+import type { Exercise } from '@/core/exercises';
+import type { ExerciseTraining } from '@/core/exercise-training';
+import type { Effort } from '@/core/progression';
 import { useApp } from '@/store/app-store';
 import { ButtonEdge, DisplayFont, MaxContentWidth, Palette, PixelFont, PixelSize, Psx, Radius, Spacing } from '@/constants/theme';
 
@@ -206,6 +211,29 @@ export function Thumb({ clip, size, style, dim }: { clip: string; size?: number;
   );
 }
 
+/** Floating training labels and live pose tracking on the full-width figure. */
+export function ExerciseTrainingPreview({
+  exercise,
+  training,
+  children,
+  controls,
+}: {
+  exercise: Pick<Exercise, 'id' | 'kind' | 'pattern' | 'primary' | 'support'>;
+  training: ExerciseTraining;
+  children: ReactNode;
+  controls?: ReactNode;
+}) {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const [tracking] = useState(createTrainingTracking);
+  return (
+    <View testID="exercise-training-preview" onLayout={(event) => setSize({ width: event.nativeEvent.layout.width, height: event.nativeEvent.layout.height })} style={styles.trainingPreview}>
+      <TrainingTrackingContext.Provider value={tracking}>{children}</TrainingTrackingContext.Provider>
+      <TrainingTrackingOverlay tracking={tracking} width={size.width} height={size.height} exercise={exercise} training={training} topSafe={controls ? 72 : 42} />
+      {controls && <View pointerEvents="box-none" style={styles.trainingControls}>{controls}</View>}
+    </View>
+  );
+}
+
 // ---- Actions ------------------------------------------------------------------------
 
 type ButtonKind = 'primary' | 'go' | 'tonal' | 'ghost' | 'danger';
@@ -227,6 +255,7 @@ export function Button({
   large,
   disabled,
   style,
+  textColor,
 }: {
   label: string;
   onPress: () => void;
@@ -234,6 +263,7 @@ export function Button({
   large?: boolean;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
+  textColor?: string;
 }) {
   const [fill, text] = BUTTON_COLORS[kind];
   const edge = kind === 'ghost' ? 'transparent' : ButtonEdge[fill];
@@ -251,7 +281,39 @@ export function Button({
         pressed && kind === 'ghost' && { backgroundColor: Palette.pressed },
         style,
       ]}>
-      <Text style={[styles.buttonText, large && styles.buttonTextLarge, { color: text }]}>{label}</Text>
+      <Text style={[styles.buttonText, large && styles.buttonTextLarge, { color: textColor ?? text }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+const EFFORT_CHOICES = {
+  easy: { title: 'Easy', detail: 'Could comfortably do more', color: '#6fd48a', level: 1 },
+  good: { title: 'Good', detail: 'Challenging but manageable', color: Palette.accent, level: 2 },
+  hard: { title: 'Hard', detail: 'Struggled to finish', color: Psx.hud, level: 3 },
+} as const;
+
+/** Equal-weight, one-tap effort choices with a full-row touch target. */
+export function EffortChoice({ effort, onPress }: { effort: Effort; onPress: () => void }) {
+  const { title, detail, color, level } = EFFORT_CHOICES[effort];
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${title}. ${detail}`}
+      accessibilityHint="Saves your set with this rating"
+      onPress={onPress}
+      style={({ pressed }) => [styles.effortChoice, pressed && styles.effortPressed]}>
+      <View pointerEvents="none" style={[styles.effortBadge, { backgroundColor: `${color}18` }]}>
+        <View style={styles.effortBars}>
+          {[8, 14, 20].map((height, index) => (
+            <View key={height} style={{ width: 5, height, borderRadius: 2, backgroundColor: index < level ? color : Palette.track }} />
+          ))}
+        </View>
+      </View>
+      <View style={styles.effortCopy}>
+        <Text style={styles.effortTitle}>{title}</Text>
+        <Text style={styles.effortDetail}>{detail}</Text>
+      </View>
+      <Icon ios="chevron.right" md="chevron_right" size={20} color={Palette.muted} />
     </Pressable>
   );
 }
@@ -260,12 +322,14 @@ export function Button({
 export function IconButton({
   label,
   icon,
+  iconColor = Palette.text,
   hint,
   onPress,
   style,
 }: {
   label?: string;
   icon?: { ios: SymbolViewProps['name'] & string; md: string };
+  iconColor?: string;
   hint: string;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
@@ -277,8 +341,29 @@ export function IconButton({
       onPress={onPress}
       hitSlop={6}
       style={({ pressed }) => [styles.iconButton, icon && styles.iconRound, style, pressed && styles.buttonPressed]}>
-      {icon ? <Icon {...icon} color={Palette.text} size={18} /> : <Text style={styles.iconText}>{label}</Text>}
+      {icon ? <Icon {...icon} color={iconColor} size={18} /> : <Text style={styles.iconText}>{label}</Text>}
     </Pressable>
+  );
+}
+
+/** Search YouTube externally, keeping the workout open in its tab on web. */
+export function YouTubeSearchButton({ query, style }: { query: string; style?: StyleProp<ViewStyle> }) {
+  return (
+    <Link href={`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`} target="_blank" rel="noopener noreferrer" asChild>
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={`Search YouTube for ${query}`}
+        hitSlop={6}
+        // React Native Web forwards anchor attributes through hrefAttrs.
+        {...(Platform.OS === 'web' ? { hrefAttrs: { target: '_blank', rel: 'noopener noreferrer' } } : {})}
+        style={StyleSheet.flatten([styles.iconButton, styles.iconRound, styles.youtubeButton, style])}>
+        {({ pressed }) => (
+          <View pointerEvents="none" style={[styles.youtubeLogo, { opacity: pressed ? 0.65 : 1 }]}>
+            <View style={styles.youtubePlay} />
+          </View>
+        )}
+      </Pressable>
+    </Link>
   );
 }
 
@@ -480,32 +565,42 @@ export function Meter({ value, max, color = Palette.accent }: { value: number; m
 }
 
 /**
- * A PS2-era HUD stat: icon, name and percent over a chunky bar with a dark rim and a
- * glossy fill (the player card's Strength / Stamina / Discipline / Reputation).
+ * A HUD metric with a readable count (or percentage) and a glossy progress bar.
  */
 export function StatBar({
   label,
+  showLabel = true,
   value,
+  valueLabel,
   color,
   icon,
 }: {
   label: string;
+  /** Hide the visual heading when the surrounding content already identifies the metric. */
+  showLabel?: boolean;
   /** 0-100. */
   value: number;
+  /** A count such as "30/150", shown beside the bar in place of the percentage. */
+  valueLabel?: string;
   color: string;
   icon: { ios: SymbolViewProps['name'] & string; md: string };
 }) {
   const v = Math.max(0, Math.min(100, value));
   return (
-    <View style={styles.statBar} accessibilityRole="progressbar" accessibilityLabel={`${label} ${v}%`} accessibilityValue={{ min: 0, max: 100, now: v }}>
-      <View style={styles.statBarHead}>
-        <Icon {...icon} color={color} size={13} />
-        <Text style={styles.statBarLabel}>
-          {label} <Text style={{ color: Palette.text }}>{v}%</Text>
-        </Text>
-      </View>
-      <View style={styles.statBarTrack}>
-        <View style={[styles.statBarFill, { width: `${v}%`, backgroundColor: color }, gradient(`linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.25) 100%)`)]} />
+    <View style={styles.statBar} accessibilityRole="progressbar" accessibilityLabel={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={v} aria-valuetext={valueLabel ?? `${v}%`}>
+      {showLabel && (
+        <View style={styles.statBarHead}>
+          <Icon {...icon} color={color} size={13} />
+          <Text style={styles.statBarLabel}>
+            {label}{!valueLabel && <Text style={{ color: Palette.text }}> {v}%</Text>}
+          </Text>
+        </View>
+      )}
+      <View style={styles.statBarProgress}>
+        <View style={styles.statBarTrack}>
+          <View style={[styles.statBarFill, { width: `${v}%`, backgroundColor: color }, gradient(`linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.25) 100%)`)]} />
+        </View>
+        {valueLabel && <Text style={styles.statBarValue}>{valueLabel}</Text>}
       </View>
     </View>
   );
@@ -554,12 +649,15 @@ export function Avatar({ uri, size = 40, onPress, label = 'Profile' }: { uri?: s
 export function ScreenHeader({
   title,
   back = false,
+  onBack,
   profile = true,
   right,
 }: {
   /** A title, or your own content in its place (Today's date and wordmark). */
   title: ReactNode;
   back?: boolean;
+  /** Return to a previous step without leaving the current route. */
+  onBack?: () => void;
   profile?: boolean;
   right?: ReactNode;
 }) {
@@ -567,7 +665,7 @@ export function ScreenHeader({
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/'));
   return (
     <View style={styles.screenHeader}>
-      {back && <IconButton icon={{ ios: 'chevron.left', md: 'arrow_back' }} hint="Back" onPress={goBack} />}
+      {back && <IconButton icon={{ ios: 'chevron.left', md: 'arrow_back' }} hint="Back" onPress={onBack ?? goBack} />}
       {typeof title === 'string' ? <Title style={styles.headerTitle}>{title}</Title> : <View style={{ flex: 1 }}>{title}</View>}
       {right ?? (profile && <Avatar uri={avatarUri} size={40} onPress={() => router.push('/profile')} label="Profile and settings" />)}
     </View>
@@ -688,6 +786,8 @@ export const styles = StyleSheet.create({
   well: { backgroundColor: Psx.well, ...gradient('none'), boxShadow: 'none', borderTopColor: Psx.edge },
   stage: { backgroundColor: Palette.stage, borderRadius: Radius.card, overflow: 'hidden', borderWidth: 1, borderColor: Psx.edge },
   thumb: { aspectRatio: 1, borderRadius: Radius.button - 2 },
+  trainingPreview: { width: '100%' },
+  trainingControls: { position: 'absolute', top: 14, left: 16, right: 16, zIndex: 2 },
 
   button: {
     minHeight: 50,
@@ -701,6 +801,25 @@ export const styles = StyleSheet.create({
   buttonPressed: { transform: [{ translateY: 3 }], borderBottomWidth: 1, marginBottom: 3 },
   buttonText: { fontFamily: DisplayFont.bold, fontSize: 16, letterSpacing: 0.6, textTransform: 'uppercase' },
   buttonTextLarge: { fontSize: 19 },
+  effortChoice: {
+    minHeight: 88,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    padding: 16,
+    borderRadius: Radius.card,
+    backgroundColor: Palette.panel,
+    borderWidth: 1,
+    borderColor: Psx.edgeTop,
+    borderBottomWidth: 3,
+    borderBottomColor: Psx.edge,
+  },
+  effortPressed: { backgroundColor: Palette.pressed, transform: [{ translateY: 1 }] },
+  effortBadge: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  effortBars: { flexDirection: 'row', alignItems: 'flex-end', gap: 3 },
+  effortCopy: { flex: 1, gap: 4 },
+  effortTitle: { fontFamily: DisplayFont.bold, fontSize: 20, lineHeight: 24, color: Palette.text },
+  effortDetail: { fontSize: 14, lineHeight: 20, color: Palette.muted },
   iconButton: {
     width: 36,
     height: 36,
@@ -714,6 +833,9 @@ export const styles = StyleSheet.create({
   iconText: { color: Palette.text, fontFamily: DisplayFont.bold, fontSize: 18 },
   // Icon buttons (back, swap) are flat 40 pt circles: a pressed-in edge reads as a cut-off circle.
   iconRound: { width: 40, height: 40, borderRadius: 20, borderBottomWidth: 0 },
+  youtubeButton: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#fff' },
+  youtubeLogo: { width: 30, height: 21, borderRadius: 6, backgroundColor: '#ff0000', alignItems: 'center', justifyContent: 'center' },
+  youtubePlay: { width: 0, height: 0, marginLeft: 2, borderLeftWidth: 9, borderLeftColor: '#fff', borderTopWidth: 5, borderTopColor: 'transparent', borderBottomWidth: 5, borderBottomColor: 'transparent' },
 
   toggle: { width: 52, height: 32, borderRadius: 16, backgroundColor: Palette.track, padding: 3, justifyContent: 'center' },
   toggleOn: { backgroundColor: Palette.accent },
@@ -793,8 +915,11 @@ export const styles = StyleSheet.create({
   },
   statBar: { flex: 1, minWidth: 130, gap: 5 },
   statBarHead: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  statBarLabel: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 12 },
+  statBarLabel: { color: Palette.muted, fontFamily: DisplayFont.semibold, fontSize: 12, flexShrink: 1 },
+  statBarProgress: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  statBarValue: { color: Palette.text, fontFamily: DisplayFont.semibold, fontSize: 12, lineHeight: 16 },
   statBarTrack: {
+    flex: 1,
     height: 12,
     borderRadius: 3,
     borderWidth: 2,

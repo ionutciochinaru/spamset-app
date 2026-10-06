@@ -1,16 +1,17 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Button, Card, Label, MemeText, PixelText, Row, Screen, Stepper, Steps, Title } from '@/components/ui';
+import { Body, Button, Card, EffortChoice, ExerciseTrainingPreview, Icon, Label, MemeText, PixelText, Row, Screen, ScreenHeader, Stepper, Steps, Thumb, Title, YouTubeSearchButton } from '@/components/ui';
 import type { SessionLog } from '@/core/session';
 import { rankTitle, setCaption, xpState } from '@/core/xp';
 import { syncNow } from '@/lib/sync';
-import { Palette, PixelSize, Psx } from '@/constants/theme';
+import { Palette, PixelSize, Psx, Spacing } from '@/constants/theme';
 import { pickCelebration } from '@/core/celebrations';
 import { getExercise, isStretch, isTimed } from '@/core/exercises';
+import { getExerciseTraining } from '@/core/exercise-training';
 import { initialPrescription, type Effort } from '@/core/progression';
 import { pickFor, planSpamsets, spamCandidates, spamTarget, targetText, timeText } from '@/core/spamset';
 import { ownedEquipment, spamSchedule, useApp } from '@/store/app-store';
@@ -28,6 +29,7 @@ export default function Spamset() {
   const candidates = useMemo(() => spamCandidates(schedule, owned), [schedule, owned]);
   const [exerciseId, setExerciseId] = useState(() => params.exercise ?? pickFor(new Date(), candidates) ?? 'squat');
   const exercise = getExercise(exerciseId);
+  const training = getExerciseTraining(exercise);
   const prescription = useApp((s) => s.prescriptions[exerciseId]) ?? initialPrescription(exerciseId, settings.bells);
   const target = spamTarget(exerciseId, prescription);
   const timed = 'seconds' in target;
@@ -59,7 +61,11 @@ export default function Spamset() {
     // Put it on the boards straight away when signed in (a no-op offline).
     syncNow().catch(() => null);
   };
-  const finish = (amount: number) => (isStretch(exercise) ? log(amount) : setRating(amount));
+  const finish = (amount: number) => {
+    setLeft(undefined);
+    if (isStretch(exercise)) log(amount);
+    else setRating(amount);
+  };
 
   // Countdown for holds and stretches; logs itself at zero.
   useEffect(() => {
@@ -68,6 +74,7 @@ export default function Spamset() {
       if (left === 1) {
         if (Platform.OS !== 'web' && settings.haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         finish(goal);
+        return;
       }
       setLeft(left - 1);
     }, 1000);
@@ -87,15 +94,32 @@ export default function Spamset() {
   const close = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
   if (rating !== undefined) {
+    const completed = targetText(exerciseId, timed ? { seconds: rating } : { reps: rating });
     return (
-      <Screen>
-        <View style={{ height: 40 }} />
-        <Label>How was it?</Label>
-        <Title>{exercise.name}</Title>
-        <Body muted>Your rating sets the next target. Easy twice adds {timed ? '5 s' : 'a rep'}; hard twice steps back.</Body>
-        <Button label="Easy" kind="go" large onPress={() => log(rating, 'easy')} />
-        <Button label="Good" kind="primary" large onPress={() => log(rating, 'good')} />
-        <Button label="Hard" kind="tonal" large onPress={() => log(rating, 'hard')} />
+      <Screen style={styles.ratingScreen}>
+        <ScreenHeader title="Finish set" back onBack={() => setRating(undefined)} profile={false} />
+        <Card style={styles.completedSet}>
+          <Row>
+            <Icon ios="checkmark.circle.fill" md="check_circle" color="#6fd48a" size={18} />
+            <Label color={Palette.text}>Set complete</Label>
+          </Row>
+          <Row style={styles.completedExercise}>
+            <Thumb clip={exercise.animation} size={64} />
+            <View style={styles.completedCopy}>
+              <Title style={styles.completedTitle}>{exercise.name}</Title>
+              <Body muted>{completed} completed</Body>
+            </View>
+          </Row>
+        </Card>
+        <View style={styles.ratingPrompt}>
+          <Title style={styles.ratingTitle}>How did that feel?</Title>
+          <Body muted>Tap a rating to save your set and tune your next target.</Body>
+        </View>
+        <View style={styles.ratingChoices}>
+          <EffortChoice effort="easy" onPress={() => log(rating, 'easy')} />
+          <EffortChoice effort="good" onPress={() => log(rating, 'good')} />
+          <EffortChoice effort="hard" onPress={() => log(rating, 'hard')} />
+        </View>
       </Screen>
     );
   }
@@ -153,15 +177,28 @@ export default function Spamset() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Label>Spam set</Label>
-        <Button label="Skip" kind="ghost" onPress={close} />
+      <ScreenHeader
+        title="Spam set"
+        back
+        onBack={close}
+        profile={false}
+      />
+      {training ? (
+        <ExerciseTrainingPreview exercise={exercise} training={training}>
+          <FigureViewer clipId={exercise.animation} />
+        </ExerciseTrainingPreview>
+      ) : (
+        <FigureViewer clipId={exercise.animation} />
+      )}
+      <Row>
+        <YouTubeSearchButton query={exercise.name} />
+        <Title style={{ flex: 1 }}>{exercise.name}</Title>
       </Row>
-      <FigureViewer clipId={exercise.animation} />
-      <Title>{exercise.name}</Title>
-      <PixelText size={PixelSize.large} color={left !== undefined ? Psx.hud : Palette.accent}>
-        {(left !== undefined ? `${left} s` : targetText(exerciseId, target)).toUpperCase()}
-      </PixelText>
+      {left !== undefined && (
+        <PixelText size={PixelSize.large} color={Psx.hud}>
+          {`${left} s`.toUpperCase()}
+        </PixelText>
+      )}
       <Card>
         <Steps items={exercise.cues.slice(0, 3)} />
       </Card>
@@ -177,10 +214,20 @@ export default function Spamset() {
           <Card>
             <Stepper label={isTimed(exercise) ? 'Seconds done' : 'Reps done'} value={done} onChange={setDone} min={0} max={200} />
           </Card>
-          <Button label="Done" kind="go" large onPress={() => finish(done)} />
+          <Button label="Done" kind="go" textColor="#fff" large onPress={() => finish(done)} />
         </>
       )}
-      {candidates.length > 1 && left === undefined && <Button label="Swap exercise" kind="tonal" onPress={swap} />}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  ratingScreen: { maxWidth: 560, gap: Spacing.four },
+  completedSet: { gap: Spacing.three },
+  completedExercise: { gap: Spacing.three },
+  completedCopy: { flex: 1, gap: Spacing.one },
+  completedTitle: { fontSize: 20, lineHeight: 26 },
+  ratingPrompt: { gap: Spacing.two },
+  ratingTitle: { fontSize: 28, lineHeight: 34 },
+  ratingChoices: { gap: 12 },
+});

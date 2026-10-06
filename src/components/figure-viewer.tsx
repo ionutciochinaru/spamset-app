@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unknown-property -- react-three-fiber JSX props */
 // @refresh reset -- remount the 3D scene on Fast Refresh: kept Three.js objects break after a hot reload ("WeakMap key must be an Object").
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
 import * as THREE from 'three';
 
@@ -11,6 +11,7 @@ import { PSXPass, snapVertices } from '@/animation/psx';
 import { clipBounds, clipFootprint, samplePose } from '@/animation/sample';
 import { Canvas, useFrame, useThree } from '@/animation/three-canvas';
 import { Scanlines } from '@/components/ui';
+import { TrainingTrackingContext, type TrackedPoint, type TrainingTracking } from '@/components/training-tracking';
 import { DisplayFont, Palette, Psx, Radius } from '@/constants/theme';
 import type { AuraFx, AuraKind } from '@/core/celebrations';
 
@@ -47,9 +48,10 @@ type SceneProps = {
   auraFx?: AuraFx;
   /** Replay celebrations from the start instead of breathing on (review). */
   loop: boolean;
+  tracking: TrainingTracking | null;
 };
 
-function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, psx, aura: auraOn, auraKind, auraFx, loop }: SceneProps) {
+function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, psx, aura: auraOn, auraKind, auraFx, loop, tracking }: SceneProps) {
   const clip = clips[clipId];
   const figure = useMemo(() => new Figure(), []);
   const pass = useMemo(() => new PSXPass(), []);
@@ -69,6 +71,8 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
   const { camera } = useThree();
   const time = useRef(0);
   const reported = useRef(0);
+  const projected = useMemo(() => new THREE.Vector3(), []);
+  const trackedAt = useRef(0);
 
   useEffect(() => () => figure.dispose(), [figure]);
 
@@ -95,6 +99,18 @@ function Scene({ clipId, orbit, speed, paused, phase, onPhase, zoom = 1, focus, 
       target.z + distance * Math.cos(azimuth) * Math.cos(elevation),
     );
     camera.lookAt(target);
+    if (tracking && performance.now() - trackedAt.current >= 45) {
+      trackedAt.current = performance.now();
+      camera.updateMatrixWorld();
+      const joints: Record<string, TrackedPoint> = {};
+      for (const [name, position] of Object.entries(pose.joints)) {
+        projected.set(...position).project(camera);
+        if (projected.z > -1 && projected.z < 1 && Math.abs(projected.x) <= 1 && Math.abs(projected.y) <= 1) {
+          joints[name] = { x: (projected.x + 1) / 2, y: (1 - projected.y) / 2 };
+        }
+      }
+      tracking.publish(joints);
+    }
     figure.update(pose, camera.position);
     aura?.update(pose.joints, camera.position, paused ? 0 : delta);
     // A rep ends at each 1/reps of the loop: burst then.
@@ -177,6 +193,7 @@ export function FigureViewer({
   locked?: boolean;
 }) {
   const clip = clips[clipId];
+  const tracking = useContext(TrainingTrackingContext);
   // Start from the watch camera, so the side it draws near (and single-arm work) faces you.
   const azimuth = view?.azimuth ?? clip.view.azimuth;
   // Floor work (lying, planks) seen from near floor level is a thin strip: start it from
@@ -222,7 +239,7 @@ export function FigureViewer({
         onResponderGrant={onGrant}
         onResponderMove={onMove}>
         <Canvas camera={{ fov: FOV, near: 0.05, far: 20 }} style={{ flex: 1 }}>
-          <Scene clipId={clipId} orbit={orbit} speed={speed} paused={paused} phase={phase} onPhase={onPhase} zoom={zoom} focus={focus} psx={psx} aura={aura} auraKind={auraKind} auraFx={auraFx} loop={loop} />
+          <Scene clipId={clipId} orbit={orbit} speed={speed} paused={paused} phase={phase} onPhase={onPhase} zoom={zoom} focus={focus} psx={psx} aura={aura} auraKind={auraKind} auraFx={auraFx} loop={loop} tracking={tracking} />
         </Canvas>
       </View>
       {scan && <Scanlines />}

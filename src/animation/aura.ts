@@ -38,6 +38,8 @@ const BEHIND = 0.14;
 /** Burst decay per second (the halo is gone in about 0.8 s). */
 const DECAY = 4;
 const RING_LIFE = 0.55;
+/** Matches the top of the figure's ground plate. */
+const FLOOR_Y = -0.002;
 
 /** Bursts per loop of a clip: one per rep it shows (two when it shows both sides or two reps); holds burst once a loop. */
 export function repsPerLoop(clip: Clip): number {
@@ -106,8 +108,28 @@ const ARROW_COLOURS: Record<string, [number, number, number, number]> = {
 const arrowTexture = () =>
   texture(12, (u, v) => ARROW_COLOURS[ARROW_ART[Math.floor((1 - v) * 12)][Math.floor(u * 12)]], true);
 
+/** Clip the whole billboard, including its lower corners, against the ground. */
+function aboveFloor<T extends THREE.Material>(material: T): T {
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.auraFloorY = { value: FLOOR_Y };
+    shader.vertexShader = `varying float vAuraWorldY;\n${shader.vertexShader}`.replace(
+      '#include <clipping_planes_vertex>',
+      `#include <clipping_planes_vertex>
+      // Recover world height after the sprite shader has applied its camera-facing offsets.
+      vAuraWorldY = dot(viewMatrix[1].xyz, mvPosition.xyz) + cameraPosition.y;`,
+    );
+    shader.fragmentShader = `uniform float auraFloorY;\nvarying float vAuraWorldY;\n${shader.fragmentShader}`.replace(
+      '#include <clipping_planes_fragment>',
+      `#include <clipping_planes_fragment>
+      if (vAuraWorldY < auraFloorY) discard;`,
+    );
+  };
+  material.customProgramCacheKey = () => 'aura-above-floor-v1';
+  return material;
+}
+
 function additive(map: THREE.Texture, color: THREE.Color) {
-  return new THREE.SpriteMaterial({ map, color, opacity: 0, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+  return aboveFloor(new THREE.SpriteMaterial({ map, color, opacity: 0, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
 }
 
 type Particle = { sprite: THREE.Sprite; velocity: THREE.Vector3; age: number; life: number; size: number };
@@ -170,7 +192,7 @@ export class Aura {
         return { sprite, velocity: new THREE.Vector3(), age: 1, life: 1, size: 0 };
       });
     // Arrows are solid pixel art (normal blending keeps the dark outline); the rest is light.
-    this.arrows = pool(ARROWS, () => new THREE.SpriteMaterial({ map: this.arrow, transparent: true, depthWrite: false, opacity: 0 }));
+    this.arrows = pool(ARROWS, () => aboveFloor(new THREE.SpriteMaterial({ map: this.arrow, transparent: true, depthWrite: false, opacity: 0 })));
     this.sparks = pool(SPARKS, () => additive(this.glow, this.core));
     this.streaks = pool(STREAKS, () => additive(this.glow, this.core));
     if (this.sustained) this.flames = pool(FLAMES, () => additive(this.glow, this.edge));
@@ -178,8 +200,8 @@ export class Aura {
     if (fx.dust) {
       const puff = (this.puffMap = puffTexture());
       const rock = (this.rockMap = rockTexture());
-      this.dust = pool(DUST, () => new THREE.SpriteMaterial({ map: puff, transparent: true, depthWrite: false, opacity: 0 }));
-      this.rocks = pool(ROCKS, () => new THREE.SpriteMaterial({ map: rock, color: '#4a3f33', transparent: true, depthWrite: false, opacity: 0 }));
+      this.dust = pool(DUST, () => aboveFloor(new THREE.SpriteMaterial({ map: puff, transparent: true, depthWrite: false, opacity: 0 })));
+      this.rocks = pool(ROCKS, () => aboveFloor(new THREE.SpriteMaterial({ map: rock, color: '#4a3f33', transparent: true, depthWrite: false, opacity: 0 })));
     }
     if (fx.lightning) {
       for (let i = 0; i < BOLTS; i++) {
@@ -187,7 +209,7 @@ export class Aura {
         geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(BOLT_POINTS * 3), 3));
         const line = new THREE.Line(
           geometry,
-          new THREE.LineBasicMaterial({ color: BOLT_COLOUR, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }),
+          aboveFloor(new THREE.LineBasicMaterial({ color: BOLT_COLOUR, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })),
         );
         line.visible = false;
         line.frustumCulled = false;

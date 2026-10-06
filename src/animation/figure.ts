@@ -31,6 +31,8 @@ export const FIGURE_COLORS = {
 
 const SIDES = ['l', 'r'] as const;
 type Side = (typeof SIDES)[number];
+const GROUND_TOP = -0.002;
+const GROUND_THICKNESS = 0.1;
 
 const v = (p: Vec3) => new THREE.Vector3(p[0], p[1], p[2]);
 const mix = (a: THREE.Vector3, b: THREE.Vector3, t: number) => a.clone().lerp(b, t);
@@ -77,7 +79,7 @@ export class Figure {
   private shirtOutline: THREE.Mesh;
   private bells: KettlebellModel[] = [];
   private equipment = new EquipmentModel();
-  private ground: THREE.Mesh;
+  private ground: THREE.Mesh<THREE.CylinderGeometry, THREE.Material[]>;
   private colors = {
     ink: new THREE.Color(FIGURE_COLORS.ink),
     far: new THREE.Color(FIGURE_COLORS.far),
@@ -88,10 +90,14 @@ export class Figure {
   };
 
   constructor() {
-    const ground = new THREE.Mesh(new THREE.CircleGeometry(1, 64), new THREE.MeshBasicMaterial({ color: FIGURE_COLORS.ground }));
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.002;
-    ground.scale.setScalar(0.95);
+    // Keep the standing surface at floor level; the solid edge extends below it.
+    const ground = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, GROUND_THICKNESS, 64), [
+      lambert('#303029'),
+      new THREE.MeshBasicMaterial({ color: FIGURE_COLORS.ground }),
+      new THREE.MeshBasicMaterial({ color: '#11120f' }),
+    ]);
+    ground.position.y = GROUND_TOP - GROUND_THICKNESS / 2;
+    ground.scale.set(0.95, 1, 0.95);
     this.ground = ground;
     this.group.add(ground);
 
@@ -134,10 +140,11 @@ export class Figure {
     this.group.add(this.equipment.group);
   }
 
-  /** Centre the floor disc under what the clip touches the floor with (x, z in m) and size it to cover it. */
+  /** Centre the platform under the clip's floor contacts; only its footprint grows. */
   setGround(x: number, z: number, radius: number) {
-    this.ground.position.set(x, -0.002, z);
-    this.ground.scale.setScalar(Math.max(0.95, radius));
+    this.ground.position.set(x, GROUND_TOP - GROUND_THICKNESS / 2, z);
+    const size = Math.max(0.95, radius);
+    this.ground.scale.set(size, 1, size);
   }
 
   /** Pose the figure. `camera` is the eye position, for near/far side shading. */
@@ -300,5 +307,6 @@ export class Figure {
     this.group.traverse((object) => {
       if (object instanceof THREE.Mesh) object.geometry.dispose();
     });
+    this.ground.material.forEach((material) => material.dispose());
   }
 }

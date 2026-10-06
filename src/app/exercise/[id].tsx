@@ -4,7 +4,8 @@ import { useMemo } from 'react';
 import { clips } from '@/animation/clips';
 import { BellPicker } from '@/components/bell-picker';
 import { FigureViewer } from '@/components/figure-viewer';
-import { Body, Card, Heading, Label, Row, Screen, ScreenHeader, Steps, Tag } from '@/components/ui';
+import { getExerciseTraining } from '@/core/exercise-training';
+import { Body, Card, ExerciseTrainingPreview, Heading, Label, Row, Screen, ScreenHeader, Steps, Tag } from '@/components/ui';
 import { Palette } from '@/constants/theme';
 import { canDo, EQUIPMENT_LABELS, getExercise, isLoaded, isStretch, isTimed } from '@/core/exercises';
 import { initialPrescription } from '@/core/progression';
@@ -13,6 +14,7 @@ import { joinDetail, loadLabel, ownedEquipment, useApp } from '@/store/app-store
 export default function ExerciseDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const exercise = getExercise(id);
+  const training = getExerciseTraining(exercise);
   const clip = clips[exercise.animation];
   const prescription = useApp((s) => s.prescriptions[id]) ?? initialPrescription(id, useApp.getState().settings.bells);
   const units = useApp((s) => s.settings.units);
@@ -31,7 +33,13 @@ export default function ExerciseDetail() {
   return (
     <Screen>
       <ScreenHeader title={exercise.name} back />
-      <FigureViewer clipId={exercise.animation} />
+      {training ? (
+        <ExerciseTrainingPreview exercise={exercise} training={training}>
+          <FigureViewer clipId={exercise.animation} />
+        </ExerciseTrainingPreview>
+      ) : (
+        <FigureViewer clipId={exercise.animation} />
+      )}
       <Row style={{ flexWrap: 'wrap' }}>
         {exercise.primary.map((m) => (
           <Tag key={m} label={m} accent />

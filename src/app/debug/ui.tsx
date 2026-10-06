@@ -2,8 +2,12 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { FigureViewer } from '@/components/figure-viewer';
-import { Avatar, Blink, Body, Button, Card, Chips, Divider, Field, Heading, HudCard, IconButton, Label, MemeText, Meter, PixelText, Podium, Row, Screen, ScreenHeader, Segmented, Stat, StatBar, Stepper, Steps, Tag, Thumb, Title, Toggle, Well } from '@/components/ui';
+import { Avatar, Blink, Body, Button, Card, Chips, Divider, EffortChoice, ExerciseTrainingPreview, Field, Heading, HudCard, IconButton, Label, MemeText, Meter, PixelText, Podium, Row, Screen, ScreenHeader, Segmented, Stat, StatBar, Stepper, Steps, Tag, Thumb, Title, Toggle, Well, YouTubeSearchButton } from '@/components/ui';
 import { Palette, PixelSize, Psx } from '@/constants/theme';
+import { getExerciseTraining } from '@/core/exercise-training';
+import { getExercise } from '@/core/exercises';
+
+type PreviewClip = 'kb-swing' | 'kb-halo' | 'kb-press' | 'kb-getup' | 'squat' | 'pushup' | 'wall-pushup' | 'seated-knee' | 'neck-flexion';
 
 /** The visual library on one page (docs/design-system.md). Open from Profile → Visual library. */
 export default function VisualLibrary() {
@@ -12,6 +16,9 @@ export default function VisualLibrary() {
   const [seg, setSeg] = useState<'kg' | 'lb'>('kg');
   const [reps, setReps] = useState(12);
   const [text, setText] = useState('');
+  const [previewClip, setPreviewClip] = useState<PreviewClip>('kb-swing');
+  const sampleExercise = getExercise(previewClip);
+  const sampleTraining = getExerciseTraining(sampleExercise);
 
   return (
     <Screen>
@@ -100,6 +107,7 @@ export default function VisualLibrary() {
       <Label>Buttons</Label>
       <Button label="> Primary" large onPress={() => {}} />
       <Button label="> Go" kind="go" onPress={() => {}} />
+      <Button label="Done" kind="go" textColor="#fff" large onPress={() => {}} />
       <Row>
         <View style={{ flex: 1 }}>
           <Button label="Tonal" kind="tonal" onPress={() => {}} />
@@ -116,9 +124,20 @@ export default function VisualLibrary() {
         <IconButton label="↑" hint="Up" onPress={() => {}} />
         <IconButton label="↓" hint="Down" onPress={() => {}} />
         <IconButton label="X" hint="Remove" onPress={() => {}} />
-        <IconButton icon={{ ios: 'shuffle', md: 'shuffle' }} hint="Swap" onPress={() => {}} />
+        <IconButton icon={{ ios: 'shuffle', md: 'shuffle' }} iconColor={Palette.bg} hint="Swap" onPress={() => {}} style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#fff' }} />
+        <YouTubeSearchButton query="Single-arm snatch" />
         <Avatar size={40} onPress={() => {}} />
       </Row>
+
+      <Label>Progress with counts</Label>
+      <Row style={{ flexWrap: 'wrap' }}>
+        <StatBar label="Next rank" showLabel={false} value={20} valueLabel="30/150" color={Palette.accent} icon={{ ios: 'bolt.fill', md: 'bolt' }} />
+      </Row>
+
+      <Label>Effort choices</Label>
+      <EffortChoice effort="easy" onPress={() => {}} />
+      <EffortChoice effort="good" onPress={() => {}} />
+      <EffortChoice effort="hard" onPress={() => {}} />
 
       <Label>Inputs</Label>
       <Card>
@@ -166,7 +185,25 @@ export default function VisualLibrary() {
       </Card>
 
       <Label>Media</Label>
-      <FigureViewer clipId="kb-swing" />
+      <Chips options={[
+        { value: 'kb-swing', label: 'Swing' }, { value: 'kb-halo', label: 'Halo' },
+        { value: 'kb-press', label: 'Press' }, { value: 'kb-getup', label: 'Get-up' },
+        { value: 'squat', label: 'Squat' }, { value: 'pushup', label: 'Push-up' },
+        { value: 'wall-pushup', label: 'Wall' }, { value: 'seated-knee', label: 'Seated' },
+        { value: 'neck-flexion', label: 'Stretch' },
+      ]} selected={previewClip} onToggle={setPreviewClip} />
+      {sampleTraining && (
+        <ExerciseTrainingPreview
+          exercise={sampleExercise}
+          training={sampleTraining}
+          controls={
+            <View pointerEvents="box-none" style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+              <IconButton icon={{ ios: 'shuffle', md: 'shuffle' }} iconColor={Palette.bg} hint="Example swap control" onPress={() => {}} style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#fff' }} />
+            </View>
+          }>
+          <FigureViewer clipId={previewClip} controls={false} style={{ aspectRatio: 0.95, borderRadius: 0, borderWidth: 0 }} />
+        </ExerciseTrainingPreview>
+      )}
       <Row>
         <Thumb clip="kb-swing" style={{ flex: 1 }} />
         <Thumb clip="pushup" style={{ flex: 1 }} />

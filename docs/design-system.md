@@ -25,7 +25,7 @@ Every screen builds from `src/components/ui.tsx`, and every token lives in `src/
 3. **Colour has a job.** Orange (`Palette.accent`) marks the main action and targets, green (`Palette.go`) starts a set or rates it Easy, and yellow (`Psx.hud`) is for HUD numbers. Cyan (`Psx.cyan`) is used sparingly for live labels on the home hero; red (`Palette.danger`) means destructive.
 4. **The PSX lives in the 3D.** Scanlines go on 3D stages and the home hero only, never over text. The figure keeps its PSX rendering.
 5. **Buttons are tactile.** A thick darker bottom edge that the button presses into. Cards dip slightly when pressed. There are no bevels and no hard pixel shadows on surfaces.
-6. **One game moment per screen.** The home screen is the game hub: one hero card with the player HUD on top (level, rank, streak, four PS2-style stat bars), the 3D figure with a gym-meme caption over it, the next-set countdown and Start. Other screens stay calm, with HUD numbers where there are numbers. `Blink` appears at most once per screen.
+6. **One game moment per screen.** The home screen is the game hub: one hero card with the player HUD on top, the 3D figure with a gym-meme caption only during celebrations, and the next-set time and action. Other screens stay calm, with HUD numbers where there are numbers. `Blink` appears at most once per screen.
 7. **Phone first.** Touch targets are at least 40 pt (50 for buttons and fields), with a 16 pt side gutter. Every component works on iOS, Android and web, with no platform forks for looks.
 8. **One header row per screen.** Every screen starts with `ScreenHeader`: the back arrow on the left on pushed screens (`back`), the title next to it, and your profile picture on the far right, which opens Profile (hidden on Profile itself with `profile={false}`). Never use the system navigation header or a spacer above the title. Today keeps its own header (date and wordmark) with the picture in the same place.
 
@@ -33,11 +33,17 @@ Every screen builds from `src/components/ui.tsx`, and every token lives in `src/
 
 | Group | Components |
 |---|---|
-| Layout | `Screen`, `ScreenHeader` (back, title, profile picture), `Row`, `Scanlines` |
+| Layout | `Screen`, `ScreenHeader` (back, title, profile picture), `Row`, `Scanlines`, `ExerciseTrainingPreview` (figure with live training tracking) |
 | Type | `Title`, `Heading`, `Label`, `Body`, `Steps`, `PixelText` (HUD) |
 | Surfaces | `Card`, `HudCard` (the home player card), `Divider`, `Well`, `Stage`, `Thumb` |
-| Actions | `Button` (primary, go, tonal, ghost, danger; `large`), `IconButton` (text or `icon`), `Avatar`, `Toggle`, `Field`, `Chips`, `Segmented`, `Stepper` |
-| Data | `Podium` (top three of a board), `Stat` (HUD number + label, or `inline`), `StatBar` (PS2-style stat bar with percent), `Meter`, `Tag` |
+| Actions | `Button` (primary, go, tonal, ghost, danger; `large`), `EffortChoice` (one-tap Easy / Good / Hard with descriptions), `IconButton` (text or `icon`), `YouTubeSearchButton` (external search by `query`), `Avatar`, `Toggle`, `Field`, `Chips`, `Segmented`, `Stepper` |
+| Data | `Podium` (top three of a board), `Stat` (HUD number + label, or `inline`), `StatBar` (count or percent), `Meter`, `Tag`, `ExerciseTrainingPreview` (movement focus, cardio, muscles and benefits) |
 | Motion | `Blink` |
-| Meme | `MemeText` (white caption with a black outline; one per screen, over the hero figure or the +XP screen) |
+| Meme | `MemeText` (white caption with a black outline; one per screen, only over a celebrating hero figure or on the +XP celebration screen) |
 | App chrome | `AppTabs` (one tab bar for every platform), `FigureViewer` (3D stage with scanlines) |
+
+## Exercise training preview
+
+The home hero, active spam-set screen, and exercise detail show `ExerciseTrainingPreview` for exercises with a curated profile. Its two floating labels describe **Focus**, **Cardio**, **Builds** or **Practices** for stretches, **Primary muscles**, and **Support muscles**. Use plain, qualitative descriptions; never turn these into personal scores, percentages, calorie estimates, or guaranteed outcomes. Main and supporting muscles come from the exercise catalog. Orange marks training information; cyan marks muscles.
+
+The figure keeps its original full width and squareish frame. Exercise metadata chooses an upright, floor, seated, or overhead composition. Measured label heights keep the notes clear of top controls, playback controls, and the caption. Thin leaders, small points, and corner marks follow relevant sampled joints projected through the live camera, including during playback and rotation. The marks disappear when their joints leave the frame; descriptive text stays visible and accessible. The overlay never takes pointer events or places scanlines over text. Decorative sign-in figures and celebrations stay clean. Review swing, overhead, floor, squat, push-up, assisted, seated, and stretch poses in `/debug/ui`.
